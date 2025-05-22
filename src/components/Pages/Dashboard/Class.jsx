@@ -1,8 +1,24 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Plus, Search, Users, ArrowLeft, GraduationCap, Edit, Trash2, ChevronDown, Home } from "lucide-react"
+import {
+  Plus,
+  Search,
+  Users,
+  ArrowLeft,
+  GraduationCap,
+  Edit,
+  Trash2,
+  ChevronDown,
+  Home,
+  AlertTriangle,
+  CheckCircle,
+  Clock,
+  ArrowUp,
+  ArrowDown,
+} from "lucide-react"
 import fetchWithAuth from "../../JWT/authInterceptor"
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, Label } from "recharts"
 
 const API_BASE_URL = "https://cyberkids.onrender.com/api/classes"
 const TEACHER_API_URL = "https://cyberkids.onrender.com/api/teacher"
@@ -39,6 +55,21 @@ const LEVEL_TO_NUMBER = {
   "Level 3": 3,
 }
 
+// Performance thresholds
+const PERFORMANCE_THRESHOLDS = {
+  points: {
+    good: 80, // 80+ points is good
+    average: 60, // 60-79 points is average
+    // below 60 is struggling
+  },
+  time: {
+    // For time, lower is better (in seconds)
+    good: 120, // Under 2 minutes is good
+    average: 300, // 2-5 minutes is average
+    // over 5 minutes is struggling
+  },
+}
+
 // Font style to apply Poppins font
 const poppinsFont = {
   fontFamily: "'Poppins', sans-serif",
@@ -66,6 +97,13 @@ const Class = () => {
   const [movingStudent, setMovingStudent] = useState({})
   const [moveSuccess, setMoveSuccess] = useState({})
   const [selectedLevel, setSelectedLevel] = useState({})
+  const [chartMetric, setChartMetric] = useState("points")
+  const [chartTimeframe, setChartTimeframe] = useState("day")
+  const [chartChallenge, setChartChallenge] = useState("all")
+  const [performanceStatus, setPerformanceStatus] = useState({ status: "neutral", message: "No data available" })
+  const [historySortField, setHistorySortField] = useState("dateCompleted")
+  const [historySortDirection, setHistorySortDirection] = useState("desc")
+  const [challengeAttemptCounts, setChallengeAttemptCounts] = useState({})
 
   // Fetch teacher's classes on component mount
   useEffect(() => {
@@ -88,6 +126,115 @@ const Class = () => {
 
     fetchClasses()
   }, [])
+
+  // Update performance status when chart metric or student changes
+  useEffect(() => {
+    if (selectedStudent) {
+      calculatePerformanceStatus()
+    }
+  }, [chartMetric, selectedStudent, chartChallenge])
+
+  // Calculate challenge attempt counts when student changes
+  useEffect(() => {
+    if (selectedStudent && selectedStudent.challengeAttempts) {
+      const counts = {}
+      selectedStudent.challengeAttempts.forEach((attempt) => {
+        if (!counts[attempt.challengeType]) {
+          counts[attempt.challengeType] = 0
+        }
+        counts[attempt.challengeType]++
+      })
+      setChallengeAttemptCounts(counts)
+    }
+  }, [selectedStudent])
+
+  // Calculate student performance status
+  const calculatePerformanceStatus = () => {
+    if (!selectedStudent || !selectedStudent.challengeAttempts || selectedStudent.challengeAttempts.length === 0) {
+      setPerformanceStatus({ status: "neutral", message: "No data available" })
+      return
+    }
+
+    let relevantData = selectedStudent.challengeAttempts.filter(
+      (attempt) => attempt.points !== null && attempt.completionStatus === "Completed",
+    )
+    if (chartChallenge !== "all") {
+      relevantData = relevantData.filter((attempt) => attempt.challengeType === chartChallenge)
+    }
+
+    if (relevantData.length === 0) {
+      setPerformanceStatus({ status: "neutral", message: "No data available for selected challenge" })
+      return
+    }
+
+    if (chartMetric === "points") {
+      // Calculate average points
+      const avgPoints = relevantData.reduce((sum, attempt) => sum + (attempt.points || 0), 0) / relevantData.length
+
+      if (avgPoints >= PERFORMANCE_THRESHOLDS.points.good) {
+        setPerformanceStatus({
+          status: "good",
+          message: `Great performance! Average score: ${avgPoints.toFixed(1)} points`,
+          value: avgPoints,
+        })
+      } else if (avgPoints >= PERFORMANCE_THRESHOLDS.points.average) {
+        setPerformanceStatus({
+          status: "average",
+          message: `Average performance. Score: ${avgPoints.toFixed(1)} points`,
+          value: avgPoints,
+        })
+      } else {
+        setPerformanceStatus({
+          status: "struggling",
+          message: `Student may be struggling. Low score: ${avgPoints.toFixed(1)} points`,
+          value: avgPoints,
+        })
+      }
+    } else {
+      // For time metric
+      const attemptsWithTime = relevantData.filter((attempt) => attempt.timeTaken && attempt.endTime)
+
+      if (attemptsWithTime.length === 0) {
+        setPerformanceStatus({ status: "neutral", message: "No time data available" })
+        return
+      }
+
+      // Calculate average time
+      const avgTime =
+        attemptsWithTime.reduce((sum, attempt) => {
+          const timeParts = attempt.timeTaken.split(":")
+          const timeInSeconds = Number.parseInt(timeParts[0]) * 60 + Number.parseInt(timeParts[1])
+          return sum + timeInSeconds
+        }, 0) / attemptsWithTime.length
+
+      if (avgTime <= PERFORMANCE_THRESHOLDS.time.good) {
+        setPerformanceStatus({
+          status: "good",
+          message: `Fast completion! Average time: ${formatTimeFromSeconds(avgTime)}`,
+          value: avgTime,
+        })
+      } else if (avgTime <= PERFORMANCE_THRESHOLDS.time.average) {
+        setPerformanceStatus({
+          status: "average",
+          message: `Average completion time: ${formatTimeFromSeconds(avgTime)}`,
+          value: avgTime,
+        })
+      } else {
+        setPerformanceStatus({
+          status: "struggling",
+          message: `Student may need help. Slow time: ${formatTimeFromSeconds(avgTime)}`,
+          value: avgTime,
+        })
+      }
+    }
+  }
+
+  // Format time from seconds to MM:SS
+  const formatTimeFromSeconds = (seconds) => {
+    const mins = Math.floor(seconds / 60)
+    const secs = Math.floor(seconds % 60)
+    return `${mins}:${secs.toString().padStart(2, "0")}`
+  }
 
   // Fetch students for a specific class
   const fetchStudentsForClass = async (grade, section) => {
@@ -297,10 +444,10 @@ const Class = () => {
 
   // Get total points for a student
   const getTotalPoints = (student) => {
-    if (!student || !student.scores || !Array.isArray(student.scores)) {
+    if (!student || !student.challengeAttempts || !Array.isArray(student.challengeAttempts)) {
       return 0
     }
-    return student.scores.reduce((total, score) => total + (score.points || 0), 0)
+    return student.challengeAttempts.reduce((total, attempt) => total + (attempt.points || 0), 0)
   }
 
   // Format date for display
@@ -315,6 +462,129 @@ const Class = () => {
     // In a real app, this would be determined by actual online status
     // For demo purposes, we'll use a deterministic approach based on the student ID
     return studentId % 3 === 0 ? "offline" : "online"
+  }
+
+  // Prepare data for the performance chart
+  const prepareChartData = () => {
+    if (!selectedStudent) return []
+
+    const data = []
+
+    // Use challengeAttempts instead of scores and timers
+    if (selectedStudent.challengeAttempts) {
+      selectedStudent.challengeAttempts.forEach((attempt) => {
+        // Filter by challenge if needed
+        if (chartChallenge !== "all" && attempt.challengeType !== chartChallenge) {
+          return
+        }
+
+        // Skip attempts without points or completion date
+        if (!attempt.points || !attempt.dateCompleted) {
+          return
+        }
+
+        const timeTaken = attempt.timeTaken
+          ? typeof attempt.timeTaken === "string"
+            ? Number.parseInt(attempt.timeTaken.split(":")[0]) * 60 + Number.parseInt(attempt.timeTaken.split(":")[1])
+            : attempt.timeTaken
+          : null
+
+        const date = new Date(attempt.dateCompleted)
+        let dateKey
+
+        // Group by timeframe
+        if (chartTimeframe === "day") {
+          dateKey = date.toISOString().split("T")[0] // YYYY-MM-DD
+        } else if (chartTimeframe === "month") {
+          dateKey = `${date.getFullYear()}-${date.getMonth() + 1}` // YYYY-MM
+        } else {
+          dateKey = date.getFullYear().toString() // YYYY
+        }
+
+        // Find if we already have an entry for this date
+        const existingEntry = data.find((item) => {
+          if (chartTimeframe === "day") return item.date.split("T")[0] === dateKey
+          if (chartTimeframe === "month")
+            return `${new Date(item.date).getFullYear()}-${new Date(item.date).getMonth() + 1}` === dateKey
+          return new Date(item.date).getFullYear().toString() === dateKey
+        })
+
+        if (existingEntry) {
+          // Update existing entry
+          existingEntry.points = (existingEntry.points + attempt.points) / 2 // Average
+          if (timeTaken && existingEntry.time) {
+            existingEntry.time = (existingEntry.time + timeTaken) / 2 // Average
+          } else if (timeTaken) {
+            existingEntry.time = timeTaken
+          }
+          existingEntry.count += 1
+        } else {
+          // Create new entry
+          data.push({
+            date: attempt.dateCompleted,
+            points: attempt.points,
+            time: timeTaken,
+            count: 1,
+            challenge: attempt.challengeType,
+          })
+        }
+      })
+    }
+
+    // Sort by date
+    data.sort((a, b) => new Date(a.date) - new Date(b.date))
+
+    return data
+  }
+
+  // Handle sorting for challenge history
+  const handleHistorySort = (field) => {
+    if (historySortField === field) {
+      setHistorySortDirection(historySortDirection === "asc" ? "desc" : "asc")
+    } else {
+      setHistorySortField(field)
+      setHistorySortDirection("asc")
+    }
+  }
+
+  // Sort challenge attempts
+  const sortedChallengeAttempts = () => {
+    if (!selectedStudent || !selectedStudent.challengeAttempts) return []
+
+    return [...selectedStudent.challengeAttempts].sort((a, b) => {
+      let aValue = a[historySortField]
+      let bValue = b[historySortField]
+
+      // Handle special cases
+      if (historySortField === "dateCompleted" || historySortField === "startTime" || historySortField === "endTime") {
+        aValue = aValue ? new Date(aValue) : new Date(0)
+        bValue = bValue ? new Date(bValue) : new Date(0)
+      } else if (historySortField === "points") {
+        aValue = aValue !== null ? aValue : -1
+        bValue = bValue !== null ? bValue : -1
+      } else if (historySortField === "timeTaken") {
+        // Convert MM:SS to seconds for comparison
+        if (aValue) {
+          const [aMin, aSec] = aValue.split(":").map(Number)
+          aValue = aMin * 60 + aSec
+        } else {
+          aValue = -1
+        }
+        if (bValue) {
+          const [bMin, bSec] = bValue.split(":").map(Number)
+          bValue = bMin * 60 + bSec
+        } else {
+          bValue = -1
+        }
+      }
+
+      // Compare based on direction
+      if (historySortDirection === "asc") {
+        return aValue > bValue ? 1 : aValue < bValue ? -1 : 0
+      } else {
+        return aValue < bValue ? 1 : aValue > bValue ? -1 : 0
+      }
+    })
   }
 
   // Render loading state
@@ -814,7 +1084,7 @@ const Class = () => {
                                           .filter(([level]) => level !== "Main Menu")
                                           .map(([level, challenge]) => {
                                             // Check if student has completed this level
-                                            const hasCompleted = student.scores?.some(
+                                            const hasCompleted = student.challengeAttempts?.some(
                                               (score) =>
                                                 score.challengeType === challenge &&
                                                 score.completionStatus === "Completed",
@@ -948,8 +1218,8 @@ const Class = () => {
           </div>
         </div>
 
-        {/* Student Information */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {/* Student Information and Performance Summary */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Basic Info Card */}
           <div className="bg-white rounded-lg shadow-sm p-6">
             <h3 className="text-xl font-medium text-gray-800 mb-4">Student Information</h3>
@@ -1011,16 +1281,24 @@ const Class = () => {
               <div className="flex justify-between">
                 <span className="text-lg text-gray-500">Challenges Completed:</span>
                 <span className="text-lg font-medium text-gray-800">
-                  {selectedStudent.scores?.filter((score) => score.completionStatus === "Completed").length || 0}
+                  {selectedStudent.challengeAttempts
+                    ? new Set(
+                        selectedStudent.challengeAttempts
+                          .filter((attempt) => attempt.completionStatus === "Completed")
+                          .map((attempt) => attempt.challengeType),
+                      ).size
+                    : 0}
                 </span>
               </div>
               <div className="flex justify-between">
                 <span className="text-lg text-gray-500">Average Score:</span>
                 <span className="text-lg font-medium text-gray-800">
-                  {selectedStudent.scores && selectedStudent.scores.length > 0
+                  {selectedStudent.challengeAttempts && selectedStudent.challengeAttempts.length > 0
                     ? Math.round(
-                        selectedStudent.scores.reduce((sum, score) => sum + (score.points || 0), 0) /
-                          selectedStudent.scores.length,
+                        selectedStudent.challengeAttempts
+                          .filter((attempt) => attempt.points !== null)
+                          .reduce((sum, attempt) => sum + (attempt.points || 0), 0) /
+                          selectedStudent.challengeAttempts.filter((attempt) => attempt.points !== null).length,
                       )
                     : "N/A"}
                 </span>
@@ -1028,11 +1306,18 @@ const Class = () => {
               <div className="flex justify-between">
                 <span className="text-lg text-gray-500">Last Activity:</span>
                 <span className="text-lg font-medium text-gray-800">
-                  {selectedStudent.scores && selectedStudent.scores.length > 0
-                    ? formatDate(
-                        selectedStudent.scores.sort((a, b) => new Date(b.dateCompleted) - new Date(a.dateCompleted))[0]
-                          .dateCompleted,
-                      )
+                  {selectedStudent.challengeAttempts && selectedStudent.challengeAttempts.length > 0
+                    ? (() => {
+                        const completedAttempts = selectedStudent.challengeAttempts.filter(
+                          (attempt) => attempt.dateCompleted,
+                        )
+                        return completedAttempts.length > 0
+                          ? formatDate(
+                              completedAttempts.sort((a, b) => new Date(b.dateCompleted) - new Date(a.dateCompleted))[0]
+                                .dateCompleted,
+                            )
+                          : "N/A"
+                      })()
                     : "N/A"}
                 </span>
               </div>
@@ -1040,132 +1325,363 @@ const Class = () => {
           </div>
         </div>
 
-        {/* Scores Section */}
+        {/* Performance Chart */}
         <div className="bg-white rounded-lg shadow-sm p-6">
-          <h3 className="text-xl font-medium text-gray-800 mb-4">Challenge Scores</h3>
-          {selectedStudent.scores && selectedStudent.scores.length > 0 ? (
-            <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-gray-200">
-                <thead className="bg-gray-50">
-                  <tr>
-                    <th className="px-6 py-3 text-left text-sm font-medium text-gray-500 uppercase tracking-wider">
-                      Challenge
-                    </th>
-                    <th className="px-6 py-3 text-left text-sm font-medium text-gray-500 uppercase tracking-wider">
-                      Points
-                    </th>
-                    <th className="px-6 py-3 text-left text-sm font-medium text-gray-500 uppercase tracking-wider">
-                      Status
-                    </th>
-                    <th className="px-6 py-3 text-left text-sm font-medium text-gray-500 uppercase tracking-wider">
-                      Date
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
-                  {selectedStudent.scores.map((score) => (
-                    <tr key={score.id} className="hover:bg-gray-50">
-                      <td className="px-6 py-4 whitespace-nowrap text-base text-gray-900">{score.challengeType}</td>
-                      <td className="px-6 py-4 whitespace-nowrap text-base">
-                        <span
-                          className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${
-                            score.points >= 80
-                              ? "bg-green-100 text-green-800"
-                              : score.points >= 60
-                                ? "bg-yellow-100 text-yellow-800"
-                                : "bg-red-100 text-red-800"
-                          }`}
-                        >
-                          {score.points}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-base">
-                        <span
-                          className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${
-                            score.completionStatus === "Completed"
-                              ? "bg-green-100 text-green-800"
-                              : "bg-blue-100 text-blue-800"
-                          }`}
-                        >
-                          {score.completionStatus}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-base text-gray-500">
-                        {formatDate(score.dateCompleted)}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          ) : (
-            <p className="text-lg text-gray-500 py-4">No scores available for this student.</p>
-          )}
-        </div>
-
-        {/* Timers Section */}
-        <div className="bg-white rounded-lg shadow-sm p-6">
-          <h3 className="text-xl font-medium text-gray-800 mb-4">Challenge Timers</h3>
-          {selectedStudent.timers && selectedStudent.timers.length > 0 ? (
-            <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-gray-200">
-                <thead className="bg-gray-50">
-                  <tr>
-                    <th className="px-6 py-3 text-left text-sm font-medium text-gray-500 uppercase tracking-wider">
-                      Challenge
-                    </th>
-                    <th className="px-6 py-3 text-left text-sm font-medium text-gray-500 uppercase tracking-wider">
-                      Time Taken
-                    </th>
-                    <th className="px-6 py-3 text-left text-sm font-medium text-gray-500 uppercase tracking-wider">
-                      Start Time
-                    </th>
-                    <th className="px-6 py-3 text-left text-sm font-medium text-gray-500 uppercase tracking-wider">
-                      End Time
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
-                  {selectedStudent.timers.map((timer) => (
-                    <tr key={timer.id} className="hover:bg-gray-50">
-                      <td className="px-6 py-4 whitespace-nowrap text-base text-gray-900">{timer.challengeType}</td>
-                      <td className="px-6 py-4 whitespace-nowrap text-base font-medium">
-                        {timer.timeTaken || "In progress"}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-base text-gray-500">
-                        {formatDate(timer.startTime)}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-base text-gray-500">
-                        {timer.endTime ? formatDate(timer.endTime) : "Not completed"}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          ) : (
-            <p className="text-lg text-gray-500 py-4">No timer data available for this student.</p>
-          )}
-        </div>
-
-        {/* Level Management */}
-        <div className="bg-white rounded-lg shadow-sm p-6">
-          <h3 className="text-xl font-medium text-gray-800 mb-4">Level Management</h3>
-          <div className="flex flex-wrap gap-3">
-            {["Level 1", "Level 2", "Level 3"].map((level) => (
-              <button
-                key={level}
-                onClick={() => changeStudentLevel(selectedStudent.id, level)}
-                className={`px-5 py-2.5 rounded-lg text-base font-medium transition-colors ${
-                  selectedStudent.level === level
-                    ? "bg-indigo-600 text-white"
-                    : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-                }`}
+          <div className="flex flex-wrap justify-between items-center mb-4">
+            <h3 className="text-xl font-medium text-gray-800">Performance Chart</h3>
+            <div className="flex flex-wrap gap-2 mt-2 sm:mt-0">
+              <select
+                className="px-3 py-2 border border-gray-300 rounded-md text-sm"
+                value={chartMetric}
+                onChange={(e) => setChartMetric(e.target.value)}
               >
-                {level}
-              </button>
+                <option value="points">Points</option>
+                <option value="time">Time Taken</option>
+              </select>
+              <select
+                className="px-3 py-2 border border-gray-300 rounded-md text-sm"
+                value={chartTimeframe}
+                onChange={(e) => setChartTimeframe(e.target.value)}
+              >
+                <option value="day">By Day</option>
+                <option value="month">By Month</option>
+                <option value="year">By Year</option>
+              </select>
+              <select
+                className="px-3 py-2 border border-gray-300 rounded-md text-sm"
+                value={chartChallenge}
+                onChange={(e) => setChartChallenge(e.target.value)}
+              >
+                <option value="all">All Challenges</option>
+                {Object.values(LEVEL_CHALLENGES).map((challenge) => (
+                  <option key={challenge} value={challenge}>
+                    {challenge.split("_").join(" ")}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+
+          {/* Performance Indicator */}
+          <div
+            className={`mb-4 p-3 rounded-lg flex items-center ${
+              performanceStatus.status === "good"
+                ? "bg-green-50 text-green-800"
+                : performanceStatus.status === "average"
+                  ? "bg-yellow-50 text-yellow-800"
+                  : performanceStatus.status === "struggling"
+                    ? "bg-red-50 text-red-800"
+                    : "bg-gray-50 text-gray-800"
+            }`}
+          >
+            {performanceStatus.status === "good" && <CheckCircle className="h-5 w-5 mr-2" />}
+            {performanceStatus.status === "average" && <Clock className="h-5 w-5 mr-2" />}
+            {performanceStatus.status === "struggling" && <AlertTriangle className="h-5 w-5 mr-2" />}
+            <span className="text-sm font-medium">{performanceStatus.message}</span>
+          </div>
+
+          <div className="h-80">
+            <ResponsiveContainer width="100%" height="100%">
+              <LineChart data={prepareChartData()} margin={{ top: 5, right: 30, left: 20, bottom: 25 }}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis
+                  dataKey="date"
+                  tickFormatter={(value) => {
+                    if (chartTimeframe === "day") return new Date(value).toLocaleDateString()
+                    if (chartTimeframe === "month")
+                      return new Date(value).toLocaleDateString(undefined, { month: "short" })
+                    return new Date(value).getFullYear().toString()
+                  }}
+                >
+                  <Label value="Date" position="bottom" offset={5} />
+                </XAxis>
+                <YAxis
+                  label={{
+                    value: chartMetric === "points" ? "Points" : "Time (seconds)",
+                    angle: -90,
+                    position: "insideLeft",
+                    style: { textAnchor: "middle" },
+                  }}
+                />
+                <Tooltip
+                  formatter={(value, name) => {
+                    if (name === "points") return [`${value} points`, "Score"]
+                    if (name === "time") return [`${value} seconds`, "Time Taken"]
+                    return [value, name]
+                  }}
+                  labelFormatter={(label) => new Date(label).toLocaleDateString()}
+                />
+                <Legend />
+                <Line
+                  type="monotone"
+                  dataKey={chartMetric}
+                  stroke={
+                    performanceStatus.status === "good"
+                      ? "#10B981" // green
+                      : performanceStatus.status === "average"
+                        ? "#F59E0B" // yellow
+                        : performanceStatus.status === "struggling"
+                          ? "#EF4444" // red
+                          : "#6366F1" // default indigo
+                  }
+                  activeDot={{ r: 8 }}
+                  strokeWidth={2}
+                  name={chartMetric === "points" ? "Score" : "Time Taken"}
+                />
+              </LineChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+
+        {/* Challenge Attempts Summary */}
+        <div className="bg-white rounded-lg shadow-sm p-6">
+          <h3 className="text-xl font-medium text-gray-800 mb-4">Challenge Attempts Summary</h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {Object.entries(challengeAttemptCounts).map(([challenge, count]) => (
+              <div
+                key={challenge}
+                className="bg-gray-50 p-4 rounded-lg flex justify-between items-center cursor-pointer hover:bg-gray-100"
+                onClick={() => {
+                  setHistorySortField("challengeType")
+                  setHistorySortDirection("asc")
+                }}
+              >
+                <div className="flex items-center">
+                  <div className="w-3 h-3 rounded-full bg-indigo-500 mr-2"></div>
+                  <span className="text-gray-800 font-medium">{challenge}</span>
+                </div>
+                <div className="bg-indigo-100 text-indigo-800 px-3 py-1 rounded-full text-sm font-medium">
+                  {count} {count === 1 ? "attempt" : "attempts"}
+                </div>
+              </div>
             ))}
           </div>
+        </div>
+
+        {/* Combined Challenge History Table */}
+        <div className="bg-white rounded-lg shadow-sm p-6">
+          <h3 className="text-xl font-medium text-gray-800 mb-4">Challenge History</h3>
+          {selectedStudent.challengeAttempts && selectedStudent.challengeAttempts.length > 0 ? (
+            <div className="overflow-x-auto">
+              <table className="min-w-full divide-y divide-gray-200">
+                <thead className="bg-gray-50 sticky top-0 z-10">
+                  <tr>
+                    <th
+                      className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
+                      onClick={() => handleHistorySort("dateCompleted")}
+                    >
+                      <div className="flex items-center">
+                        Date
+                        {historySortField === "dateCompleted" &&
+                          (historySortDirection === "asc" ? (
+                            <ArrowUp className="h-3 w-3 ml-1" />
+                          ) : (
+                            <ArrowDown className="h-3 w-3 ml-1" />
+                          ))}
+                      </div>
+                    </th>
+                    <th
+                      className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
+                      onClick={() => handleHistorySort("challengeType")}
+                    >
+                      <div className="flex items-center">
+                        Challenge
+                        {historySortField === "challengeType" &&
+                          (historySortDirection === "asc" ? (
+                            <ArrowUp className="h-3 w-3 ml-1" />
+                          ) : (
+                            <ArrowDown className="h-3 w-3 ml-1" />
+                          ))}
+                      </div>
+                    </th>
+                    <th
+                      className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
+                      onClick={() => handleHistorySort("completionStatus")}
+                    >
+                      <div className="flex items-center">
+                        Status
+                        {historySortField === "completionStatus" &&
+                          (historySortDirection === "asc" ? (
+                            <ArrowUp className="h-3 w-3 ml-1" />
+                          ) : (
+                            <ArrowDown className="h-3 w-3 ml-1" />
+                          ))}
+                      </div>
+                    </th>
+                    <th
+                      className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
+                      onClick={() => handleHistorySort("points")}
+                    >
+                      <div className="flex items-center">
+                        Points
+                        {historySortField === "points" &&
+                          (historySortDirection === "asc" ? (
+                            <ArrowUp className="h-3 w-3 ml-1" />
+                          ) : (
+                            <ArrowDown className="h-3 w-3 ml-1" />
+                          ))}
+                      </div>
+                    </th>
+                    <th
+                      className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
+                      onClick={() => handleHistorySort("timeTaken")}
+                    >
+                      <div className="flex items-center">
+                        Time Taken
+                        {historySortField === "timeTaken" &&
+                          (historySortDirection === "asc" ? (
+                            <ArrowUp className="h-3 w-3 ml-1" />
+                          ) : (
+                            <ArrowDown className="h-3 w-3 ml-1" />
+                          ))}
+                      </div>
+                    </th>
+                    <th
+                      className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
+                      onClick={() => handleHistorySort("startTime")}
+                    >
+                      <div className="flex items-center">
+                        Start Time
+                        {historySortField === "startTime" &&
+                          (historySortDirection === "asc" ? (
+                            <ArrowUp className="h-3 w-3 ml-1" />
+                          ) : (
+                            <ArrowDown className="h-3 w-3 ml-1" />
+                          ))}
+                      </div>
+                    </th>
+                    <th
+                      className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
+                      onClick={() => handleHistorySort("endTime")}
+                    >
+                      <div className="flex items-center">
+                        End Time
+                        {historySortField === "endTime" &&
+                          (historySortDirection === "asc" ? (
+                            <ArrowUp className="h-3 w-3 ml-1" />
+                          ) : (
+                            <ArrowDown className="h-3 w-3 ml-1" />
+                          ))}
+                      </div>
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-200">
+                  {sortedChallengeAttempts()
+                    .slice(0, 15)
+                    .map((attempt, index) => (
+                      <tr key={index} className="hover:bg-gray-50">
+                        <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">
+                          {attempt.dateCompleted ? formatDate(attempt.dateCompleted) : "N/A"}
+                        </td>
+                        <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">{attempt.challengeType}</td>
+                        <td className="px-4 py-3 whitespace-nowrap text-sm">
+                          <span
+                            className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${
+                              attempt.completionStatus === "Completed"
+                                ? "bg-green-100 text-green-800"
+                                : "bg-blue-100 text-blue-800"
+                            }`}
+                          >
+                            {attempt.completionStatus || "In Progress"}
+                          </span>
+                        </td>
+                        <td className="px-4 py-3 whitespace-nowrap text-sm">
+                          {attempt.points !== null ? (
+                            <span
+                              className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${
+                                attempt.points >= 80
+                                  ? "bg-green-100 text-green-800"
+                                  : attempt.points >= 60
+                                    ? "bg-yellow-100 text-yellow-800"
+                                    : "bg-red-100 text-red-800"
+                              }`}
+                            >
+                              {attempt.points}
+                            </span>
+                          ) : (
+                            "N/A"
+                          )}
+                        </td>
+                        <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500">
+                          {attempt.timeTaken || "N/A"}
+                        </td>
+                        <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500">
+                          {attempt.startTime ? formatDate(attempt.startTime) : "N/A"}
+                        </td>
+                        <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500">
+                          {attempt.endTime ? formatDate(attempt.endTime) : "N/A"}
+                        </td>
+                      </tr>
+                    ))}
+                </tbody>
+              </table>
+              {sortedChallengeAttempts().length > 15 && (
+                <div className="text-center py-3 border-t border-gray-200">
+                  <p className="text-sm text-gray-500">
+                    Showing 15 of {sortedChallengeAttempts().length} attempts. Scroll to see more.
+                  </p>
+                  <div className="mt-2 max-h-[300px] overflow-y-auto">
+                    <table className="min-w-full divide-y divide-gray-200">
+                      <tbody className="bg-white divide-y divide-gray-200">
+                        {sortedChallengeAttempts()
+                          .slice(15)
+                          .map((attempt, index) => (
+                            <tr key={index + 15} className="hover:bg-gray-50">
+                              <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">
+                                {attempt.dateCompleted ? formatDate(attempt.dateCompleted) : "N/A"}
+                              </td>
+                              <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">
+                                {attempt.challengeType}
+                              </td>
+                              <td className="px-4 py-3 whitespace-nowrap text-sm">
+                                <span
+                                  className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${
+                                    attempt.completionStatus === "Completed"
+                                      ? "bg-green-100 text-green-800"
+                                      : "bg-blue-100 text-blue-800"
+                                  }`}
+                                >
+                                  {attempt.completionStatus || "In Progress"}
+                                </span>
+                              </td>
+                              <td className="px-4 py-3 whitespace-nowrap text-sm">
+                                {attempt.points !== null ? (
+                                  <span
+                                    className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${
+                                      attempt.points >= 80
+                                        ? "bg-green-100 text-green-800"
+                                        : attempt.points >= 60
+                                          ? "bg-yellow-100 text-yellow-800"
+                                          : "bg-red-100 text-red-800"
+                                    }`}
+                                  >
+                                    {attempt.points}
+                                  </span>
+                                ) : (
+                                  "N/A"
+                                )}
+                              </td>
+                              <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500">
+                                {attempt.timeTaken || "N/A"}
+                              </td>
+                              <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500">
+                                {attempt.startTime ? formatDate(attempt.startTime) : "N/A"}
+                              </td>
+                              <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500">
+                                {attempt.endTime ? formatDate(attempt.endTime) : "N/A"}
+                              </td>
+                            </tr>
+                          ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              )}
+            </div>
+          ) : (
+            <p className="text-lg text-gray-500 py-4">No challenge history available for this student.</p>
+          )}
         </div>
       </div>
     )
