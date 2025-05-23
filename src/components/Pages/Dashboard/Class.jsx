@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import {
   Plus,
   Search,
@@ -22,6 +22,7 @@ import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, Responsi
 
 const API_BASE_URL = "https://cyberkids.onrender.com/api/classes"
 const TEACHER_API_URL = "https://cyberkids.onrender.com/api/teacher"
+const WS_ENDPOINT = "https://cyberkids.onrender.com/ws"
 
 // Level badge colors
 const LEVEL_COLORS = {
@@ -104,6 +105,107 @@ const Class = () => {
   const [historySortField, setHistorySortField] = useState("dateCompleted")
   const [historySortDirection, setHistorySortDirection] = useState("desc")
   const [challengeAttemptCounts, setChallengeAttemptCounts] = useState({})
+  const [challengeFilter, setChallengeFilter] = useState("all")
+  const [challengeSortDropdownOpen, setChallengeSortDropdownOpen] = useState(false)
+
+  // WebSocket state
+  const [studentStatuses, setStudentStatuses] = useState({})
+  const stompClientRef = useRef(null)
+  const isConnectingRef = useRef(false)
+
+  // Initialize WebSocket connection
+  useEffect(() => {
+    const connectWebSocket = async () => {
+      if (isConnectingRef.current || typeof window === "undefined") return
+
+      isConnectingRef.current = true
+
+      try {
+        const token = localStorage.getItem("jwtToken")
+        if (!token) {
+          isConnectingRef.current = false
+          return
+        }
+
+        console.log("Connecting to student status WebSocket...")
+
+        // Dynamically import the required libraries
+        const [{ Client }, { default: SockJS }] = await Promise.all([import("@stomp/stompjs"), import("sockjs-client")])
+
+        const client = new Client({
+          webSocketFactory: () => new SockJS(WS_ENDPOINT),
+          connectHeaders: {
+            Authorization: `Bearer ${token}`,
+          },
+          debug: (str) => {
+            console.log(str)
+          },
+          reconnectDelay: 5000,
+          heartbeatIncoming: 4000,
+          heartbeatOutgoing: 4000,
+          onConnect: () => {
+            console.log("Connected to student status WebSocket")
+            isConnectingRef.current = false
+
+            client.subscribe("/topic/student-status", (message) => {
+              if (message.body) {
+                try {
+                  const statusUpdate = JSON.parse(message.body)
+                  console.log("Received student status update:", statusUpdate)
+
+                  // Update the student status immediately when a message is received
+                  if (statusUpdate.robloxId) {
+                    setStudentStatuses((prev) => ({
+                      ...prev,
+                      [statusUpdate.robloxId]: statusUpdate.isOnline || statusUpdate.online,
+                    }))
+
+                    // Also update the students array to ensure consistency
+                    setStudents((prevStudents) =>
+                      prevStudents.map((student) =>
+                        student.robloxId === statusUpdate.robloxId
+                          ? { ...student, online: statusUpdate.isOnline || statusUpdate.online }
+                          : student,
+                      ),
+                    )
+                  }
+                } catch (e) {
+                  console.error("Error parsing student status message:", e)
+                }
+              }
+            })
+          },
+          onStompError: (frame) => {
+            console.error("STOMP error:", frame.headers, frame.body)
+            isConnectingRef.current = false
+          },
+          onWebSocketClose: () => {
+            console.log("WebSocket connection closed")
+            isConnectingRef.current = false
+          },
+        })
+
+        client.activate()
+        stompClientRef.current = client
+      } catch (error) {
+        console.error("Error initializing WebSocket:", error)
+        isConnectingRef.current = false
+
+        // Try to reconnect after a delay
+        setTimeout(connectWebSocket, 5000)
+      }
+    }
+
+    connectWebSocket()
+
+    // Cleanup function
+    return () => {
+      if (stompClientRef.current) {
+        stompClientRef.current.deactivate()
+        stompClientRef.current = null
+      }
+    }
+  }, [])
 
   // Fetch teacher's classes on component mount
   useEffect(() => {
@@ -147,6 +249,29 @@ const Class = () => {
       setChallengeAttemptCounts(counts)
     }
   }, [selectedStudent])
+
+  // Initialize student statuses from the fetched data
+  useEffect(() => {
+    if (students && students.length > 0) {
+      // Initialize the online status from the student data
+      const initialStatus = {}
+      students.forEach((student) => {
+        if (student.robloxId && (student.online === true || student.online === 1)) {
+          initialStatus[student.robloxId] = true
+        }
+      })
+
+      // Only update if we have any online students
+      if (Object.keys(initialStatus).length > 0) {
+        setStudentStatuses((prev) => ({
+          ...prev,
+          ...initialStatus,
+        }))
+      }
+
+      console.log("Initialized student online status:", initialStatus)
+    }
+  }, [students])
 
   // Calculate student performance status
   const calculatePerformanceStatus = () => {
@@ -253,6 +378,25 @@ const Class = () => {
       return []
     } finally {
       setLoading(false)
+    }
+  }
+
+  // Refresh student list
+  const refreshStudentList = async () => {
+    if (selectedClass) {
+      const classObj = classes.find((c) => c.id === selectedClass)
+      if (classObj) {
+        setLoading(true)
+        try {
+          const refreshedStudents = await fetchStudentsForClass(classObj.grade, classObj.section)
+          setStudents(refreshedStudents)
+        } catch (err) {
+          console.error("Error refreshing student list:", err)
+          setError(err.message)
+        } finally {
+          setLoading(false)
+        }
+      }
     }
   }
 
@@ -457,11 +601,23 @@ const Class = () => {
     return date.toLocaleDateString() + " " + date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
   }
 
-  // Get online status (randomly generated for demo)
-  const getOnlineStatus = (studentId) => {
-    // In a real app, this would be determined by actual online status
-    // For demo purposes, we'll use a deterministic approach based on the student ID
-    return studentId % 3 === 0 ? "offline" : "online"
+  // Get online status from WebSocket data or fallback to stored status
+  const getOnlineStatus = (student) => {
+    if (!student || !student.robloxId) return "offline"
+
+    // If we have real-time status for this student, use it
+    if (studentStatuses.hasOwnProperty(student.robloxId)) {
+      return studentStatuses[student.robloxId] ? "online" : "offline"
+    }
+
+    // Otherwise use the online property from the student object if available
+    if (student.hasOwnProperty("online")) {
+      // Convert to boolean in case it's a number (1/0) from the database
+      return student.online === true || student.online === 1 ? "online" : "offline"
+    }
+
+    // Fallback to offline as default
+    return "offline"
   }
 
   // Prepare data for the performance chart
@@ -547,11 +703,18 @@ const Class = () => {
     }
   }
 
-  // Sort challenge attempts
+  // Sort and filter challenge attempts
   const sortedChallengeAttempts = () => {
     if (!selectedStudent || !selectedStudent.challengeAttempts) return []
 
-    return [...selectedStudent.challengeAttempts].sort((a, b) => {
+    let filteredAttempts = [...selectedStudent.challengeAttempts]
+
+    // Apply challenge filter
+    if (challengeFilter !== "all") {
+      filteredAttempts = filteredAttempts.filter((attempt) => attempt.challengeType === challengeFilter)
+    }
+
+    return filteredAttempts.sort((a, b) => {
       let aValue = a[historySortField]
       let bValue = b[historySortField]
 
@@ -584,6 +747,121 @@ const Class = () => {
       } else {
         return aValue < bValue ? 1 : aValue > bValue ? -1 : 0
       }
+    })
+  }
+
+  // Calculate statistics for the selected challenge
+  const calculateChallengeStats = () => {
+    if (!selectedStudent || !selectedStudent.challengeAttempts || challengeFilter === "all") {
+      return { avgPoints: 0, totalPoints: 0, avgTime: "0:00" }
+    }
+
+    const filteredAttempts = selectedStudent.challengeAttempts.filter(
+      (attempt) => attempt.challengeType === challengeFilter,
+    )
+
+    if (filteredAttempts.length === 0) {
+      return { avgPoints: 0, totalPoints: 0, avgTime: "0:00" }
+    }
+
+    // Calculate total points
+    const totalPoints = filteredAttempts.reduce((sum, attempt) => sum + (attempt.points || 0), 0)
+
+    // Calculate average points
+    const avgPoints = Math.round(totalPoints / filteredAttempts.length)
+
+    // Calculate average time
+    const attemptsWithTime = filteredAttempts.filter((attempt) => attempt.timeTaken)
+    let avgTimeString = "0:00"
+
+    if (attemptsWithTime.length > 0) {
+      const totalSeconds = attemptsWithTime.reduce((sum, attempt) => {
+        if (!attempt.timeTaken) return sum
+        const timeParts = attempt.timeTaken.split(":")
+        return sum + (Number.parseInt(timeParts[0]) * 60 + Number.parseInt(timeParts[1]))
+      }, 0)
+
+      const avgSeconds = Math.round(totalSeconds / attemptsWithTime.length)
+      const minutes = Math.floor(avgSeconds / 60)
+      const seconds = avgSeconds % 60
+      avgTimeString = `${minutes}:${seconds.toString().padStart(2, "0")}`
+    }
+
+    return {
+      avgPoints,
+      totalPoints,
+      avgTime: avgTimeString,
+    }
+  }
+
+  // Add this function to handle sorting
+  const handleSort = (field) => {
+    if (sortField === field) {
+      setSortDirection(sortDirection === "asc" ? "desc" : "asc")
+    } else {
+      setSortField(field)
+      setSortDirection("asc")
+    }
+  }
+
+  // Add this function to toggle progress dropdown
+  const toggleProgressDropdown = (studentId) => {
+    setExpandedProgress((prev) => ({
+      ...prev,
+      [studentId]: !prev[studentId],
+    }))
+  }
+
+  // Add this function to sort students
+  const sortedStudents = () => {
+    if (!students || students.length === 0) return []
+
+    return [...students]
+      .filter((student) => (student.realName?.toLowerCase() || "").includes(searchQuery.toLowerCase()))
+      .sort((a, b) => {
+        let aValue = a[sortField]
+        let bValue = b[sortField]
+
+        // Handle special cases
+        if (sortField === "status") {
+          aValue = getOnlineStatus(a)
+          bValue = getOnlineStatus(b)
+        } else if (sortField === "class") {
+          aValue = `${a.grade || ""} - ${a.section || ""}`
+          bValue = `${b.grade || ""} - ${b.section || ""}`
+        }
+
+        // Handle null or undefined values
+        if (aValue === undefined || aValue === null) aValue = ""
+        if (bValue === undefined || bValue === null) bValue = ""
+
+        // Convert to strings for comparison
+        aValue = String(aValue).toLowerCase()
+        bValue = String(bValue).toLowerCase()
+
+        // Compare based on direction
+        if (sortDirection === "asc") {
+          return aValue.localeCompare(bValue)
+        } else {
+          return bValue.localeCompare(aValue)
+        }
+      })
+  }
+
+  // Add this new function after the other toggle functions:
+  const toggleLevelSelection = (studentId, level) => {
+    const key = `${studentId}-${level}`
+    setSelectedLevel((prev) => {
+      const newState = { ...prev }
+      // Clear any previous selections for this student
+      Object.keys(newState).forEach((k) => {
+        if (k.startsWith(`${studentId}-`)) {
+          delete newState[k]
+        }
+      })
+      // Toggle the selected level
+      newState[key] = !prev[key]
+      return newState
     })
   }
 
@@ -727,77 +1005,6 @@ const Class = () => {
     )
   }
 
-  // Add this function to handle sorting
-  const handleSort = (field) => {
-    if (sortField === field) {
-      setSortDirection(sortDirection === "asc" ? "desc" : "asc")
-    } else {
-      setSortField(field)
-      setSortDirection("asc")
-    }
-  }
-
-  // Add this function to toggle progress dropdown
-  const toggleProgressDropdown = (studentId) => {
-    setExpandedProgress((prev) => ({
-      ...prev,
-      [studentId]: !prev[studentId],
-    }))
-  }
-
-  // Add this function to sort students
-  const sortedStudents = () => {
-    if (!students || students.length === 0) return []
-
-    return [...students]
-      .filter((student) => (student.realName?.toLowerCase() || "").includes(searchQuery.toLowerCase()))
-      .sort((a, b) => {
-        let aValue = a[sortField]
-        let bValue = b[sortField]
-
-        // Handle special cases
-        if (sortField === "status") {
-          aValue = getOnlineStatus(a.id)
-          bValue = getOnlineStatus(b.id)
-        } else if (sortField === "class") {
-          aValue = `${a.grade || ""} - ${a.section || ""}`
-          bValue = `${b.grade || ""} - ${b.section || ""}`
-        }
-
-        // Handle null or undefined values
-        if (aValue === undefined || aValue === null) aValue = ""
-        if (bValue === undefined || bValue === null) bValue = ""
-
-        // Convert to strings for comparison
-        aValue = String(aValue).toLowerCase()
-        bValue = String(bValue).toLowerCase()
-
-        // Compare based on direction
-        if (sortDirection === "asc") {
-          return aValue.localeCompare(bValue)
-        } else {
-          return bValue.localeCompare(aValue)
-        }
-      })
-  }
-
-  // Add this new function after the other toggle functions:
-  const toggleLevelSelection = (studentId, level) => {
-    const key = `${studentId}-${level}`
-    setSelectedLevel((prev) => {
-      const newState = { ...prev }
-      // Clear any previous selections for this student
-      Object.keys(newState).forEach((k) => {
-        if (k.startsWith(`${studentId}-`)) {
-          delete newState[k]
-        }
-      })
-      // Toggle the selected level
-      newState[key] = !prev[key]
-      return newState
-    })
-  }
-
   // Render students view
   if (viewMode === "students") {
     const classObj = classes.find((c) => c.id === selectedClass)
@@ -858,6 +1065,32 @@ const Class = () => {
 
             {!isEditingClass && (
               <div className="flex space-x-2">
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    refreshStudentList()
+                  }}
+                  className="p-2 rounded-lg bg-gray-100 text-gray-700 hover:bg-gray-200 transition-colors"
+                  title="Refresh Students"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="24"
+                    height="24"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    className="h-6 w-6"
+                  >
+                    <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"></path>
+                    <path d="M21 3v5h-5"></path>
+                    <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"></path>
+                    <path d="M3 21v-5h5"></path>
+                  </svg>
+                </button>
                 <button
                   onClick={(e) => {
                     e.stopPropagation()
@@ -990,7 +1223,7 @@ const Class = () => {
                       </thead>
                       <tbody className="bg-white divide-y divide-gray-200">
                         {sortedStudents().map((student, index) => {
-                          const onlineStatus = getOnlineStatus(student.id)
+                          const onlineStatus = getOnlineStatus(student)
                           return (
                             <tr key={student.id} className="hover:bg-gray-50">
                               <td className="px-6 py-5 whitespace-nowrap">
@@ -1259,11 +1492,11 @@ const Class = () => {
                 <div className="flex items-center">
                   <div
                     className={`h-3 w-3 rounded-full mr-2 ${
-                      getOnlineStatus(selectedStudent.id) === "online" ? "bg-green-500" : "bg-red-500"
+                      getOnlineStatus(selectedStudent) === "online" ? "bg-green-500" : "bg-red-500"
                     }`}
                   ></div>
                   <span className="text-lg font-medium text-gray-800 capitalize">
-                    {getOnlineStatus(selectedStudent.id)}
+                    {getOnlineStatus(selectedStudent)}
                   </span>
                 </div>
               </div>
@@ -1353,11 +1586,13 @@ const Class = () => {
                 onChange={(e) => setChartChallenge(e.target.value)}
               >
                 <option value="all">All Challenges</option>
-                {Object.values(LEVEL_CHALLENGES).map((challenge) => (
-                  <option key={challenge} value={challenge}>
-                    {challenge.split("_").join(" ")}
-                  </option>
-                ))}
+                {Object.entries(LEVEL_CHALLENGES)
+                  .filter(([level]) => level !== "Main Menu")
+                  .map(([_, challenge]) => (
+                    <option key={challenge} value={challenge}>
+                      {challenge.split("_").join(" ")}
+                    </option>
+                  ))}
               </select>
             </div>
           </div>
@@ -1433,34 +1668,94 @@ const Class = () => {
           </div>
         </div>
 
-        {/* Challenge Attempts Summary */}
-        <div className="bg-white rounded-lg shadow-sm p-6">
-          <h3 className="text-xl font-medium text-gray-800 mb-4">Challenge Attempts Summary</h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {Object.entries(challengeAttemptCounts).map(([challenge, count]) => (
-              <div
-                key={challenge}
-                className="bg-gray-50 p-4 rounded-lg flex justify-between items-center cursor-pointer hover:bg-gray-100"
-                onClick={() => {
-                  setHistorySortField("challengeType")
-                  setHistorySortDirection("asc")
-                }}
-              >
-                <div className="flex items-center">
-                  <div className="w-3 h-3 rounded-full bg-indigo-500 mr-2"></div>
-                  <span className="text-gray-800 font-medium">{challenge}</span>
-                </div>
-                <div className="bg-indigo-100 text-indigo-800 px-3 py-1 rounded-full text-sm font-medium">
-                  {count} {count === 1 ? "attempt" : "attempts"}
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-
         {/* Combined Challenge History Table */}
         <div className="bg-white rounded-lg shadow-sm p-6">
-          <h3 className="text-xl font-medium text-gray-800 mb-4">Challenge History</h3>
+          <div className="flex flex-wrap justify-between items-center mb-4">
+            <h3 className="text-xl font-medium text-gray-800">Challenge History</h3>
+            <div className="relative">
+              <button
+                onClick={() => setChallengeSortDropdownOpen(!challengeSortDropdownOpen)}
+                className="flex items-center space-x-2 px-4 py-2 bg-indigo-50 text-indigo-600 rounded-lg hover:bg-indigo-100 text-base font-medium"
+              >
+                <span>
+                  {challengeFilter === "all"
+                    ? "All Challenges"
+                    : challengeFilter === "INFORMATION_CLASSIFICATION_SORTING"
+                      ? "Level 1"
+                      : challengeFilter === "PASSWORD_SECURITY"
+                        ? "Level 2"
+                        : "Level 3"}
+                </span>
+                <ChevronDown className="h-5 w-5" />
+              </button>
+              {challengeSortDropdownOpen && (
+                <div className="absolute right-0 mt-2 w-64 bg-white rounded-lg shadow-lg z-50 border border-gray-100">
+                  <div className="py-1">
+                    <button
+                      className="block w-full text-left px-4 py-2 text-base text-gray-700 hover:bg-gray-100"
+                      onClick={() => {
+                        setChallengeFilter("all")
+                        setChallengeSortDropdownOpen(false)
+                      }}
+                    >
+                      All Challenges
+                    </button>
+                    <button
+                      className="block w-full text-left px-4 py-2 text-base text-gray-700 hover:bg-gray-100"
+                      onClick={() => {
+                        setChallengeFilter("INFORMATION_CLASSIFICATION_SORTING")
+                        setChallengeSortDropdownOpen(false)
+                      }}
+                    >
+                      Level 1: Information Classification
+                    </button>
+                    <button
+                      className="block w-full text-left px-4 py-2 text-base text-gray-700 hover:bg-gray-100"
+                      onClick={() => {
+                        setChallengeFilter("PASSWORD_SECURITY")
+                        setChallengeSortDropdownOpen(false)
+                      }}
+                    >
+                      Level 2: Password Security
+                    </button>
+                    <button
+                      className="block w-full text-left px-4 py-2 text-base text-gray-700 hover:bg-gray-100"
+                      onClick={() => {
+                        setChallengeFilter("PHISHING_IDENTIFICATION")
+                        setChallengeSortDropdownOpen(false)
+                      }}
+                    >
+                      Level 3: Phishing Identification
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {challengeFilter !== "all" && (
+            <div className="mb-6 flex flex-wrap gap-x-8 gap-y-2">
+              <div className="flex items-center">
+                <div className="h-4 w-4 rounded-full bg-indigo-500 mr-2"></div>
+                <span className="text-sm text-gray-700">
+                  Total Attempts: {challengeAttemptCounts[challengeFilter] || 0}
+                </span>
+              </div>
+              <div className="flex items-center">
+                <div className="h-4 w-4 rounded-full bg-green-500 mr-2"></div>
+                <span className="text-sm text-gray-700">Average Points: {calculateChallengeStats().avgPoints}</span>
+              </div>
+              <div className="flex items-center">
+                <div className="h-4 w-4 rounded-full bg-amber-500 mr-2"></div>
+                <span className="text-sm text-gray-700">Total Points: {calculateChallengeStats().totalPoints}</span>
+              </div>
+              <div className="flex items-center">
+                <div className="h-4 w-4 rounded-full bg-blue-500 mr-2"></div>
+                <span className="text-sm text-gray-700">Average Time: {calculateChallengeStats().avgTime}</span>
+              </div>
+            </div>
+          )}
+
           {selectedStudent.challengeAttempts && selectedStudent.challengeAttempts.length > 0 ? (
             <div className="overflow-x-auto">
               <table className="min-w-full divide-y divide-gray-200">

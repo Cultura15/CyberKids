@@ -1,16 +1,20 @@
 "use client"
 
-import { Users, Award, Clock, Settings, BookOpen } from "lucide-react"
+import { Award, Settings, BookOpen, Shield } from "lucide-react"
 import { useNavigate } from "react-router-dom"
 
 // Constants
 const NAV_ITEMS = [
   { id: "overview", label: "Overview", icon: Award },
   { id: "class", label: "Class", icon: BookOpen },
-  { id: "students", label: "Students", icon: Users },
-  { id: "challenges", label: "Challenges", icon: Clock },
   { id: "settings", label: "Settings", icon: Settings },
 ]
+
+// Cybersecurity font style
+const cyberFont = {
+  fontFamily: "'Orbitron', sans-serif",
+  letterSpacing: "1px",
+}
 
 const Sidebar = ({ activeTab, setActiveTab }) => {
   const navigate = useNavigate()
@@ -29,23 +33,25 @@ const Sidebar = ({ activeTab, setActiveTab }) => {
     <div className="bg-white w-64 flex-shrink-0 h-screen flex flex-col transition-all duration-300 ease-in-out shadow-lg border-r border-gray-100">
       {/* Logo and Heading */}
       <div className="mb-8 text-center pt-6">
-        <div className="h-12 w-12 bg-indigo-600 rounded-xl mx-auto mb-3 flex items-center justify-center">
-          <svg
-            className="w-8 h-8 text-white"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-            xmlns="http://www.w3.org/2000/svg"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth="2"
-              d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"
-            ></path>
-          </svg>
+        <div className="h-12 w-12 bg-gradient-to-br from-indigo-600 to-purple-600 rounded-xl mx-auto mb-3 flex items-center justify-center shadow-lg">
+          <div className="relative">
+            {/* Cybersecurity Shield Logo */}
+            <Shield className="w-7 h-7 text-white" />
+            <div className="absolute inset-0 flex items-center justify-center">
+              <div className="w-3 h-3 bg-white rounded-full opacity-80"></div>
+            </div>
+            {/* Circuit pattern overlay */}
+            <div className="absolute -top-1 -right-1 w-2 h-2 border border-white opacity-60 rounded-sm"></div>
+            <div className="absolute -bottom-1 -left-1 w-1.5 h-1.5 border border-white opacity-40 rounded-sm"></div>
+          </div>
         </div>
-        <h1 className="text-lg font-bold text-gray-800">CyberKids</h1>
+        <h1
+          className="text-lg font-bold bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 to-purple-600"
+          style={cyberFont}
+        >
+          CyberKids
+        </h1>
+  
       </div>
 
       {/* Navigation */}
@@ -85,7 +91,7 @@ const Sidebar = ({ activeTab, setActiveTab }) => {
       <div className="mt-auto p-4 border-t border-gray-100">
         <button
           onClick={handleLogout}
-          className="w-full py-2 text-sm text-indigo-600 hover:text-indigo-800 font-medium rounded-lg transition flex items-center justify-center"
+          className="w-full py-2 text-sm text-indigo-600 hover:text-indigo-800 font-medium rounded-lg transition flex items-center justify-center hover:bg-indigo-50"
         >
           <svg className="h-4 w-4 mr-2" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
             <path
@@ -107,7 +113,7 @@ const Sidebar = ({ activeTab, setActiveTab }) => {
           Logout
         </button>
         <div className="flex items-center justify-center mt-4">
-          <span className="text-xs text-gray-400">Teacher Dashboard v1</span>
+          <span className="text-xs text-gray-400">Teacher Dashboard v1.0</span>
         </div>
       </div>
     </div>
