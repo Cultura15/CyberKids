@@ -1,3 +1,5 @@
+<img src="https://skillicons.dev/icons?i=react,spring,lua" alt="Cultura">
+
 # CyberKids: A Cybersecurity Game for Elementary Students
 
 >  _Capstone Project for IT332_  
@@ -16,15 +18,15 @@ This capstone project was developed by a team of BSIT students as part of their 
 
 ## Game Levels & Learning Objectives
 
-### 🧩 Level 1: Information Sorting
+### Level 1: Information Sorting
 - Learn to distinguish between **public** and **private** information.
 - Practice sharing only safe data online through in-game scenarios.
 
-### 🔐 Level 2: Password Security
+### Level 2: Password Security
 - Understand what makes a **strong password**.
 - Interactive mini-games demonstrate brute force attacks and the importance of complexity.
 
-### 🎣 Level 3: Phishing Awareness
+### Level 3: Phishing Awareness
 - Identify and avoid **phishing attempts** like impersonation, USB baiting, email scams, and QR code traps.
 
 ---
@@ -35,7 +37,7 @@ This capstone project was developed by a team of BSIT students as part of their 
 Each module was designed using the SMART framework:  
 **Specific**, **Measurable**, **Achievable**, **Relevant**, and **Time-bound** learning goals.
 
-### 🕹Gamified Experience
+### Gamified Experience
 - Built-in **scoring system**, **timers**, and **leaderboards**.
 - Students are rewarded for accuracy and speed, encouraging repeated learning through play.
 
