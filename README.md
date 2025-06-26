@@ -12,7 +12,7 @@
 
 **CyberKids** is an educational, gamified platform designed on **Roblox Studio** to teach elementary students the fundamentals of cybersecurity. Through three immersive levels, the game simplifies complex topics like data privacy, password security, and phishing awareness using age-appropriate content and engaging mechanics.
 
-This capstone project was developed by a team of BSIT students as part of their final requirement in IT332.
+This is a 4th year capstone project developed by a team of BSIT students as part of their final requirement in IT332.
 
 ---
 
@@ -31,7 +31,7 @@ This capstone project was developed by a team of BSIT students as part of their 
 
 ---
 
-## 🎯 Key Features
+## Key Features
 
 ### SMART-Aligned Learning Objectives
 Each module was designed using the SMART framework:  
@@ -70,10 +70,10 @@ Each module was designed using the SMART framework:
 
 ## 👥 Project Team
 
-- **John Doe**  
-- **John Smith**  
-- **John Kelly**  
-- **John Kenny**  
-- **John Kenneth**
+- **Jesson Cultura**  
+- **Ash Vequiso**  
+- **Emmanuel Dedumo**  
+- **Jhudiel Artezuela**  
+- **John Kenneth Baguio**
 
 
