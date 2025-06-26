@@ -34,6 +34,7 @@ build/
 
 ### Secrets ###
 /src/main/resources/application.properties
+/src/main/resources/storage.txt
 
 ### JWT ###
 /src/main/java/capstone/cyberkids/CyberKids/JWT/AuthController.java
