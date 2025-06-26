@@ -1,0 +1,7 @@
+SECRETS:
+
+MS TEAMS:
+#secret = 3e010e66-d55f-4782-a00c-74b14e2dba8c
+#clientid = 69a61f8c-ea56-4594-858c-3892a90c59f7
+#objectid = 9a9dfd47-2ab5-467d-be5a-bf982374d4aa
+#tenantid = 71cb6f1d-3825-40fb-a71e-bbd58bdc275e

@@ -1,0 +1,55 @@
+HELP.md
+target/
+!.mvn/wrapper/maven-wrapper.jar
+!**/src/main/**/target/
+!**/src/test/**/target/
+
+### STS ###
+.apt_generated
+.classpath
+.factorypath
+.project
+.settings
+.springBeans
+.sts4-cache
+
+### IntelliJ IDEA ###
+.idea
+*.iws
+*.iml
+*.ipr
+
+### NetBeans ###
+/nbproject/private/
+/nbbuild/
+/dist/
+/nbdist/
+/.nb-gradle/
+build/
+!**/src/main/**/build/
+!**/src/test/**/build/
+
+### VS Code ###
+.vscode/
+
+### Secrets ###
+/src/main/resources/application.properties
+
+### JWT ###
+/src/main/java/capstone/cyberkids/CyberKids/JWT/AuthController.java
+/src/main/java/capstone/cyberkids/CyberKids/JWT/AuthRequest.java
+/src/main/java/capstone/cyberkids/CyberKids/JWT/AuthService.java
+/src/main/java/capstone/cyberkids/CyberKids/JWT/CustomeUserDetailsService.java
+/src/main/java/capstone/cyberkids/CyberKids/JWT/JwtRequestFilter.java
+/src/main/java/capstone/cyberkids/CyberKids/JWT/JwtUtil.java
+
+### Config ###
+/src/main/java/capstone/cyberkids/CyberKids/Config/SecurityConfig.java
+/src/main/java/capstone/cyberkids/CyberKids/Config/WebSocketConfig.java
+
+### Pages ###
+/src/main/java/capstone/cyberkids/CyberKids/Repository/*.java
+/src/main/java/capstone/cyberkids/CyberKids/LeaderboardLevel1/**/*.java
+/src/main/java/capstone/cyberkids/CyberKids/LeaderboardLevel2/*.java
+/src/main/java/capstone/cyberkids/CyberKids/LeaderboardLevel3/*.java
+/src/main/java/capstone/cyberkids/CyberKids/Controller/*.java
