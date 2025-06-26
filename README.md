@@ -1,4 +1,8 @@
-<img src="https://skillicons.dev/icons?i=react,spring,lua" alt="Cultura">
+<img src="https://skillicons.dev/icons?i=react,spring,lua" alt="Cultura"> <img align="left" alt="Kotlin" width="30px" style="padding-right:10px;" src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/kotlin/kotlin-original.svg" />
+<svg xmlns="http://www.w3.org/2000/svg" x="0px" y="0px" width="100" height="100" viewBox="0 0 48 48">
+<path fill="#3fa9f5" d="M11.846,2.946L7.145,20.48l11.963,3.202l1.494-5.572l21.246,5.694l3.206-11.958L11.846,2.946z M27.398,29.885L6.152,24.192L2.946,36.154l33.208,8.9l4.7-17.534l-11.963-3.206L27.398,29.885z"></path>
+</svg>
+
 
 # CyberKids: A Cybersecurity Game for Elementary Students
 
