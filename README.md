@@ -8,7 +8,7 @@
 
 ---
 
-## Overview
+## 🧠Overview
 
 **CyberKids** is an educational, gamified platform designed on **Roblox Studio** to teach elementary students the fundamentals of cybersecurity. Through three immersive levels, the game simplifies complex topics like data privacy, password security, and phishing awareness using age-appropriate content and engaging mechanics.
 
@@ -16,7 +16,7 @@ This is a 4th year capstone project developed by a team of BSIT students as part
 
 ---
 
-## Game Levels & Learning Objectives
+## 🎮Game Levels & Learning Objectives
 
 ### Level 1: Information Sorting
 - Learn to distinguish between **public** and **private** information.
@@ -31,7 +31,7 @@ This is a 4th year capstone project developed by a team of BSIT students as part
 
 ---
 
-## Key Features
+## 🎯Key Features
 
 ### SMART-Aligned Learning Objectives
 Each module was designed using the SMART framework:  
@@ -57,7 +57,7 @@ Each module was designed using the SMART framework:
 
 ---
 
-## 🛠️ Tech Stack
+## 🛠️Tech Stack
 
 | Layer        | Technology         |
 |--------------|--------------------|
