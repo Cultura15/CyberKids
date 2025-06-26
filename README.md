@@ -1,4 +1,4 @@
-<img src="https://skillicons.dev/icons?i=react,spring" alt="Cultura"> <img align="left" alt="Roblox" width="50px" style="padding-right:5px;" src="https://github.com/user-attachments/assets/c04693fb-42c7-45aa-a3e5-4fd2fb5d00e9" />
+<img src="https://skillicons.dev/icons?i=react,spring" alt="Cultura"> <img align="left" alt="Roblox" width="40px" style="padding-right:5px;" src="https://github.com/user-attachments/assets/c04693fb-42c7-45aa-a3e5-4fd2fb5d00e9" />
 
 
 
