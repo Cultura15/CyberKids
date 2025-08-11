@@ -4,8 +4,8 @@ FROM maven:3.9.6-eclipse-temurin AS build
 WORKDIR /app
 
 # Copy files from the local build context
-COPY pom.xml .
-COPY src ./src
+COPY CyberKids/pom.xml .
+COPY CyberKids/src ./src
 
 RUN mvn clean package -DskipTests
 
