@@ -1,0 +1,28 @@
+1 Week Work Plan:
+
+Day 1: Revise papers SRS og SDD (Jesson & Jhudiel)
+    |- Modify game Level 3 (Ash, Emman, Kenneth)
+    |- Update journal sa teams (Emman)
+      |- Post-meeting (Everyone) 10pm
+
+Day 2: Finalize journal and papers (Jesson, Jhudiel)
+    |- Defense Script & Flow (Jesson, Jhudiel)
+    |- Continue modifying game Level 3 (Ash, Emman, Kenneth)
+        |- Post-meeting (Everyone) 10pm
+
+Day 3: Continue modifying game Level 3 (Everyone)
+        |- Post-meeting for testing (Everyone) 10pm
+
+Day 4: Fixing and debugging Level 3 (Jesson, Ash)
+    |- Modify game Level 2 ipa simplify ang concept (Emman, Kenneth, Jhudiel)
+        |- Post-meeting (Everyone) 10pm
+
+Day 5: Fixing and debugging Level 2 (Everyone) 
+        |- Post-meeting (Everyone) 10pm
+
+Day 6: Testing all game levels (Everyone)
+    |- Post-meeting (Everyone) 10pm
+
+Day 7: Pre-finalize (Ash, Emman, Kenneth)
+    |- Review papers and explanations for defense (Jesson, Jhudiel)
+    |- Post-finalize (Everyone)
