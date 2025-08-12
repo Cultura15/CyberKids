@@ -74,7 +74,7 @@ Each module was designed using the SMART framework:
 ## 👥 Project Team
 
 - **Jesson Cultura**  
-- **Ash Vequiso**  
+- **Ash Josh V. Vequiso**  
 - **Emmanuel Dedumo**  
 - **Jhudiel Artezuela**  
 - **John Kenneth B. Baguio**
