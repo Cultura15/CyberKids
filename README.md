@@ -77,6 +77,6 @@ Each module was designed using the SMART framework:
 - **Ash Vequiso**  
 - **Emmanuel Dedumo**  
 - **Jhudiel Artezuela**  
-- **John Kenneth Baguio**
+- **John Kenneth B. Baguio**
 
 
