@@ -1,23 +1,12 @@
+"use client"
+
 import React from "react"
 import { Users, Trophy, Maximize2 } from "lucide-react"
-import { calculateCompletionRate, getProgressBarColor, getSortedStudents, getIconByName } from "../utils"
-import { POPPINS_FONT } from "../constants"
+import { calculateCompletionRate, getProgressBarColor } from "../../utils/completionUtils"
 
-const iconMap = {
-  Shield: require("lucide-react").Shield,
-  Key: require("lucide-react").Key,
-  Eye: require("lucide-react").Eye,
-}
-
-const DashboardCards = ({ 
-  students, 
-  selectedChallenge, 
-  sortField, 
-  sortDirection, 
-  onLeaderboardOpen 
-}) => {
+const StatsCards = ({ students, selectedChallenge, getSortedStudents, onLeaderboardOpen }) => {
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6" style={POPPINS_FONT}>
+    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
       {/* Total Students Card */}
       <div className="bg-white rounded-xl shadow-sm p-3">
         <div className="flex items-center">
@@ -42,9 +31,7 @@ const DashboardCards = ({
                 <div
                   className={`h-9 w-9 rounded-full bg-${selectedChallenge.color}-100 flex items-center justify-center text-${selectedChallenge.color}-600 mr-3`}
                 >
-                  {React.createElement(getIconByName(selectedChallenge.icon, iconMap), { 
-                    className: "h-5 w-5" 
-                  })}
+                  {React.createElement(selectedChallenge.icon, { className: "h-5 w-5" })}
                 </div>
                 <div>
                   <h4 className="text-base font-medium text-gray-800">{selectedChallenge.displayName}</h4>
@@ -62,8 +49,8 @@ const DashboardCards = ({
                   <div className="w-full bg-gray-200 rounded-full h-4 mb-3">
                     <div
                       className={`${getProgressBarColor(calculateCompletionRate(students, selectedChallenge.challengeType).percentage)} h-4 rounded-full transition-all duration-300`}
-                      style={{ 
-                        width: `${calculateCompletionRate(students, selectedChallenge.challengeType).percentage}%` 
+                      style={{
+                        width: `${calculateCompletionRate(students, selectedChallenge.challengeType).percentage}%`,
                       }}
                     ></div>
                   </div>
@@ -98,7 +85,7 @@ const DashboardCards = ({
 
         <div className="max-h-[250px] overflow-y-auto pr-2">
           <div className="space-y-3">
-            {getSortedStudents(students, sortField, sortDirection)
+            {getSortedStudents()
               .slice(0, 10)
               .map((student, index) => (
                 <div key={student.id} className="flex items-center p-2 rounded-lg hover:bg-gray-50">
@@ -127,4 +114,4 @@ const DashboardCards = ({
   )
 }
 
-export default React.memo(DashboardCards)
+export default StatsCards

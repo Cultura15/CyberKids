@@ -1,87 +1,21 @@
-import React from "react"
-import { 
-  X, 
-  Trophy, 
-  Lock, 
-  Unlock, 
-  ArrowUp, 
-  ArrowDown 
-} from "lucide-react"
-import { getSortedStudents } from "../utils"
-import { POPPINS_FONT } from "../constants"
+"use client"
+import { Trophy, X, ArrowUp, ArrowDown } from "lucide-react"
 
-const ConfirmationModal = ({ 
-  isOpen, 
-  confirmAction, 
-  onClose, 
-  onConfirm 
-}) => {
-  if (!isOpen || !confirmAction) return null
-
-  return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-xl shadow-lg w-full max-w-md" style={POPPINS_FONT}>
-        <div className="p-6">
-          <div className="flex items-center mb-4">
-            {confirmAction.isLocked ? (
-              <div className="h-12 w-12 rounded-full bg-green-100 flex items-center justify-center text-green-600 mr-4">
-                <Unlock className="h-6 w-6" />
-              </div>
-            ) : (
-              <div className="h-12 w-12 rounded-full bg-gray-100 flex items-center justify-center text-gray-600 mr-4">
-                <Lock className="h-6 w-6" />
-              </div>
-            )}
-            <div>
-              <h3 className="text-xl font-semibold text-gray-800">
-                {confirmAction.isLocked ? "Unlock" : "Lock"} {confirmAction.world.displayName}
-              </h3>
-              <p className="text-sm text-gray-600">{confirmAction.world.level}</p>
-            </div>
-          </div>
-
-          <p className="text-gray-700 mb-6">
-            {confirmAction.isLocked
-              ? `Are you sure you want to unlock ${confirmAction.world.displayName}? Students will be able to access this level in Roblox.`
-              : `Are you sure you want to lock ${confirmAction.world.displayName}? Students will not be able to access this level in Roblox.`}
-          </p>
-
-          <div className="flex justify-end space-x-3">
-            <button
-              onClick={onClose}
-              className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors font-medium"
-            >
-              Cancel
-            </button>
-            <button
-              onClick={onConfirm}
-              className={`px-4 py-2 rounded-lg text-white font-medium ${
-                confirmAction.isLocked ? "bg-green-600 hover:bg-green-700" : "bg-gray-600 hover:bg-gray-700"
-              }`}
-            >
-              {confirmAction.isLocked ? "Yes, Unlock" : "Yes, Lock"}
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
-  )
-}
-
-const LeaderboardModal = ({ 
-  isOpen, 
-  onClose, 
-  selectedClass, 
-  students, 
-  sortField, 
-  sortDirection, 
-  onSort 
+const LeaderboardModal = ({
+  isOpen,
+  selectedClass,
+  students,
+  sortField,
+  sortDirection,
+  onSort,
+  getSortedStudents,
+  onClose,
 }) => {
   if (!isOpen) return null
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-xl shadow-lg w-full max-w-3xl max-h-[90vh] flex flex-col" style={POPPINS_FONT}>
+      <div className="bg-white rounded-xl shadow-lg w-full max-w-3xl max-h-[90vh] flex flex-col">
         {/* Modal Header */}
         <div className="flex items-center justify-between p-4 border-b">
           <div className="flex items-center">
@@ -108,9 +42,7 @@ const LeaderboardModal = ({
               <button
                 onClick={() => onSort("name")}
                 className={`px-3 py-1.5 rounded text-sm font-medium flex items-center ${
-                  sortField === "name"
-                    ? "bg-indigo-100 text-indigo-700"
-                    : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                  sortField === "name" ? "bg-indigo-100 text-indigo-700" : "bg-gray-100 text-gray-700 hover:bg-gray-200"
                 }`}
               >
                 Name
@@ -148,7 +80,7 @@ const LeaderboardModal = ({
             </div>
 
             <div className="divide-y divide-gray-100 overflow-y-auto max-h-[50vh]">
-              {getSortedStudents(students, sortField, sortDirection).map((student, index) => (
+              {getSortedStudents().map((student, index) => (
                 <div key={student.id} className="grid grid-cols-12 py-3 px-4 hover:bg-gray-100 transition-colors">
                   <div className="col-span-1 flex items-center">
                     <div
@@ -200,4 +132,4 @@ const LeaderboardModal = ({
   )
 }
 
-export { ConfirmationModal, LeaderboardModal }
+export default LeaderboardModal

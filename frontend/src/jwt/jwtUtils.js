@@ -1,3 +1,5 @@
+const API_URL = process.env.REACT_APP_API_URL
+
 // JWT utility functions
 const jwtUtils = {
   // Store JWT token in localStorage
@@ -47,7 +49,7 @@ const jwtUtils = {
   // Login function
   login: async (email, password) => {
     try {
-      const response = await fetch("https://cyberkids.onrender.com/api/auth/login", {
+      const response = await fetch(`${API_URL}/api/auth/login`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -92,7 +94,7 @@ const jwtUtils = {
   // Microsoft OAuth login
   loginWithMicrosoft: () => {
     // Redirect to Microsoft OAuth endpoint
-    window.location.href = "https://cyberkids.onrender.com/oauth2/authorization/microsoft"
+    window.location.href = `${API_URL}/oauth2/authorization/microsoft`
   },
 
   // Handle Microsoft redirect
@@ -108,7 +110,7 @@ const jwtUtils = {
 
       // If we're on the OAuth redirect page, fetch the user data
       if (window.location.pathname.includes("/oauth/redirect")) {
-        const response = await fetch("https://cyberkids.onrender.com/api/oauth/redirect", {
+        const response = await fetch(`${API_URL}/api/oauth/redirect`, {
           credentials: "include", // Important for OAuth flows
         })
 
@@ -158,7 +160,7 @@ const jwtUtils = {
     }
 
     try {
-      const response = await fetch("https://cyberkids.onrender.com/api/teacher/me", {
+      const response = await fetch(`${API_URL}/api/teacher/me`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -200,7 +202,7 @@ const jwtUtils = {
     }
 
     try {
-      const response = await fetch("https://cyberkids.onrender.com/api/auth/token-login", {
+      const response = await fetch(`${API_URL}/api/auth/token-login`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },

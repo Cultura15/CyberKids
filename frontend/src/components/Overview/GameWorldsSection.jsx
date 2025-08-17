@@ -1,17 +1,9 @@
-import React from "react"
+"use client"
 import { Lock, Unlock } from "lucide-react"
-import { GAME_WORLDS, POPPINS_FONT } from "../constants"
-import { getIconByName } from "../utils"
 
-const iconMap = {
-  Shield: require("lucide-react").Shield,
-  Key: require("lucide-react").Key,
-  Eye: require("lucide-react").Eye,
-}
-
-const GameWorlds = ({ worldStatus, actionLoading, onWorldLockToggle }) => {
+const GameWorldsSection = ({ gameWorlds, worldStatus, actionLoading, onWorldToggle }) => {
   return (
-    <div className="bg-white rounded-xl shadow-sm p-6" style={POPPINS_FONT}>
+    <div className="bg-white rounded-xl shadow-sm p-6">
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center">
           <div className="mr-3">
@@ -25,10 +17,9 @@ const GameWorlds = ({ worldStatus, actionLoading, onWorldLockToggle }) => {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        {GAME_WORLDS.map((world) => {
+        {gameWorlds.map((world) => {
           const isLocked = worldStatus[world.name]
-          const IconComponent = getIconByName(world.icon, iconMap)
-
+          const IconComponent = world.icon
           return (
             <div
               key={world.name}
@@ -39,21 +30,13 @@ const GameWorlds = ({ worldStatus, actionLoading, onWorldLockToggle }) => {
               <div className="flex justify-between items-start mb-4">
                 <div className="flex items-center">
                   <div
-                    className={`p-3 rounded-lg ${
-                      isLocked ? "bg-gray-200" : `bg-${world.color}-100`
-                    } mr-3 shadow-sm`}
+                    className={`p-3 rounded-lg ${isLocked ? "bg-gray-200" : `bg-${world.color}-100`} mr-3 shadow-sm`}
                   >
-                    <IconComponent 
-                      className={`h-6 w-6 ${
-                        isLocked ? "text-gray-500" : `text-${world.color}-600`
-                      }`} 
-                    />
+                    <IconComponent className={`h-6 w-6 ${isLocked ? "text-gray-500" : `text-${world.color}-600`}`} />
                   </div>
                   <div>
                     <div className="flex items-center">
-                      <h3 className={`text-lg font-bold ${
-                        isLocked ? "text-gray-700" : `text-${world.color}-800`
-                      }`}>
+                      <h3 className={`text-lg font-bold ${isLocked ? "text-gray-700" : `text-${world.color}-800`}`}>
                         {world.displayName}
                       </h3>
                       <span
@@ -72,12 +55,10 @@ const GameWorlds = ({ worldStatus, actionLoading, onWorldLockToggle }) => {
               <p className="text-sm text-gray-600 mb-4">{world.description}</p>
 
               <button
-                onClick={() => onWorldLockToggle(world.name)}
+                onClick={() => onWorldToggle(world.name)}
                 disabled={actionLoading[world.name]}
                 className={`w-full py-2.5 rounded-lg flex items-center justify-center text-sm font-medium transition-colors ${
-                  isLocked 
-                    ? "bg-green-600 hover:bg-green-700 text-white" 
-                    : "bg-gray-600 hover:bg-gray-700 text-white"
+                  isLocked ? "bg-green-600 hover:bg-green-700 text-white" : "bg-gray-600 hover:bg-gray-700 text-white"
                 }`}
               >
                 {actionLoading[world.name] ? (
@@ -100,4 +81,4 @@ const GameWorlds = ({ worldStatus, actionLoading, onWorldLockToggle }) => {
   )
 }
 
-export default React.memo(GameWorlds)
+export default GameWorldsSection
