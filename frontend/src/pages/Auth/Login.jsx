@@ -3,8 +3,8 @@
 import { useState, useEffect } from "react"
 import { Eye, EyeOff, Lock, AtSign } from "lucide-react"
 import { useNavigate, useLocation } from "react-router-dom"
-import jwtUtils from "../../JWT/jwtUtils"
-import MicrosoftLoginButton from "./MicrosoftLoginButton"
+import jwtUtils from '../../jwt/jwtUtils';
+import MicrosoftLoginButton from '../../components/MicrosoftLoginButton';
 
 
 const Login = ({ onLoginSuccess, onSwitchToSignup }) => {

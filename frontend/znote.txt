@@ -26,3 +26,28 @@ Day 6: Testing all game levels (Everyone)
 Day 7: Pre-finalize (Ash, Emman, Kenneth)
     |- Review papers and explanations for defense (Jesson, Jhudiel)
     |- Post-finalize (Everyone)
+
+----
+
+import fetchWithAuth from '../../../JWT/authInterceptor';
+
+Class.jsx
+
+**Class.jsx** - Main orchestrator component
+**ClassList.jsx** - Handles class management view
+**StudentList.jsx** - Manages student listing
+**StudentDetail.jsx** - Individual student details and performance
+**PerformanceChart.jsx** - Analytics chart component
+**StatusHistory.jsx** - Status history functionality
+**StudentActions.jsx** - Student action controls
+**JWT/authInterceptor.js** - Authentication interceptor
+**JWT/jwtUtils.js** - JWT utility functions
+
+TeacherDashboard.jsx
+
+**DashboardHeader** - Handles the top header with branding and user actions
+**NotificationDropdown** - Manages the notification bell dropdown menu
+**NotificationModal** - Handles the full notifications modal dialog
+**ProfileDropdown** - Manages the user profile dropdown menu
+**useWebSocket** - Custom hook for WebSocket connection management
+**TeacherDashboard** - Main orchestrator component that manages state and coordinates all components

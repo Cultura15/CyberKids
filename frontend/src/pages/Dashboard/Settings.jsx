@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Save, User, Lock } from 'lucide-react';
 
-const API_BASE_URL = 'https://cyberkids.onrender.com';
+const API_BASE_URL = process.env.REACT_APP_API_URL;
 
 const Settings = () => {
   // State for settings

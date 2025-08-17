@@ -3,7 +3,9 @@
 import { useState } from "react"
 import { Eye, EyeOff, Lock, AtSign, User } from "lucide-react"
 import { useNavigate } from "react-router-dom"
-import jwtUtils from "../../JWT/jwtUtils"
+import jwtUtils from '../../jwt/jwtUtils';
+
+const API_URL = process.env.REACT_APP_API_URL
 
 const Signup = ({ onSignupSuccess, onSwitchToLogin }) => {
   // Simplified state management
@@ -59,7 +61,7 @@ const Signup = ({ onSignupSuccess, onSwitchToLogin }) => {
       const { fullName, email, password } = formData
 
       // Match the backend API endpoint and structure
-      const response = await fetch("https://cyberkids.onrender.com/api/teacher/register", {
+      const response = await fetch(`${API_URL}/api/teacher/register`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -80,7 +82,7 @@ const Signup = ({ onSignupSuccess, onSwitchToLogin }) => {
       const data = await response.json()
 
       // After successful registration, attempt to login
-      const loginResult = await fetch("https://cyberkids.onrender.com/api/auth/login", {
+      const loginResult = await fetch(`${API_URL}/api/auth/login`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -145,7 +147,7 @@ const Signup = ({ onSignupSuccess, onSwitchToLogin }) => {
 
   // Handle Microsoft login
   const handleMicrosoftLogin = () => {
-    window.location.href = "https://cyberkids.onrender.com/oauth2/authorization/microsoft"
+    window.location.href = `${API_URL}/oauth2/authorization/microsoft`
   }
 
   // Destructure for cleaner JSX

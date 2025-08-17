@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react"
 import { useNavigate, useLocation } from "react-router-dom"
 import { FaSpinner } from "react-icons/fa"
-import jwtUtils from "../../JWT/jwtUtils"
+import jwtUtils from '../../jwt/jwtUtils';
 
 const OAuthCallback = ({ onLoginSuccess }) => {
   const [error, setError] = useState("")

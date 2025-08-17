@@ -18,12 +18,12 @@ import {
   ArrowDown,
   CopyIcon,
 } from "lucide-react"
-import fetchWithAuth from "../../JWT/authInterceptor"
+import fetchWithAuth from "../../jwt/authInterceptor"
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, Label } from "recharts"
 
-const API_BASE_URL = "https://cyberkids.onrender.com/api/classes"
-const TEACHER_API_URL = "https://cyberkids.onrender.com/api/teacher"
-const WS_ENDPOINT = "https://cyberkids.onrender.com/ws"
+const API_BASE_URL = process.env.REACT_APP_API_BASE_URL;
+const TEACHER_API_URL = process.env.REACT_APP_TEACHER_API_URL;
+const WS_ENDPOINT = process.env.REACT_APP_WS_ENDPOINT;
 
 // Level badge colors
 const LEVEL_COLORS = {

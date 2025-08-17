@@ -16,10 +16,10 @@ import {
   ArrowUp,
   ArrowDown,
 } from "lucide-react"
-import fetchWithAuth from "../../JWT/authInterceptor"
+import fetchWithAuth from "../../jwt/authInterceptor"
 
 // Constants
-const API_BASE_URL = "https://cyberkids.onrender.com"
+const API_BASE_URL = process.env.REACT_APP_API_URL;
 
 // Game world definitions with correct backend world names
 const GAME_WORLDS = [

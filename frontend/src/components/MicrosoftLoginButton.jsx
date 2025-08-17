@@ -3,7 +3,7 @@
 const MicrosoftLoginButton = ({ className }) => {
   const handleMicrosoftLogin = () => {
     // Direct implementation without relying on jwtUtils
-    window.location.href = "https://cyberkids.onrender.com/oauth2/authorization/microsoft"
+    window.location.href = process.env.REACT_APP_OAUTH_MICROSOFT;
   }
 
   return (
