@@ -1,0 +1,212 @@
+const API_URL = process.env.REACT_APP_API_URL
+
+// JWT utility functions
+const jwtUtils = {
+  // Store JWT token in localStorage
+  setToken: (token) => {
+    localStorage.setItem("jwtToken", token)
+    // Set expiration time (10 hours from now to match backend)
+    const expiryTime = Date.now() + 10 * 60 * 60 * 1000
+    localStorage.setItem("tokenExpiry", expiryTime.toString())
+  },
+
+  // Get the stored JWT token
+  getToken: () => {
+    return localStorage.getItem("jwtToken")
+  },
+
+  // Remove the token (logout)
+  removeToken: () => {
+    localStorage.removeItem("jwtToken")
+    localStorage.removeItem("tokenExpiry")
+    localStorage.removeItem("teacherData")
+  },
+
+  // Check if token exists and is not expired
+  isAuthenticated: () => {
+    const token = localStorage.getItem("jwtToken")
+    const tokenExpiry = localStorage.getItem("tokenExpiry")
+
+    if (!token || !tokenExpiry) {
+      return false
+    }
+
+    // Check if token is expired
+    return Date.now() < Number.parseInt(tokenExpiry)
+  },
+
+  // Get user info from localStorage
+  getUserInfo: () => {
+    const teacherData = localStorage.getItem("teacherData")
+    return teacherData ? JSON.parse(teacherData) : null
+  },
+
+  // Store user data
+  setUserData: (userData) => {
+    localStorage.setItem("teacherData", JSON.stringify(userData))
+  },
+
+  // Login function
+  login: async (email, password) => {
+    try {
+      const response = await fetch(`${API_URL}/api/auth/login`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          email,
+          password,
+        }),
+      })
+
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.message || "Login failed")
+      }
+
+      const data = await response.json()
+
+      if (data?.token) {
+        // Store the token
+        jwtUtils.setToken(data.token)
+
+        // Store user data if available
+        if (data.user) {
+          localStorage.setItem("teacherData", JSON.stringify(data.user))
+        }
+
+        return {
+          success: true,
+          data,
+        }
+      } else {
+        throw new Error("No token received from server")
+      }
+    } catch (error) {
+      return {
+        success: false,
+        error: error.message || "Login failed",
+      }
+    }
+  },
+
+  // Microsoft OAuth login - CORRECTED URL
+  loginWithMicrosoft: () => {
+    // Redirect to Spring Boot's OAuth2 endpoint for Microsoft
+    // This should match your Spring Boot application's OAuth2 configuration
+    window.location.href = `${API_URL}/oauth2/authorization/microsoft`
+  },
+
+  // Handle Microsoft redirect - SIMPLIFIED
+  handleMicrosoftRedirect: async () => {
+    try {
+      const params = new URLSearchParams(window.location.search)
+      const error = params.get("error")
+
+      if (error) {
+        throw new Error(error || "Microsoft login failed")
+      }
+
+      // This method is now mainly used for checking if we're on a redirect page
+      if (window.location.pathname.includes("/oauth/redirect")) {
+        return {
+          success: true,
+          message: "OAuth redirect detected"
+        }
+      }
+
+      return { success: false, error: "Not on redirect page" }
+    } catch (error) {
+      return {
+        success: false,
+        error: error.message || "Microsoft login failed",
+      }
+    }
+  },
+
+  // Fetch user profile using the token
+  fetchUserProfile: async () => {
+    const token = jwtUtils.getToken()
+
+    if (!token) {
+      return {
+        success: false,
+        error: "No authentication token found",
+      }
+    }
+
+    try {
+      const response = await fetch(`${API_URL}/api/teacher/me`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      })
+
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.message || "Failed to fetch user profile")
+      }
+
+      const data = await response.json()
+
+      if (data) {
+        localStorage.setItem("teacherData", JSON.stringify(data))
+        return {
+          success: true,
+          data,
+        }
+      } else {
+        throw new Error("No user data received")
+      }
+    } catch (error) {
+      return {
+        success: false,
+        error: error.message || "Failed to fetch user profile",
+      }
+    }
+  },
+
+  // Validate token with backend
+  validateToken: async () => {
+    const token = jwtUtils.getToken()
+
+    if (!token) {
+      return {
+        success: false,
+        error: "No authentication token found",
+      }
+    }
+
+    try {
+      const response = await fetch(`${API_URL}/api/auth/token-login`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      })
+
+      if (!response.ok) {
+        // If token validation fails, clear the stored token
+        if (response.status === 401) {
+          jwtUtils.removeToken()
+        }
+        const errorData = await response.json()
+        throw new Error(errorData.message || "Token validation failed")
+      }
+
+      const data = await response.json()
+
+      return {
+        success: true,
+        data,
+      }
+    } catch (error) {
+      return {
+        success: false,
+        error: error.message || "Token validation failed",
+      }
+    }
+  },
+}
+
+export default jwtUtils

@@ -3,13 +3,13 @@
 import { useState, useEffect, lazy, Suspense } from "react"
 import { BrowserRouter, Routes, Route, Navigate, useNavigate, useLocation } from "react-router-dom"
 import { FaSpinner } from "react-icons/fa"
-import jwtUtils from "./components/JWT/jwtUtils"
-import './Styles/font.css';
+import jwtUtils from './jwt/jwtUtils';
+import './styles/font.css';
 
-const Login = lazy(() => import("./components/Pages/Authentication Folder/Login"))
-const Signup = lazy(() => import("./components/Pages/Authentication Folder/Signup"))
-const TeacherDashboard = lazy(() => import("./components/Pages/Dashboard/TeacherDashboard"))
-const OAuthCallback = lazy(() => import("./components/Pages/Authentication Folder/OAuthCallback"))
+const Login = lazy(() => import('./pages/Auth/Login'));
+const Signup = lazy(() => import('./pages/Auth/Signup'));
+const OAuthCallback = lazy(() => import('./pages/Auth/OAuthCallback'));
+const TeacherDashboard = lazy(() => import('./pages/Dashboard/Layout'));
 
 function LoadingSpinner() {
   return (
