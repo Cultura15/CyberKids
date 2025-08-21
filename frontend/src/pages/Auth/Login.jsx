@@ -1,16 +1,16 @@
 "use client"
-
+ 
 import { useState, useEffect } from "react"
 import { Eye, EyeOff, Lock, AtSign } from "lucide-react"
 import { useNavigate, useLocation } from "react-router-dom"
 import jwtUtils from '../../jwt/jwtUtils';
 import MicrosoftLoginButton from '../../components/MicrosoftLoginButton';
-
-
+ 
+ 
 const Login = ({ onLoginSuccess, onSwitchToSignup }) => {
   const navigate = useNavigate()
   const location = useLocation()
-
+ 
   // State management
   const [formData, setFormData] = useState({
     email: "",
@@ -20,54 +20,74 @@ const Login = ({ onLoginSuccess, onSwitchToSignup }) => {
   const [showPassword, setShowPassword] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState("")
-
+  const [isCheckingAuth, setIsCheckingAuth] = useState(true)
+ 
   // Destructure form data for easier access
   const { email, password, rememberMe } = formData
-
+ 
   // Check for redirect message from signup and load remembered email
   useEffect(() => {
-    // Check for redirect params
-    const params = new URLSearchParams(location.search)
-    if (params.get("redirected") === "signup_success") {
-      setError("")
-    }
-
-    // Load remembered email if available
-    const savedEmail = localStorage.getItem("userEmail")
-    if (savedEmail) {
-      setFormData((prev) => ({
-        ...prev,
-        email: savedEmail,
-        rememberMe: true,
-      }))
-    }
-
-    // Check if already logged in
-    if (jwtUtils.isAuthenticated()) {
-      navigate("/dashboard")
-    }
-
-    // Check if this is a Microsoft OAuth redirect
-    const checkMicrosoftRedirect = async () => {
-      if (window.location.pathname.includes("/oauth/redirect") || window.location.search.includes("code=")) {
-        setLoading(true)
-        const result = await jwtUtils.handleMicrosoftRedirect()
-
-        if (result.success) {
-          if (onLoginSuccess) {
-            onLoginSuccess(result.data.user)
-          }
-          navigate("/dashboard")
-        } else if (result.error !== "Not on redirect page") {
-          setError(result.error)
+    const initializeLogin = async () => {
+      try {
+        // Check for redirect params
+        const params = new URLSearchParams(location.search)
+        if (params.get("redirected") === "signup_success") {
+          setError("")
         }
-        setLoading(false)
+ 
+        // Load remembered email if available
+        const savedEmail = localStorage.getItem("userEmail")
+        if (savedEmail) {
+          setFormData((prev) => ({
+            ...prev,
+            email: savedEmail,
+            rememberMe: true,
+          }))
+        }
+ 
+        // Check if already logged in - with delay to prevent navigation error
+        const isAuthenticated = jwtUtils.isAuthenticated()
+        if (isAuthenticated && !location.search.includes('error=')) {
+          setTimeout(() => {
+            try {
+              navigate("/dashboard", { replace: true })
+            } catch (navError) {
+              console.error("Navigation error:", navError)
+              window.location.href = "/dashboard"
+            }
+          }, 100)
+        } else {
+          setIsCheckingAuth(false)
+        }
+ 
+        // Check if this is a Microsoft OAuth redirect
+        if (window.location.pathname.includes("/oauth/redirect") || window.location.search.includes("code=")) {
+          setLoading(true)
+          const result = await jwtUtils.handleMicrosoftRedirect()
+ 
+          if (result.success) {
+            if (onLoginSuccess) {
+              onLoginSuccess(result.data.user)
+            }
+            setTimeout(() => {
+              navigate("/dashboard", { replace: true })
+            }, 100)
+          } else if (result.error !== "Not on redirect page") {
+            setError(result.error)
+          }
+          setLoading(false)
+        }
+      } catch (error) {
+        console.error("Login initialization error:", error)
+        setIsCheckingAuth(false)
       }
     }
-
-    checkMicrosoftRedirect()
+ 
+    // Add delay to ensure component is fully mounted
+    const timer = setTimeout(initializeLogin, 50)
+    return () => clearTimeout(timer)
   }, [location, navigate, onLoginSuccess])
-
+ 
   const handleInputChange = (e) => {
     const { name, value, checked } = e.target
     setFormData((prevData) => ({
@@ -75,40 +95,40 @@ const Login = ({ onLoginSuccess, onSwitchToSignup }) => {
       [name]: name === "rememberMe" ? checked : value,
     }))
   }
-
+ 
   const validateForm = () => {
     if (!email.trim()) {
       setError("Email is required")
       return false
     }
-
+ 
     // Basic email validation
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
     if (!emailRegex.test(email)) {
       setError("Please enter a valid email address")
       return false
     }
-
+ 
     if (!password) {
       setError("Password is required")
       return false
     }
-
+ 
     return true
   }
-
+ 
   const handleLogin = async (e) => {
     e.preventDefault()
-
+ 
     if (!validateForm()) return
-
+ 
     setLoading(true)
     setError("")
-
+ 
     try {
       // Use the JWT utility to handle login
       const loginResult = await jwtUtils.login(email, password)
-
+ 
       if (loginResult.success) {
         // Handle remember me option
         if (rememberMe) {
@@ -116,22 +136,29 @@ const Login = ({ onLoginSuccess, onSwitchToSignup }) => {
         } else {
           localStorage.removeItem("userEmail")
         }
-
+ 
         // Fetch user profile if not included in login response
         if (!loginResult.data.user) {
           await jwtUtils.fetchUserProfile()
         }
-
+ 
         // Get user data
         const userData = jwtUtils.getUserInfo()
-
+ 
         // Call success callback if provided
         if (onLoginSuccess && userData) {
           onLoginSuccess(userData)
         }
-
-        // Redirect to dashboard
-        navigate("/dashboard")
+ 
+        // Redirect to dashboard with delay
+        setTimeout(() => {
+          try {
+            navigate("/dashboard", { replace: true })
+          } catch (navError) {
+            console.error("Navigation error:", navError)
+            window.location.href = "/dashboard"
+          }
+        }, 100)
       } else {
         throw new Error(loginResult.error)
       }
@@ -141,7 +168,19 @@ const Login = ({ onLoginSuccess, onSwitchToSignup }) => {
       setLoading(false)
     }
   }
-
+ 
+  // Show loading while checking authentication
+  if (isCheckingAuth) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="inline-block h-8 w-8 border-2 border-indigo-600 border-t-transparent rounded-full animate-spin"></div>
+          <p className="mt-2 text-gray-600">Loading...</p>
+        </div>
+      </div>
+    )
+  }
+ 
   return (
     <div className="min-h-screen flex flex-col md:flex-row bg-white">
       {/* Left side - Login Form */}
@@ -168,7 +207,7 @@ const Login = ({ onLoginSuccess, onSwitchToSignup }) => {
             <h1 className="text-2xl font-bold text-gray-900">Welcome Back</h1>
             <p className="mt-2 text-gray-600">Sign in to access your account</p>
           </div>
-
+ 
           {/* Error Message */}
           {error && (
             <div className="mb-6 p-4 bg-red-50 border-l-4 border-red-500 text-red-700 text-sm rounded">
@@ -176,7 +215,7 @@ const Login = ({ onLoginSuccess, onSwitchToSignup }) => {
               <p>{error}</p>
             </div>
           )}
-
+ 
           {/* Login Form */}
           <form onSubmit={handleLogin}>
             {/* Email Field */}
@@ -200,7 +239,7 @@ const Login = ({ onLoginSuccess, onSwitchToSignup }) => {
                 />
               </div>
             </div>
-
+ 
             {/* Password Field */}
             <div className="mb-6">
               <div className="flex items-center justify-between mb-2">
@@ -239,7 +278,7 @@ const Login = ({ onLoginSuccess, onSwitchToSignup }) => {
                 </button>
               </div>
             </div>
-
+ 
             {/* Remember Me */}
             <div className="flex items-center mb-6">
               <input
@@ -254,7 +293,7 @@ const Login = ({ onLoginSuccess, onSwitchToSignup }) => {
                 Remember me
               </label>
             </div>
-
+ 
             {/* Submit Button */}
             <button
               type="submit"
@@ -267,7 +306,7 @@ const Login = ({ onLoginSuccess, onSwitchToSignup }) => {
               {loading ? "Signing in..." : "Sign in"}
             </button>
           </form>
-
+ 
           {/* Social Login*/}
           <div className="mt-8">
             <div className="relative">
@@ -278,13 +317,13 @@ const Login = ({ onLoginSuccess, onSwitchToSignup }) => {
                 <span className="px-4 bg-white text-gray-500 font-medium">Or continue with</span>
               </div>
             </div>
-
+ 
             <div className="mt-6">
               {/* Microsoft Login Button */}
               <MicrosoftLoginButton />
             </div>
           </div>
-
+ 
           {/* Switch to Signup */}
           {onSwitchToSignup && (
             <p className="text-center mt-8 text-sm text-gray-600">
@@ -300,7 +339,7 @@ const Login = ({ onLoginSuccess, onSwitchToSignup }) => {
           )}
         </div>
       </div>
-
+ 
       {/* Right side - Background Image */}
       <div className="hidden md:block md:w-1/2 bg-indigo-600 relative overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-br from-indigo-600 to-purple-700 opacity-90"></div>
@@ -325,5 +364,5 @@ const Login = ({ onLoginSuccess, onSwitchToSignup }) => {
     </div>
   )
 }
-
+ 
 export default Login

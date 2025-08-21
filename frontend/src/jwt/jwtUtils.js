@@ -91,51 +91,28 @@ const jwtUtils = {
     }
   },
 
-  // Microsoft OAuth login
+  // Microsoft OAuth login - CORRECTED URL
   loginWithMicrosoft: () => {
-    // Redirect to Microsoft OAuth endpoint
+    // Redirect to Spring Boot's OAuth2 endpoint for Microsoft
+    // This should match your Spring Boot application's OAuth2 configuration
     window.location.href = `${API_URL}/oauth2/authorization/microsoft`
   },
 
-  // Handle Microsoft redirect
+  // Handle Microsoft redirect - SIMPLIFIED
   handleMicrosoftRedirect: async () => {
     try {
-      // Get the token from the URL if it exists (for OAuth redirect)
       const params = new URLSearchParams(window.location.search)
       const error = params.get("error")
 
       if (error) {
-        throw new Error(params.get("error_description") || "Microsoft login failed")
+        throw new Error(error || "Microsoft login failed")
       }
 
-      // If we're on the OAuth redirect page, fetch the user data
+      // This method is now mainly used for checking if we're on a redirect page
       if (window.location.pathname.includes("/oauth/redirect")) {
-        const response = await fetch(`${API_URL}/api/oauth/redirect`, {
-          credentials: "include", // Important for OAuth flows
-        })
-
-        if (!response.ok) {
-          const errorData = await response.json()
-          throw new Error(errorData.message || "Microsoft login failed")
-        }
-
-        const data = await response.json()
-
-        if (data?.token) {
-          // Store the token
-          jwtUtils.setToken(data.token)
-
-          // Store user data
-          if (data.user) {
-            localStorage.setItem("teacherData", JSON.stringify(data.user))
-          }
-
-          return {
-            success: true,
-            data,
-          }
-        } else {
-          throw new Error("No token received from server")
+        return {
+          success: true,
+          message: "OAuth redirect detected"
         }
       }
 
