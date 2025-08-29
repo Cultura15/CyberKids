@@ -1,6 +1,7 @@
 package capstone.cyberkids.CyberKids.Controller;
 
 import capstone.cyberkids.CyberKids.Entity.Classes;
+import capstone.cyberkids.CyberKids.Entity.Scenario;
 import capstone.cyberkids.CyberKids.Entity.Student;
 import capstone.cyberkids.CyberKids.Entity.StudentStatusLog;
 import capstone.cyberkids.CyberKids.Model.StudentRequest;
@@ -8,8 +9,10 @@ import capstone.cyberkids.CyberKids.Repository.ClassRepo;
 import capstone.cyberkids.CyberKids.Repository.StudentRepo;
 import capstone.cyberkids.CyberKids.Repository.StudentStatusLogRepository;
 import capstone.cyberkids.CyberKids.Service.NotificationService;
+import capstone.cyberkids.CyberKids.Service.ScenarioService;
 import capstone.cyberkids.CyberKids.Service.StudentService;
 import capstone.cyberkids.CyberKids.dtos.ClassRequest;
+import capstone.cyberkids.CyberKids.dtos.GameScenarioDTO;
 import capstone.cyberkids.CyberKids.dtos.StudentDTO;
 import capstone.cyberkids.CyberKids.dtos.StudentStatusDTO;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,6 +26,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/student")
@@ -34,6 +38,7 @@ public class StudentController {
     @Autowired private NotificationService notificationService;
     @Autowired private SimpMessagingTemplate messagingTemplate;
     @Autowired private StudentStatusLogRepository statusLogRepository;
+    @Autowired private ScenarioService scenarioService;
 
 
     @PostMapping("/register")
@@ -120,6 +125,40 @@ public class StudentController {
             return ResponseEntity.ok(response);
         }
         return ResponseEntity.notFound().build();
+    }
+
+    // Endpoint for Roblox game to fetch scenarios
+    @GetMapping("/getquestions")
+    public ResponseEntity<List<GameScenarioDTO>> getActiveScenariosForGame() {
+        try {
+            List<Scenario> scenarios = scenarioService.getAllActiveScenariosForGame();
+
+            List<GameScenarioDTO> gameScenarios = scenarios.stream()
+                    .map(GameScenarioDTO::new)
+                    .collect(Collectors.toList());
+
+            return ResponseEntity.ok(gameScenarios);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    @GetMapping("/game/npc-info")
+    public ResponseEntity<Map<String, Object>> getNpcInfo() {
+        try {
+            List<Scenario> scenarios = scenarioService.getAllActiveScenariosForGame();
+            int activeCount = scenarios.size();
+
+            // Generate spawn locations or other NPC data
+            return ResponseEntity.ok(Map.of(
+                    "npcCount", activeCount,
+                    "scenarios", scenarios.stream()
+                            .map(GameScenarioDTO::new)
+                            .collect(Collectors.toList())
+            ));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
     }
 
 //    @PostMapping("/status")

@@ -7,6 +7,7 @@ import { useNavigate } from "react-router-dom"
 const NAV_ITEMS = [
   { id: "overview", label: "Overview", icon: Award },
   { id: "class", label: "Class", icon: BookOpen },
+  { id: "questions", label: "Questions", icon: BookOpen },
   { id: "settings", label: "Settings", icon: Settings },
 ]
 

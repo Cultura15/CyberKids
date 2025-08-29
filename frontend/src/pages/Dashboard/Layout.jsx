@@ -6,6 +6,7 @@ import axios from "axios"
 import Sidebar from "../../components/Sidebar"
 import Overview from "./Overview"
 import Class from './Class';
+import Questions from "./Questions"
 import Settings from "./Settings"
 import DashboardHeader from "../../components/DashboardHeader/DashboardHeader"
 import NotificationModal from "../../components/NotificationModal"
@@ -141,6 +142,7 @@ const TeacherDashboard = ({ onLogout, userData }) => {
         <main className="flex-1 px-6 pb-6 overflow-auto">
           {activeTab === "overview" && <Overview />}
           {activeTab === "class" && <Class />}
+          {activeTab === "questions" && <Questions/>}
           {activeTab === "settings" && <Settings userData={teacherProfile || userData} />}
         </main>
 

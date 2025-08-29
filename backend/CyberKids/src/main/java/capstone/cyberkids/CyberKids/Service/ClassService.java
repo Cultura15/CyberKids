@@ -52,6 +52,12 @@ public class ClassService {
         return classRepository.findByTeacherId(teacherId);
     }
 
+    public Classes getClassById(Long classId) {
+        return classRepository.findById(classId)
+                .orElseThrow(() -> new RuntimeException("Class not found with id: " + classId));
+    }
+
+
     public List<ClassDTO> getAllClasses() {
         List<Classes> classes = classRepository.findAll();
         return classes.stream()
