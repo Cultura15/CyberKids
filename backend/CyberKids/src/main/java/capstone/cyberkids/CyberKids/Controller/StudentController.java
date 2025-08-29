@@ -11,10 +11,8 @@ import capstone.cyberkids.CyberKids.Repository.StudentStatusLogRepository;
 import capstone.cyberkids.CyberKids.Service.NotificationService;
 import capstone.cyberkids.CyberKids.Service.ScenarioService;
 import capstone.cyberkids.CyberKids.Service.StudentService;
-import capstone.cyberkids.CyberKids.dtos.ClassRequest;
 import capstone.cyberkids.CyberKids.dtos.GameScenarioDTO;
 import capstone.cyberkids.CyberKids.dtos.StudentDTO;
-import capstone.cyberkids.CyberKids.dtos.StudentStatusDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -25,7 +23,6 @@ import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 @RestController
