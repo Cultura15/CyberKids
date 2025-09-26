@@ -30,7 +30,8 @@ public class ScenarioController {
         try {
             Scenario scenario = scenarioService.createScenario(
                     request.getContent(),
-                    request.getClassId()
+                    request.getClassId(),
+                    request.getCorrectAnswer()
             );
             return ResponseEntity.status(HttpStatus.CREATED)
                     .body(new ScenarioDTO(scenario));
@@ -39,6 +40,7 @@ public class ScenarioController {
                     .body(Map.of("error", e.getMessage()));
         }
     }
+
 
     @GetMapping("/my-scenarios")
     public ResponseEntity<List<ScenarioDTO>> getMyScenarios() {

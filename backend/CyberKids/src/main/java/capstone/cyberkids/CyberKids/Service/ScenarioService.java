@@ -3,6 +3,7 @@ package capstone.cyberkids.CyberKids.Service;
 import capstone.cyberkids.CyberKids.Entity.Classes;
 import capstone.cyberkids.CyberKids.Entity.Scenario;
 import capstone.cyberkids.CyberKids.Entity.Teacher;
+import capstone.cyberkids.CyberKids.Model.AnswerTypeLvl1;
 import capstone.cyberkids.CyberKids.Repository.ScenarioRepository;
 import capstone.cyberkids.CyberKids.Repository.TeacherRepo;
 import capstone.cyberkids.CyberKids.dtos.ScenarioDTO;
@@ -28,11 +29,25 @@ public class ScenarioService {
         this.teacherRepository = teacherRepository;
     }
 
-    public Scenario createScenario(String content, Long classId) {
+    public Scenario createScenario(String content, Long classId, String correctAnswer) {
         Teacher teacher = teacherService.getLoggedInTeacher();
 
         if (content == null || content.trim().isEmpty()) {
             throw new RuntimeException("Scenario content cannot be empty");
+        }
+
+        if (correctAnswer == null) {
+            throw new RuntimeException("Correct answer must be provided (SAFE or UNSAFE)");
+        }
+
+
+        String normalizedAnswer = correctAnswer.trim().toUpperCase();
+
+        AnswerTypeLvl1 answerEnum;
+        try {
+            answerEnum = AnswerTypeLvl1.valueOf(normalizedAnswer);
+        } catch (IllegalArgumentException e) {
+            throw new RuntimeException("Correct answer must be either SAFE or UNSAFE");
         }
 
         Classes selectedClass = classService.getClassById(classId);
@@ -41,11 +56,13 @@ public class ScenarioService {
             throw new RuntimeException("You are not authorized to add a scenario to this class");
         }
 
-        Scenario scenario = new Scenario(content.trim(), teacher);
+        Scenario scenario = new Scenario(content.trim(), teacher, answerEnum);
         scenario.setClassEntity(selectedClass);
         scenario.setActive(true);
+
         return scenarioRepository.save(scenario);
     }
+
 
     public List<ScenarioDTO> getMyScenarios() {
         Teacher teacher = teacherService.getLoggedInTeacher();
