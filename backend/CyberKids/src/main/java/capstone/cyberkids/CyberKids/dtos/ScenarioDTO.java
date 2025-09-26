@@ -8,6 +8,7 @@ public class ScenarioDTO {
     private Long id;
     private String content;
     private Long classId;
+    private String correctAnswer;
     private Boolean active;
     private String teacherName;
     private Date createdAt;
@@ -22,31 +23,31 @@ public class ScenarioDTO {
         this.teacherName = scenario.getTeacher().getFullName();
         this.createdAt = scenario.getCreatedAt();
         this.updatedAt = scenario.getUpdatedAt();
+        this.correctAnswer = scenario.getCorrectAnswer().name();
 
-        // ✅ This line was missing
         if (scenario.getClassEntity() != null) {
             this.classId = scenario.getClassEntity().getId();
+        }
+
+        if (scenario.getCorrectAnswer() != null) {
+            this.correctAnswer = scenario.getCorrectAnswer().name(); // SAFE or UNSAFE
         }
     }
 
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
-
     public String getContent() { return content; }
     public void setContent(String content) { this.content = content; }
-
     public Boolean getActive() { return active; }
     public void setActive(Boolean active) { this.active = active; }
-
     public String getTeacherName() { return teacherName; }
     public void setTeacherName(String teacherName) { this.teacherName = teacherName; }
-
     public Date getCreatedAt() { return createdAt; }
     public void setCreatedAt(Date createdAt) { this.createdAt = createdAt; }
-
     public Date getUpdatedAt() { return updatedAt; }
     public void setUpdatedAt(Date updatedAt) { this.updatedAt = updatedAt; }
-
     public Long getClassId() { return classId; }
     public void setClassId(Long classId) { this.classId = classId; }
+    public String getCorrectAnswer() {return correctAnswer;}
+    public void setCorrectAnswer(String correctAnswer) {this.correctAnswer = correctAnswer;}
 }

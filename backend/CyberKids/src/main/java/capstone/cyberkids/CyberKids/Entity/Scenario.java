@@ -3,8 +3,9 @@ package capstone.cyberkids.CyberKids.Entity;
 import jakarta.persistence.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
-
+import capstone.cyberkids.CyberKids.Model.AnswerTypeLvl1;
 import java.util.Date;
+
 
 @Entity
 @Table(name = "scenarios")
@@ -18,6 +19,10 @@ public class Scenario {
 
     @Column(name = "active", nullable = false)
     private boolean active = false;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private AnswerTypeLvl1 correctAnswer;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "teacher_id", nullable = false)
@@ -39,9 +44,10 @@ public class Scenario {
 
     public Scenario() {}
 
-    public Scenario(String content, Teacher teacher) {
+    public Scenario(String content, Teacher teacher, AnswerTypeLvl1 correctAnswer) {
         this.content = content;
         this.teacher = teacher;
+        this.correctAnswer = correctAnswer;
     }
 
     public Scenario(String content, boolean active, Teacher teacher) {
@@ -64,4 +70,6 @@ public class Scenario {
     public void setUpdatedAt(Date updatedAt) { this.updatedAt = updatedAt; }
     public Classes getClassEntity() { return classEntity;}
     public void setClassEntity(Classes classEntity) { this.classEntity = classEntity;}
+    public AnswerTypeLvl1 getCorrectAnswer() { return correctAnswer; }
+    public void setCorrectAnswer(AnswerTypeLvl1 correctAnswer) { this.correctAnswer = correctAnswer; }
 }
