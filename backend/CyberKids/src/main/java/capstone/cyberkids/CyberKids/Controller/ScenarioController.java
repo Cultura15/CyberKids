@@ -5,6 +5,8 @@ import capstone.cyberkids.CyberKids.Service.ScenarioService;
 import capstone.cyberkids.CyberKids.dtos.ScenarioDTO;
 import capstone.cyberkids.CyberKids.dtos.ScenarioRequestDTO;
 import capstone.cyberkids.CyberKids.dtos.GameScenarioDTO;
+import capstone.cyberkids.CyberKids.dtos.AnswerSubmissionDTO;
+import capstone.cyberkids.CyberKids.dtos.FeedbackResponseDTO;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -41,7 +43,6 @@ public class ScenarioController {
         }
     }
 
-
     @GetMapping("/my-scenarios")
     public ResponseEntity<List<ScenarioDTO>> getMyScenarios() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
@@ -59,7 +60,41 @@ public class ScenarioController {
         return ResponseEntity.ok(scenarios);
     }
 
+    // NEW ENDPOINT: For Roblox game to fetch active scenarios
+    @GetMapping("/game/active")
+    public ResponseEntity<List<GameScenarioDTO>> getActiveScenariosForGame() {
+        try {
+            List<GameScenarioDTO> scenarios = scenarioService.getAllActiveScenariosForGameDTO();
+            return ResponseEntity.ok(scenarios);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(null);
+        }
+    }
 
+    // NEW ENDPOINT: For Roblox to submit answers and get AI feedback
+    @PostMapping("/game/submit-answer")
+    public ResponseEntity<?> submitAnswerForFeedback(@RequestBody AnswerSubmissionDTO submission) {
+        try {
+            if (submission.getScenarioId() == null || submission.getUserAnswer() == null) {
+                return ResponseEntity.badRequest()
+                        .body(Map.of("error", "Scenario ID and user answer are required"));
+            }
+
+            FeedbackResponseDTO feedback = scenarioService.evaluateAnswerWithAI(
+                    submission.getScenarioId(),
+                    submission.getUserAnswer()
+            );
+
+            return ResponseEntity.ok(feedback);
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest()
+                    .body(Map.of("error", e.getMessage()));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("error", "An error occurred while processing your answer"));
+        }
+    }
 
     @PutMapping("/{scenarioId}")
     public ResponseEntity<?> updateScenario(
@@ -105,5 +140,4 @@ public class ScenarioController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
     }
-
 }

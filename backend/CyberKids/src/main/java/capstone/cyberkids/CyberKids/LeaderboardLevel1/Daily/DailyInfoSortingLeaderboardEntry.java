@@ -2,38 +2,76 @@ package capstone.cyberkids.CyberKids.LeaderboardLevel1.Daily;
 
 import capstone.cyberkids.CyberKids.Entity.Student;
 import jakarta.persistence.*;
-
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "leaderboard_daily_infosorting")
+@Table(
+        name = "daily_leaderboard_infosorting",
+        indexes = {
+                @Index(name = "idx_date", columnList = "date"),
+                @Index(name = "idx_student_date", columnList = "student_id,date"),
+                @Index(name = "idx_date_score", columnList = "date,score"),
+                @Index(name = "idx_created_at", columnList = "createdAt")
+        }
+
+)
 public class DailyInfoSortingLeaderboardEntry {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "student_id", nullable = false)
     private Student student;
 
+    @Column(nullable = false)
     private int score;
 
+    @Column(nullable = false)
     private String totalTimeTaken;
 
+    @Column(nullable = false)
     private LocalDate date;
 
-    // Flag to indicate whether it's an active leaderboard entry (for the current day)
-    private boolean isActive;
+    @Column(nullable = false, updatable = false)
+    private LocalDateTime createdAt;
 
-    public DailyInfoSortingLeaderboardEntry(Student student, int score, String totalTimeTaken, LocalDate date, boolean isActive) {
+    @Column(nullable = false)
+    private LocalDateTime updatedAt;
 
+    // Default constructor
+    public DailyInfoSortingLeaderboardEntry() {
+        this.createdAt = LocalDateTime.now();
+        this.updatedAt = LocalDateTime.now();
+    }
+
+    public DailyInfoSortingLeaderboardEntry(Student student, int score, String totalTimeTaken, LocalDate date) {
         this.student = student;
         this.score = score;
         this.totalTimeTaken = totalTimeTaken;
         this.date = date;
-        this.isActive = isActive;
+        this.createdAt = LocalDateTime.now();
+        this.updatedAt = LocalDateTime.now();
     }
 
+    @PrePersist
+    protected void onCreate() {
+        if (createdAt == null) {
+            createdAt = LocalDateTime.now();
+        }
+        if (updatedAt == null) {
+            updatedAt = LocalDateTime.now();
+        }
+    }
+
+    @PreUpdate
+    protected void onUpdate() {
+        updatedAt = LocalDateTime.now();
+    }
+
+    // Getters and Setters
     public Long getId() {
         return id;
     }
@@ -74,11 +112,15 @@ public class DailyInfoSortingLeaderboardEntry {
         this.date = date;
     }
 
-    public boolean isActive() {
-        return isActive;
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
     }
 
-    public void setActive(boolean active) {
-        isActive = active;
+    public LocalDateTime getUpdatedAt() {
+        return updatedAt;
+    }
+
+    public void setUpdatedAt(LocalDateTime updatedAt) {
+        this.updatedAt = updatedAt;
     }
 }

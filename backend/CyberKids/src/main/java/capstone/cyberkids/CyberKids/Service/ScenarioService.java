@@ -7,6 +7,8 @@ import capstone.cyberkids.CyberKids.Model.AnswerTypeLvl1;
 import capstone.cyberkids.CyberKids.Repository.ScenarioRepository;
 import capstone.cyberkids.CyberKids.Repository.TeacherRepo;
 import capstone.cyberkids.CyberKids.dtos.ScenarioDTO;
+import capstone.cyberkids.CyberKids.dtos.GameScenarioDTO;
+import capstone.cyberkids.CyberKids.dtos.FeedbackResponseDTO;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -21,12 +23,15 @@ public class ScenarioService {
     private final TeacherService teacherService;
     private final ClassService classService;
     private final TeacherRepo teacherRepository;
+    private final AIService aiService;
 
-    public ScenarioService(ScenarioRepository scenarioRepository, TeacherService teacherService, ClassService classService, TeacherRepo teacherRepository) {
+    public ScenarioService(ScenarioRepository scenarioRepository, TeacherService teacherService,
+                           ClassService classService, TeacherRepo teacherRepository, AIService aiService) {
         this.scenarioRepository = scenarioRepository;
         this.teacherService = teacherService;
         this.classService = classService;
         this.teacherRepository = teacherRepository;
+        this.aiService = aiService;
     }
 
     public Scenario createScenario(String content, Long classId, String correctAnswer) {
@@ -39,7 +44,6 @@ public class ScenarioService {
         if (correctAnswer == null) {
             throw new RuntimeException("Correct answer must be provided (SAFE or UNSAFE)");
         }
-
 
         String normalizedAnswer = correctAnswer.trim().toUpperCase();
 
@@ -62,7 +66,6 @@ public class ScenarioService {
 
         return scenarioRepository.save(scenario);
     }
-
 
     public List<ScenarioDTO> getMyScenarios() {
         Teacher teacher = teacherService.getLoggedInTeacher();
@@ -142,6 +145,36 @@ public class ScenarioService {
     // Method for Roblox game to fetch all active scenarios
     public List<Scenario> getAllActiveScenariosForGame() {
         return scenarioRepository.findAllActiveScenarios();
+    }
+
+    // New method for Roblox game to get scenarios as GameScenarioDTO
+    public List<GameScenarioDTO> getAllActiveScenariosForGameDTO() {
+        List<Scenario> scenarios = scenarioRepository.findAllActiveScenarios();
+        return scenarios.stream()
+                .map(GameScenarioDTO::new)
+                .collect(Collectors.toList());
+    }
+
+    // New method to evaluate answer and generate AI feedback
+    public FeedbackResponseDTO evaluateAnswerWithAI(Long scenarioId, String userAnswer) {
+        Scenario scenario = scenarioRepository.findById(scenarioId)
+                .orElseThrow(() -> new RuntimeException("Scenario not found"));
+
+        if (!scenario.isActive()) {
+            throw new RuntimeException("This scenario is not active");
+        }
+
+        // Normalize user answer
+        String normalizedUserAnswer = userAnswer.trim().toUpperCase();
+        String correctAnswer = scenario.getCorrectAnswer().name();
+
+        // Check if answer is correct
+        boolean isCorrect = normalizedUserAnswer.equals(correctAnswer);
+
+        // Generate AI feedback
+        String aiFeedback = aiService.generateScenarioFeedback(scenario, normalizedUserAnswer, isCorrect);
+
+        return new FeedbackResponseDTO(aiFeedback, isCorrect, correctAnswer, normalizedUserAnswer, scenarioId);
     }
 
     public long getActiveScenarioCount() {
