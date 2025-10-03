@@ -1,4 +1,3 @@
-// Create this DTO class to ensure proper JSON structure
 package capstone.cyberkids.CyberKids.dtos;
 
 import capstone.cyberkids.CyberKids.LeaderboardLevel1.Daily.DailyInfoSortingLeaderboardEntry;
