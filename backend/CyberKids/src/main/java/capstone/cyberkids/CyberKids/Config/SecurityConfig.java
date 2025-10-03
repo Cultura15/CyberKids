@@ -217,7 +217,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/leaderboard/phishing/**").permitAll()
                         .requestMatchers("/api/teacher/**").hasRole("TEACHER")
                         .requestMatchers("/api/classes/**").hasRole("TEACHER")
-                        .requestMatchers("/api/scenarios/**").hasRole("TEACHER")
+                        .requestMatchers("/api/scenarios/**").permitAll()
                         .anyRequest().authenticated()
                 )
                 .oauth2Login(oauth2 -> oauth2
