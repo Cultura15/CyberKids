@@ -43,6 +43,12 @@ public class Student {
     private String targetWorld;
     private String targetLevel;
 
+    @Column(name = "grade")
+    private String grade;
+
+    @Column(name = "section")
+    private String section;
+
     public Student() {}
 
     public Student(Long id, String robloxId, String robloxName, String realName) {
@@ -119,6 +125,18 @@ public class Student {
     public void setOnline(Boolean online) {
         isOnline = online;
     }
+
+    public String getGrade() {return grade;}
+
+    public String getSection() {
+        return section;
+    }
+
+    public void setSection(String section) {
+        this.section = section;
+    }
+
+    public void setGrade(String grade) {this.grade = grade;}
 
     public String getRealNameOrFallback() {
         return (realName != null && !realName.isBlank())

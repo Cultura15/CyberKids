@@ -89,6 +89,8 @@ public class StudentController {
         if (!alreadyManual) {
             student.setRealName(req.getRealName());
             student.setClassEntity(classEntity);
+            student.setGrade(req.getGrade());
+            student.setSection(req.getSection());
             student = studentRepo.save(student);
 
             String teacherEmail = classEntity.getTeacher().getEmail();
@@ -97,6 +99,36 @@ public class StudentController {
 
         return ResponseEntity.ok(Map.of("student", new StudentDTO(student), "manualRegistered", true));
     }
+
+    @GetMapping("/by-roblox-id/{robloxId}")
+    public ResponseEntity<Map<String, Object>> getStudentByRobloxId(@PathVariable String robloxId) {
+        Student student = studentRepo.findByRobloxId(robloxId);
+
+        if (student == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(Map.of("error", "Student not found"));
+        }
+
+        boolean manualRegistered = student.getRealName() != null && !student.getRealName().isBlank()
+                && student.getClassEntity() != null;
+
+        StudentRequest response = new StudentRequest();
+        response.setRobloxId(student.getRobloxId());
+        response.setRobloxName(student.getRobloxName());
+        response.setRealName(student.getRealName());
+//        response.setOnline(student.isOnline()); // Assuming `isOnline` is a boolean field in Student
+        response.setGrade(student.getGrade());  // Assuming these exist in your Student entity
+        response.setSection(student.getSection());
+        response.setClassCode(student.getClassEntity() != null ? student.getClassEntity().getClassCode() : null);
+
+        Map<String, Object> payload = new HashMap<>();
+        payload.put("student", response);
+        payload.put("manualRegistered", manualRegistered);
+
+        return ResponseEntity.ok(payload);
+    }
+
+
 
     @GetMapping("/{id}")
     public ResponseEntity<Student> getById(@PathVariable Long id) {
@@ -129,10 +161,9 @@ public class StudentController {
 
     // Endpoint for Roblox game to fetch scenarios
     @GetMapping("/getquestions")
-    public ResponseEntity<List<GameScenarioDTO>> getActiveScenariosForGame() {
+    public ResponseEntity<List<GameScenarioDTO>> getActiveScenariosForGame(@RequestParam String classCode) {
         try {
-            List<Scenario> scenarios = scenarioService.getAllActiveScenariosForGame();
-
+            List<Scenario> scenarios = scenarioService.getActiveScenariosByClassCode(classCode);
             List<GameScenarioDTO> gameScenarios = scenarios.stream()
                     .map(GameScenarioDTO::new)
                     .collect(Collectors.toList());
@@ -142,6 +173,9 @@ public class StudentController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
+
+
+
 
     @GetMapping("/game/npc-info")
     public ResponseEntity<Map<String, Object>> getNpcInfo() {
