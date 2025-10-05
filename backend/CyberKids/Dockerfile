@@ -4,8 +4,8 @@ FROM maven:3.9.6-eclipse-temurin AS build
 WORKDIR /app
 
 # Copy project files
-COPY pom.xml .
-COPY src ./src
+COPY backend/CyberKids/pom.xml .
+COPY backend/CyberKids/src ./src
 
 # Build the Spring Boot app (skip tests for faster build)
 RUN mvn clean package -DskipTests
