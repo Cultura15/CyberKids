@@ -3,10 +3,11 @@ FROM maven:3.9.6-eclipse-temurin AS build
 
 WORKDIR /app
 
-# Copy files from the local build context
-COPY backend/CyberKids/pom.xml .
-COPY backend/CyberKids/src ./src
+# Copy project files
+COPY pom.xml .
+COPY src ./src
 
+# Build the Spring Boot app (skip tests for faster build)
 RUN mvn clean package -DskipTests
 
 # --- Runtime Stage ---
@@ -14,8 +15,12 @@ FROM eclipse-temurin:21-jdk-alpine
 
 WORKDIR /app
 
-COPY --from=build /app/target/*.jar /app/app.jar
+# Copy the built JAR from the build stage
+COPY --from=build /app/target/*.jar app.jar
 
+# Default port for local testing
+ENV PORT=8080
 EXPOSE 8080
 
-ENTRYPOINT ["java", "-jar", "/app/app.jar"]
+# Use Render's dynamic PORT when deployed
+CMD ["sh", "-c", "java -jar app.jar --server.port=$PORT"]
