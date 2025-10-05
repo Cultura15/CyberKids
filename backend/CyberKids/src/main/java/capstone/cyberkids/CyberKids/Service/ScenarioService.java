@@ -147,6 +147,14 @@ public class ScenarioService {
         return scenarioRepository.findAllActiveScenarios();
     }
 
+    public List<Scenario> getActiveScenariosByClassCode(String classCode) {
+        Classes classEntity = classService.getClassByCode(classCode);
+        return scenarioRepository.findByClassEntityAndActiveTrue(classEntity);
+    }
+
+
+
+
     // New method for Roblox game to get scenarios as GameScenarioDTO
     public List<GameScenarioDTO> getAllActiveScenariosForGameDTO() {
         List<Scenario> scenarios = scenarioRepository.findAllActiveScenarios();

@@ -57,6 +57,11 @@ public class ClassService {
                 .orElseThrow(() -> new RuntimeException("Class not found with id: " + classId));
     }
 
+    public Classes getClassByCode(String classCode) {
+        return classRepository.findByClassCode(classCode)
+                .orElseThrow(() -> new RuntimeException("Class not found for code: " + classCode));
+    }
+
 
     public List<ClassDTO> getAllClasses() {
         List<Classes> classes = classRepository.findAll();
