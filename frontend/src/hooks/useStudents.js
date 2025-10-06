@@ -13,7 +13,7 @@ export const useStudents = (selectedClass) => {
   const fetchStudentsForClass = async (grade, section) => {
     setLoading(true)
     try {
-      const response = await fetchWithAuth(`${API_BASE_URL}/api/classes/grade/${grade}/section/${section}/students`)
+      const response = await fetchWithAuth(`${API_BASE_URL}/api/classes/grade/${grade}/section/${section}/students/summary`)
       if (!response.ok) {
         throw new Error("Failed to fetch students for this class")
       }
