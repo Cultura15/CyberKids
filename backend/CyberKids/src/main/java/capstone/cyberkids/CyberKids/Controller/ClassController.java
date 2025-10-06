@@ -4,9 +4,7 @@ import capstone.cyberkids.CyberKids.Entity.Classes;
 import capstone.cyberkids.CyberKids.Entity.Student;
 import capstone.cyberkids.CyberKids.Service.ClassService;
 import capstone.cyberkids.CyberKids.Service.StudentService;
-import capstone.cyberkids.CyberKids.dtos.ClassDTO;
-import capstone.cyberkids.CyberKids.dtos.ClassRequest;
-import capstone.cyberkids.CyberKids.dtos.StudentDTO;
+import capstone.cyberkids.CyberKids.dtos.*;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -42,17 +40,20 @@ public class ClassController {
         return ResponseEntity.ok(createdClass);
     }
 
-    @GetMapping("/grade/{grade}/section/{section}/students")
-    public ResponseEntity<List<StudentDTO>> getStudentsByGradeAndSection(
+    // Lightweight list of students for table view
+    @GetMapping("/grade/{grade}/section/{section}/students/summary")
+    public ResponseEntity<List<StudentSummaryDTO>> getStudentsSummary(
             @PathVariable String grade,
             @PathVariable String section) {
+        List<StudentSummaryDTO> summaries = studentService.getStudentSummariesByGradeAndSection(grade, section);
+        return ResponseEntity.ok(summaries);
+    }
 
-        List<Student> students = studentService.getStudentsByGradeAndSection(grade, section);
-        List<StudentDTO> studentDTOs = students.stream()
-                .map(StudentDTO::new)
-                .collect(Collectors.toList());
-
-        return ResponseEntity.ok(studentDTOs);
+    // Full details of a single student
+    @GetMapping("/students/{studentId}/details")
+    public ResponseEntity<StudentDetailDTO> getStudentDetails(@PathVariable Long studentId) {
+        Student student = studentService.getStudentByIdWithScoresAndTimers(studentId);
+        return ResponseEntity.ok(new StudentDetailDTO(student));
     }
 
     @GetMapping("/my-classes")

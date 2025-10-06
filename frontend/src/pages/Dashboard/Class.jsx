@@ -21,9 +21,9 @@ import {
 import fetchWithAuth from "../../jwt/authInterceptor"
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, Label } from "recharts"
 
-const API_BASE_URL = process.env.REACT_APP_API_BASE_URL;
-const TEACHER_API_URL = process.env.REACT_APP_TEACHER_API_URL;
-const WS_ENDPOINT = process.env.REACT_APP_WS_ENDPOINT;
+const API_BASE_URL = process.env.REACT_APP_API_BASE_URL
+const TEACHER_API_URL = process.env.REACT_APP_TEACHER_API_URL
+const WS_ENDPOINT = process.env.REACT_APP_WS_ENDPOINT
 
 // Level badge colors
 const LEVEL_COLORS = {
@@ -120,7 +120,7 @@ const ClassComponent = () => {
   const stompClientRef = useRef(null)
   const isConnectingRef = useRef(false)
 
-    // Add this function to copy class code to clipboard
+  // Add this function to copy class code to clipboard
   const copyClassCode = async (classCode) => {
     try {
       await navigator.clipboard.writeText(classCode)
@@ -194,7 +194,7 @@ const ClassComponent = () => {
             isConnectingRef.current = false
 
             client.subscribe("/topic/student-status", (message) => {
-              if (message.body) { 
+              if (message.body) {
                 try {
                   const statusUpdate = JSON.parse(message.body)
                   console.log("Received student status update:", statusUpdate)
@@ -411,7 +411,7 @@ const ClassComponent = () => {
   const fetchStudentsForClass = async (grade, section) => {
     setLoading(true)
     try {
-      const response = await fetchWithAuth(`${API_BASE_URL}/grade/${grade}/section/${section}/students`)
+      const response = await fetchWithAuth(`${API_BASE_URL}/grade/${grade}/section/${section}/students/summary`)
       if (!response.ok) {
         throw new Error("Failed to fetch students for this class")
       }
@@ -613,9 +613,22 @@ const ClassComponent = () => {
   }
 
   // View student details
-  const viewStudentDetails = (student) => {
-    setSelectedStudent(student)
-    setViewMode("studentDetail")
+  const viewStudentDetails = async (student) => {
+    setLoading(true)
+    try {
+      const response = await fetchWithAuth(`${API_BASE_URL}/students/${student.id}/details`)
+      if (!response.ok) {
+        throw new Error("Failed to fetch student details")
+      }
+      const fullStudentData = await response.json()
+      setSelectedStudent(fullStudentData)
+      setViewMode("studentDetail")
+    } catch (err) {
+      console.error("Error fetching student details:", err)
+      setError(err.message)
+    } finally {
+      setLoading(false)
+    }
   }
 
   // Go back to classes view
@@ -1024,7 +1037,7 @@ const ClassComponent = () => {
                     {cls.grade} - {cls.section}
                   </h3>
 
-                   {/* Class Code Display */}
+                  {/* Class Code Display */}
                   {cls.classCode && (
                     <div className="flex items-center space-x-2 mt-2">
                       <div className="bg-white/20 backdrop-blur-sm px-3 py-1 rounded-full">
@@ -1046,7 +1059,7 @@ const ClassComponent = () => {
                       </button>
                     </div>
                   )}
-                  
+
                   <div className="flex items-center space-x-2">
                     <Users className="h-5 w-5" />
                     <span className="text-base">{cls.students ? cls.students.length : 0} students</span>
@@ -1134,30 +1147,30 @@ const ClassComponent = () => {
                     {classObj?.grade} - {classObj?.section}
                   </h2>
 
-                   {/* Class Code Display in Students View */}
-                    {classObj?.classCode && (
-                      <div className="flex items-center space-x-2">
-                        <div className="bg-indigo-50 px-3 py-1 rounded-full border border-indigo-200">
-                          <span className="text-sm font-mono font-bold text-indigo-700 tracking-wider">
-                            {classObj.classCode}
-                          </span>
-                        </div>
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation()
-                            copyClassCode(classObj.classCode)
-                          }}
-                          className="p-1 rounded-full bg-indigo-100 hover:bg-indigo-200 transition-colors text-indigo-600"
-                          title="Copy class code"
-                        >
-                          {copiedClassCode === classObj.classCode ? (
-                            <CheckCircle className="h-4 w-4" />
-                          ) : (
-                            <CopyIcon className="h-4 w-4" />
-                          )}
-                        </button>
+                  {/* Class Code Display in Students View */}
+                  {classObj?.classCode && (
+                    <div className="flex items-center space-x-2">
+                      <div className="bg-indigo-50 px-3 py-1 rounded-full border border-indigo-200">
+                        <span className="text-sm font-mono font-bold text-indigo-700 tracking-wider">
+                          {classObj.classCode}
+                        </span>
                       </div>
-                    )}
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          copyClassCode(classObj.classCode)
+                        }}
+                        className="p-1 rounded-full bg-indigo-100 hover:bg-indigo-200 transition-colors text-indigo-600"
+                        title="Copy class code"
+                      >
+                        {copiedClassCode === classObj.classCode ? (
+                          <CheckCircle className="h-4 w-4" />
+                        ) : (
+                          <CopyIcon className="h-4 w-4" />
+                        )}
+                      </button>
+                    </div>
+                  )}
 
                   <p className="text-lg text-gray-600">{students.length} students</p>
                 </div>

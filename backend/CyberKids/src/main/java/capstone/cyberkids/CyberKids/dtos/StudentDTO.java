@@ -16,8 +16,9 @@ public class StudentDTO {
     private String grade;
     private String section;
     private Boolean isOnline;
+    private Long classId;
 
-    private List<ChallengeAttemptDTO> challengeAttempts;
+//    private List<ChallengeAttemptDTO> challengeAttempts;
 
     public StudentDTO(Student student) {
         this.id = student.getId();
@@ -25,40 +26,41 @@ public class StudentDTO {
         this.robloxName = student.getRobloxName();
         this.realName = student.getRealName();
         this.isOnline = student.getOnline();
+        this.classId = student.getClassEntity() != null ? student.getClassEntity().getId() : null;
 
         if (student.getClassEntity() != null) {
             this.grade = student.getClassEntity().getGrade();
             this.section = student.getClassEntity().getSection();
         }
+//
+//        this.challengeAttempts = new ArrayList<>();
 
-        this.challengeAttempts = new ArrayList<>();
-
-        Map<String, List<Timer>> timersByType = Optional.ofNullable(student.getTimers()).orElse(Set.of())
-                .stream()
-                .collect(Collectors.groupingBy(t -> t.getChallengeType().name()));
-
-        Map<String, List<Score>> scoresByType = Optional.ofNullable(student.getScores()).orElse(Set.of())
-                .stream()
-                .collect(Collectors.groupingBy(s -> s.getChallengeType().name()));
-
-        Set<String> allChallengeTypes = new HashSet<>();
-        allChallengeTypes.addAll(timersByType.keySet());
-        allChallengeTypes.addAll(scoresByType.keySet());
-
-        for (String type : allChallengeTypes) {
-            List<Timer> timers = timersByType.getOrDefault(type, List.of());
-            List<Score> scores = scoresByType.getOrDefault(type, List.of());
-
-            int maxSize = Math.max(timers.size(), scores.size());
-
-            for (int i = 0; i < maxSize; i++) {
-                ChallengeAttemptDTO dto = new ChallengeAttemptDTO(type);
-
-                if (i < timers.size()) dto.mergeWith(timers.get(i));
-                if (i < scores.size()) dto.mergeWith(scores.get(i));
-                challengeAttempts.add(dto);
-            }
-        }
+//        Map<String, List<Timer>> timersByType = Optional.ofNullable(student.getTimers()).orElse(Set.of())
+//                .stream()
+//                .collect(Collectors.groupingBy(t -> t.getChallengeType().name()));
+//
+//        Map<String, List<Score>> scoresByType = Optional.ofNullable(student.getScores()).orElse(Set.of())
+//                .stream()
+//                .collect(Collectors.groupingBy(s -> s.getChallengeType().name()));
+//
+//        Set<String> allChallengeTypes = new HashSet<>();
+//        allChallengeTypes.addAll(timersByType.keySet());
+//        allChallengeTypes.addAll(scoresByType.keySet());
+//
+//        for (String type : allChallengeTypes) {
+//            List<Timer> timers = timersByType.getOrDefault(type, List.of());
+//            List<Score> scores = scoresByType.getOrDefault(type, List.of());
+//
+//            int maxSize = Math.max(timers.size(), scores.size());
+//
+//            for (int i = 0; i < maxSize; i++) {
+//                ChallengeAttemptDTO dto = new ChallengeAttemptDTO(type);
+//
+//                if (i < timers.size()) dto.mergeWith(timers.get(i));
+//                if (i < scores.size()) dto.mergeWith(scores.get(i));
+//                challengeAttempts.add(dto);
+//            }
+//        }
     }
 
     public Long getId() {
@@ -117,11 +119,20 @@ public class StudentDTO {
         isOnline = online;
     }
 
-    public List<ChallengeAttemptDTO> getChallengeAttempts() {
-        return challengeAttempts;
+//    public List<ChallengeAttemptDTO> getChallengeAttempts() {
+//        return challengeAttempts;
+//    }
+//
+//    public void setChallengeAttempts(List<ChallengeAttemptDTO> challengeAttempts) {
+//        this.challengeAttempts = challengeAttempts;
+//    }
+
+    public Long getClassId() {
+        return classId;
     }
 
-    public void setChallengeAttempts(List<ChallengeAttemptDTO> challengeAttempts) {
-        this.challengeAttempts = challengeAttempts;
+    public void setClassId(Long classId) {
+        this.classId = classId;
     }
+
 }

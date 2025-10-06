@@ -2,11 +2,14 @@ package capstone.cyberkids.CyberKids.Service;
 
 import capstone.cyberkids.CyberKids.Entity.Student;
 import capstone.cyberkids.CyberKids.Repository.StudentRepo;
+import capstone.cyberkids.CyberKids.dtos.StudentSummaryDTO;
+import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class StudentService {
@@ -22,9 +25,24 @@ public class StudentService {
         return repo.findById(id);
     }
 
-    public List<Student> getStudentsByGradeAndSection(String grade, String section) {
-        return repo.findByClassEntity_GradeAndClassEntity_Section(grade, section);
+    public List<StudentSummaryDTO> getStudentSummariesByGradeAndSection(String grade, String section) {
+        List<Student> students = repo.findByClassEntity_GradeAndClassEntity_Section(grade, section);
+        return students.stream()
+                .map(s -> new StudentSummaryDTO(
+                        s.getId(),
+                        s.getRealName(),
+                        s.getRobloxId(),
+                        s.getClassEntity().getGrade(),
+                        s.getClassEntity().getSection(),
+                        s.getOnline()))
+                .collect(Collectors.toList());
     }
+
+    public Student getStudentByIdWithScoresAndTimers(Long id) {
+        return repo.findByIdWithScoresAndTimers(id)
+                .orElseThrow(() -> new EntityNotFoundException("Student not found"));
+    }
+
 
     public List<Student> getStudentsBySection(String section) {
         return repo.findAllByClassEntity_Section(section);
