@@ -5,15 +5,18 @@ import { useNavigate } from "react-router-dom"
 import axios from "axios"
 import Sidebar from "../../components/Sidebar"
 import Overview from "./Overview"
-import Class from './Class';
+import Class from "./Class"
 import Questions from "./Questions"
 import Settings from "./Settings"
 import DashboardHeader from "../../components/DashboardHeader/DashboardHeader"
 import NotificationModal from "../../components/NotificationModal"
 import useWebSocket from "../../hooks/useWebSocket"
 
+// ✅ Import the global Student Status Context
+import { StudentStatusProvider } from "../../context/StudentStatusContext"
+
 // Constants
-const API_URL = process.env.REACT_APP_API_URL;
+const API_URL = process.env.REACT_APP_API_URL
 
 const TeacherDashboard = ({ onLogout, userData }) => {
   // State management
@@ -27,15 +30,18 @@ const TeacherDashboard = ({ onLogout, userData }) => {
   const navigate = useNavigate()
 
   // WebSocket connection
-  const { wsConnected, disconnect } = useWebSocket(teacherProfile, userData, setNotifications, setUnreadCount)
+  const { wsConnected, disconnect } = useWebSocket(
+    teacherProfile,
+    userData,
+    setNotifications,
+    setUnreadCount
+  )
 
-  // Handle logout - use the provided onLogout callback
+  // Handle logout
   const handleLogout = () => {
-    // Disconnect WebSocket if connected
     disconnect()
-
-    if (onLogout) onLogout() // Call the parent's logout function to update app state
-    navigate("/login") // Redirect to login page
+    if (onLogout) onLogout()
+    navigate("/login")
   }
 
   // Fetch teacher profile
@@ -44,10 +50,7 @@ const TeacherDashboard = ({ onLogout, userData }) => {
       setLoading(true)
       try {
         const token = localStorage.getItem("jwtToken")
-
-        if (!token) {
-          throw new Error("Authentication token not found")
-        }
+        if (!token) throw new Error("Authentication token not found")
 
         const headers = {
           Authorization: `Bearer ${token}`,
@@ -69,14 +72,16 @@ const TeacherDashboard = ({ onLogout, userData }) => {
   // Mark notification as read
   const markAsRead = (id) => {
     setNotifications(
-      notifications.map((notification) => (notification.id === id ? { ...notification, read: true } : notification)),
+      notifications.map((notification) =>
+        notification.id === id ? { ...notification, read: true } : notification
+      )
     )
     setUnreadCount(Math.max(0, unreadCount - 1))
   }
 
   // Mark all notifications as read
   const markAllAsRead = () => {
-    setNotifications(notifications.map((notification) => ({ ...notification, read: true })))
+    setNotifications(notifications.map((n) => ({ ...n, read: true })))
     setUnreadCount(0)
   }
 
@@ -91,10 +96,8 @@ const TeacherDashboard = ({ onLogout, userData }) => {
 
       await axios.delete(`${API_URL}/api/teacher/notification/${id}`, { headers })
 
-      // Remove notification from state
-      setNotifications(notifications.filter((notification) => notification.id !== id))
+      setNotifications(notifications.filter((n) => n.id !== id))
 
-      // Update unread count if the deleted notification was unread
       const deletedNotification = notifications.find((n) => n.id === id)
       if (deletedNotification && !deletedNotification.read) {
         setUnreadCount(Math.max(0, unreadCount - 1))
@@ -105,7 +108,7 @@ const TeacherDashboard = ({ onLogout, userData }) => {
     }
   }
 
-  // Render loading state
+  // Loading screen
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-indigo-50 to-purple-100">
@@ -117,47 +120,51 @@ const TeacherDashboard = ({ onLogout, userData }) => {
     )
   }
 
-  // Main component render
+  // ✅ Wrap the entire dashboard in StudentStatusProvider
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-50 to-purple-100 flex">
-      {/* Sidebar */}
-      <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} />
+    <StudentStatusProvider>
+      <div className="min-h-screen bg-gradient-to-br from-indigo-50 to-purple-100 flex">
+        {/* Sidebar */}
+        <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} />
 
-      {/* Main Content */}
-      <div className="flex-1 flex flex-col">
-        {/* Header */}
-        <DashboardHeader
-          teacherProfile={teacherProfile}
-          userData={userData}
-          notifications={notifications}
-          unreadCount={unreadCount}
-          onLogout={handleLogout}
-          onMarkAsRead={markAsRead}
-          onMarkAllAsRead={markAllAsRead}
-          onDeleteNotification={deleteNotification}
-          onShowNotificationModal={() => setShowNotificationModal(true)}
-        />
+        {/* Main Content */}
+        <div className="flex-1 flex flex-col">
+          {/* Header */}
+          <DashboardHeader
+            teacherProfile={teacherProfile}
+            userData={userData}
+            notifications={notifications}
+            unreadCount={unreadCount}
+            onLogout={handleLogout}
+            onMarkAsRead={markAsRead}
+            onMarkAllAsRead={markAllAsRead}
+            onDeleteNotification={deleteNotification}
+            onShowNotificationModal={() => setShowNotificationModal(true)}
+          />
 
-        {/* Content Area */}
-        <main className="flex-1 px-6 pb-6 overflow-auto">
-          {activeTab === "overview" && <Overview />}
-          {activeTab === "class" && <Class />}
-          {activeTab === "questions" && <Questions/>}
-          {activeTab === "settings" && <Settings userData={teacherProfile || userData} />}
-        </main>
+          {/* Content Area */}
+          <main className="flex-1 px-6 pb-6 overflow-auto">
+            {activeTab === "overview" && <Overview />}
+            {activeTab === "class" && <Class />}
+            {activeTab === "questions" && <Questions />}
+            {activeTab === "settings" && (
+              <Settings userData={teacherProfile || userData} />
+            )}
+          </main>
 
-        {/* Notification Modal */}
-        <NotificationModal
-          showModal={showNotificationModal}
-          onClose={() => setShowNotificationModal(false)}
-          notifications={notifications}
-          unreadCount={unreadCount}
-          onMarkAsRead={markAsRead}
-          onMarkAllAsRead={markAllAsRead}
-          onDeleteNotification={deleteNotification}
-        />
+          {/* Notification Modal */}
+          <NotificationModal
+            showModal={showNotificationModal}
+            onClose={() => setShowNotificationModal(false)}
+            notifications={notifications}
+            unreadCount={unreadCount}
+            onMarkAsRead={markAsRead}
+            onMarkAllAsRead={markAllAsRead}
+            onDeleteNotification={deleteNotification}
+          />
+        </div>
       </div>
-    </div>
+    </StudentStatusProvider>
   )
 }
 
