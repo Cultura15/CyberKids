@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, useRef } from "react"
+import { useState, useEffect } from "react"
 import {
   Plus,
   Search,
@@ -20,6 +20,9 @@ import {
 } from "lucide-react"
 import fetchWithAuth from "../../jwt/authInterceptor"
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, Label } from "recharts"
+// import { useStudentStatus } from "../../hooks/useStudentStatus";
+import { useStudentStatusContext } from "../../context/StudentStatusContext";
+
 
 const API_BASE_URL = process.env.REACT_APP_API_BASE_URL
 const TEACHER_API_URL = process.env.REACT_APP_TEACHER_API_URL
@@ -115,10 +118,12 @@ const ClassComponent = () => {
   const [showStatusHistory, setShowStatusHistory] = useState(false)
   const [loadingStatusHistory, setLoadingStatusHistory] = useState(false)
 
-  // WebSocket state
-  const [studentStatuses, setStudentStatuses] = useState({})
-  const stompClientRef = useRef(null)
-  const isConnectingRef = useRef(false)
+  const { studentStatuses, initializeStatuses, getOnlineStatus } = useStudentStatusContext();
+
+
+  // const [studentStatuses, setStudentStatuses] = useState({})
+  // const stompClientRef = useRef(null)
+  // const isConnectingRef = useRef(false)
 
   // Add this function to copy class code to clipboard
   const copyClassCode = async (classCode) => {
@@ -159,99 +164,98 @@ const ClassComponent = () => {
     }
   }
 
-  // Initialize WebSocket connection
-  useEffect(() => {
-    const connectWebSocket = async () => {
-      if (isConnectingRef.current || typeof window === "undefined") return
+  // useEffect(() => {
+  //   const connectWebSocket = async () => {
+  //     if (isConnectingRef.current || typeof window === "undefined") return
 
-      isConnectingRef.current = true
+  //     isConnectingRef.current = true
 
-      try {
-        const token = localStorage.getItem("jwtToken")
-        if (!token) {
-          isConnectingRef.current = false
-          return
-        }
+  //     try {
+  //       const token = localStorage.getItem("jwtToken")
+  //       if (!token) {
+  //         isConnectingRef.current = false
+  //         return
+  //       }
 
-        console.log("Connecting to student status WebSocket...")
+  //       console.log("Connecting to student status WebSocket...")
 
-        // Dynamically import the required libraries
-        const [{ Client }, { default: SockJS }] = await Promise.all([import("@stomp/stompjs"), import("sockjs-client")])
+  //       // Dynamically import the required libraries
+  //       const [{ Client }, { default: SockJS }] = await Promise.all([import("@stomp/stompjs"), import("sockjs-client")])
 
-        const client = new Client({
-          webSocketFactory: () => new SockJS(WS_ENDPOINT),
-          connectHeaders: {
-            Authorization: `Bearer ${token}`,
-          },
-          debug: (str) => {
-            console.log(str)
-          },
-          reconnectDelay: 5000,
-          heartbeatIncoming: 4000,
-          heartbeatOutgoing: 4000,
-          onConnect: () => {
-            console.log("Connected to student status WebSocket")
-            isConnectingRef.current = false
+  //       const client = new Client({
+  //         webSocketFactory: () => new SockJS(WS_ENDPOINT),
+  //         connectHeaders: {
+  //           Authorization: `Bearer ${token}`,
+  //         },
+  //         debug: (str) => {
+  //           console.log(str)
+  //         },
+  //         reconnectDelay: 5000,
+  //         heartbeatIncoming: 4000,
+  //         heartbeatOutgoing: 4000,
+  //         onConnect: () => {
+  //           console.log("Connected to student status WebSocket")
+  //           isConnectingRef.current = false
 
-            client.subscribe("/topic/student-status", (message) => {
-              if (message.body) {
-                try {
-                  const statusUpdate = JSON.parse(message.body)
-                  console.log("Received student status update:", statusUpdate)
+  //           client.subscribe("/topic/student-status", (message) => {
+  //             if (message.body) {
+  //               try {
+  //                 const statusUpdate = JSON.parse(message.body)
+  //                 console.log("Received student status update:", statusUpdate)
 
-                  // Update the student status immediately when a message is received
-                  if (statusUpdate.robloxId) {
-                    setStudentStatuses((prev) => ({
-                      ...prev,
-                      [statusUpdate.robloxId]: statusUpdate.isOnline || statusUpdate.online,
-                    }))
+  //                 // Update the student status immediately when a message is received
+  //                 if (statusUpdate.robloxId) {
+  //                   setStudentStatuses((prev) => ({
+  //                     ...prev,
+  //                     [statusUpdate.robloxId]: statusUpdate.isOnline || statusUpdate.online,
+  //                   }))
 
-                    // Also update the students array to ensure consistency
-                    setStudents((prevStudents) =>
-                      prevStudents.map((student) =>
-                        student.robloxId === statusUpdate.robloxId
-                          ? { ...student, online: statusUpdate.isOnline || statusUpdate.online }
-                          : student,
-                      ),
-                    )
-                  }
-                } catch (e) {
-                  console.error("Error parsing student status message:", e)
-                }
-              }
-            })
-          },
-          onStompError: (frame) => {
-            console.error("STOMP error:", frame.headers, frame.body)
-            isConnectingRef.current = false
-          },
-          onWebSocketClose: () => {
-            console.log("WebSocket connection closed")
-            isConnectingRef.current = false
-          },
-        })
+  //                   // Also update the students array to ensure consistency
+  //                   setStudents((prevStudents) =>
+  //                     prevStudents.map((student) =>
+  //                       student.robloxId === statusUpdate.robloxId
+  //                         ? { ...student, online: statusUpdate.isOnline || statusUpdate.online }
+  //                         : student,
+  //                     ),
+  //                   )
+  //                 }
+  //               } catch (e) {
+  //                 console.error("Error parsing student status message:", e)
+  //               }
+  //             }
+  //           })
+  //         },
+  //         onStompError: (frame) => {
+  //           console.error("STOMP error:", frame.headers, frame.body)
+  //           isConnectingRef.current = false
+  //         },
+  //         onWebSocketClose: () => {
+  //           console.log("WebSocket connection closed")
+  //           isConnectingRef.current = false
+  //         },
+  //       })
 
-        client.activate()
-        stompClientRef.current = client
-      } catch (error) {
-        console.error("Error initializing WebSocket:", error)
-        isConnectingRef.current = false
+  //       client.activate()
+  //       stompClientRef.current = client
+  //     } catch (error) {
+  //       console.error("Error initializing WebSocket:", error)
+  //       isConnectingRef.current = false
 
-        // Try to reconnect after a delay
-        setTimeout(connectWebSocket, 5000)
-      }
-    }
+  //       // Try to reconnect after a delay
+  //       setTimeout(connectWebSocket, 5000)
+  //     }
+  //   }
 
-    connectWebSocket()
+  //   connectWebSocket()
 
-    // Cleanup function
-    return () => {
-      if (stompClientRef.current) {
-        stompClientRef.current.deactivate()
-        stompClientRef.current = null
-      }
-    }
-  }, [])
+  //   // Cleanup function
+  //   return () => {
+  //     if (stompClientRef.current) {
+  //       stompClientRef.current.deactivate()
+  //       stompClientRef.current = null
+  //     }
+  //   }
+  // }, [])
 
   // Fetch teacher's classes on component mount
   useEffect(() => {
@@ -296,26 +300,9 @@ const ClassComponent = () => {
     }
   }, [selectedStudent])
 
-  // Initialize student statuses from the fetched data
   useEffect(() => {
     if (students && students.length > 0) {
-      // Initialize the online status from the student data
-      const initialStatus = {}
-      students.forEach((student) => {
-        if (student.robloxId && (student.online === true || student.online === 1)) {
-          initialStatus[student.robloxId] = true
-        }
-      })
-
-      // Only update if we have any online students
-      if (Object.keys(initialStatus).length > 0) {
-        setStudentStatuses((prev) => ({
-          ...prev,
-          ...initialStatus,
-        }))
-      }
-
-      console.log("Initialized student online status:", initialStatus)
+      initializeStatuses(students)
     }
   }, [students])
 
@@ -666,23 +653,23 @@ const ClassComponent = () => {
   }
 
   // Get online status from WebSocket data or fallback to stored status
-  const getOnlineStatus = (student) => {
-    if (!student || !student.robloxId) return "offline"
+  // const getOnlineStatus = (student) => {
+  //   if (!student || !student.robloxId) return "offline"
 
-    // If we have real-time status for this student, use it
-    if (studentStatuses.hasOwnProperty(student.robloxId)) {
-      return studentStatuses[student.robloxId] ? "online" : "offline"
-    }
+  //   // If we have real-time status for this student, use it
+  //   if (studentStatuses.hasOwnProperty(student.robloxId)) {
+  //     return studentStatuses[student.robloxId] ? "online" : "offline"
+  //   }
 
-    // Otherwise use the online property from the student object if available
-    if (student.hasOwnProperty("online")) {
-      // Convert to boolean in case it's a number (1/0) from the database
-      return student.online === true || student.online === 1 ? "online" : "offline"
-    }
+  //   // Otherwise use the online property from the student object if available
+  //   if (student.hasOwnProperty("online")) {
+  //     // Convert to boolean in case it's a number (1/0) from the database
+  //     return student.online === true || student.online === 1 ? "online" : "offline"
+  //   }
 
-    // Fallback to offline as default
-    return "offline"
-  }
+  //   // Fallback to offline as default
+  //   return "offline"
+  // }
 
   // Prepare data for the performance chart
   const prepareChartData = () => {
