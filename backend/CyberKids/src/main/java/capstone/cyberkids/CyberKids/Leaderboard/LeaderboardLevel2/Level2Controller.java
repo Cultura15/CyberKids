@@ -1,19 +1,21 @@
-package capstone.cyberkids.CyberKids.LeaderboardLevel1.Daily;
+package capstone.cyberkids.CyberKids.Leaderboard.LeaderboardLevel2;
 
+
+import capstone.cyberkids.CyberKids.dtos.LeaderboardResponseDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
-import capstone.cyberkids.CyberKids.dtos.LeaderboardResponseDTO;
 
 @RestController
-@RequestMapping("/api/leaderboard/info-sorting/daily")
-public class DailyInfoSortingLeaderboardController {
+@RequestMapping("/api/leaderboard/password-sec/daily")
+public class Level2Controller {
 
     @Autowired
-    private DailyInfoSortingLeaderboardService leaderboardService;
+    private Level2Service leaderboardService;
 
     @PostMapping("/update/roblox/{robloxId}")
     public ResponseEntity<?> updateDailyLeaderboardByRobloxId(
@@ -38,7 +40,7 @@ public class DailyInfoSortingLeaderboardController {
             }
 
             // Update the leaderboard
-            DailyInfoSortingLeaderboardEntry updatedEntry =
+            Level2Entity updatedEntry =
                     leaderboardService.updateStudentDailyScoreAndTimeByRobloxId(
                             robloxId, score, totalTimeTaken, LocalDate.now());
 

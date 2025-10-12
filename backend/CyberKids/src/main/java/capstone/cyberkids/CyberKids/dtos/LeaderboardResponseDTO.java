@@ -1,6 +1,8 @@
 package capstone.cyberkids.CyberKids.dtos;
 
-import capstone.cyberkids.CyberKids.LeaderboardLevel1.Daily.DailyInfoSortingLeaderboardEntry;
+import capstone.cyberkids.CyberKids.Leaderboard.LeaderboardLevel1.Level1Entity;
+import capstone.cyberkids.CyberKids.Leaderboard.LeaderboardLevel2.Level2Entity;
+import capstone.cyberkids.CyberKids.Leaderboard.LeaderboardLevel3.Level3Entity;
 
 public class LeaderboardResponseDTO {
     private Long id;
@@ -10,7 +12,23 @@ public class LeaderboardResponseDTO {
     private StudentDTO student;
 
     // Constructor
-    public LeaderboardResponseDTO(DailyInfoSortingLeaderboardEntry entry) {
+    public LeaderboardResponseDTO(Level1Entity entry) {
+        this.id = entry.getId();
+        this.score = entry.getScore();
+        this.totalTimeTaken = entry.getTotalTimeTaken();
+        this.date = entry.getDate().toString();
+        this.student = new StudentDTO(entry.getStudent());
+    }
+
+    public LeaderboardResponseDTO(Level2Entity entry) {
+        this.id = entry.getId();
+        this.score = entry.getScore();
+        this.totalTimeTaken = entry.getTotalTimeTaken();
+        this.date = entry.getDate().toString();
+        this.student = new StudentDTO(entry.getStudent());
+    }
+
+    public LeaderboardResponseDTO(Level3Entity entry) {
         this.id = entry.getId();
         this.score = entry.getScore();
         this.totalTimeTaken = entry.getTotalTimeTaken();

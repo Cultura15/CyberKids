@@ -1,11 +1,8 @@
-package capstone.cyberkids.CyberKids.LeaderboardLevel3;
-
+package capstone.cyberkids.CyberKids.Leaderboard.Global;
 
 import capstone.cyberkids.CyberKids.Entity.Score;
 import capstone.cyberkids.CyberKids.Entity.Student;
 import capstone.cyberkids.CyberKids.Entity.Timer;
-import capstone.cyberkids.CyberKids.LeaderboardLevel2.Level2Entity;
-import capstone.cyberkids.CyberKids.LeaderboardLevel2.Repo;
 import capstone.cyberkids.CyberKids.Model.ChallengeType;
 import capstone.cyberkids.CyberKids.Repository.ScoreRepo;
 import capstone.cyberkids.CyberKids.Repository.TimerRepo;
@@ -15,9 +12,10 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 
 @Service
-public class Level3Service {
+public class GlobalService {
+
     @Autowired
-    private Level3Repo leaderboardRepo;
+    private GlobalRepo leaderboardRepo;
 
     @Autowired
     private ScoreRepo scoreRepo;
@@ -25,10 +23,10 @@ public class Level3Service {
     @Autowired
     private TimerRepo timerRepo;
 
-    public Level3Entity updateStudentTotalScoreAndTime(Student student) {
+    public GlobalEntity updateStudentTotalScoreAndTime(Student student) {
         // Calculate total points for the student in the INFO_SORTING challenge
         int totalPoints = scoreRepo
-                .findByStudentAndChallengeType(student, ChallengeType.PHISHING_IDENTIFICATION)
+                .findByStudentAndChallengeType(student, ChallengeType.INFORMATION_CLASSIFICATION_SORTING)
                 .stream()
                 .mapToInt(Score::getPoints)
                 .sum();
@@ -39,7 +37,7 @@ public class Level3Service {
         // Calculate the total time taken for this student
         long totalTimeInSeconds = 0;
         for (Timer timer : timers) {
-            if (timer.getChallengeType() == ChallengeType.PHISHING_IDENTIFICATION) {
+            if (timer.getChallengeType() == ChallengeType.INFORMATION_CLASSIFICATION_SORTING) {
                 // Ensure the time is calculated using the calculateTimeTaken method
                 timer.calculateTimeTaken();
 
@@ -65,9 +63,9 @@ public class Level3Service {
         String totalTimeTaken = String.format("%d:%02d", minutesPart, secondsPart);
 
         // Update the leaderboard entry or create one if it doesn't exist
-        Level3Entity leaderboardEntry = leaderboardRepo
+        GlobalEntity leaderboardEntry = leaderboardRepo
                 .findByStudent(student)
-                .orElse(new Level3Entity(student, totalPoints, totalTimeTaken));
+                .orElse(new GlobalEntity(student, totalPoints, totalTimeTaken));
 
         leaderboardEntry.setTotalScore(totalPoints);
         leaderboardEntry.setTotalTimeTaken(totalTimeTaken);

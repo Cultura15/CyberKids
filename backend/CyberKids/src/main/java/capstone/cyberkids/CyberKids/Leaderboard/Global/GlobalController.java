@@ -1,8 +1,6 @@
-package capstone.cyberkids.CyberKids.LeaderboardLevel3;
+package capstone.cyberkids.CyberKids.Leaderboard.Global;
 
 import capstone.cyberkids.CyberKids.Entity.Student;
-import capstone.cyberkids.CyberKids.LeaderboardLevel2.Level2Entity;
-import capstone.cyberkids.CyberKids.LeaderboardLevel2.Level2Service;
 import capstone.cyberkids.CyberKids.Repository.StudentRepo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -12,10 +10,11 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/api/leaderboard/phishing/global")
-public class Level3Controller {
+@RequestMapping("/api/leaderboard/info-sorting/global")
+public class GlobalController {
+
     @Autowired
-    private Level3Service leaderboardService;
+    private GlobalService leaderboardService;
 
     @Autowired
     private StudentRepo studentRepo;
@@ -27,7 +26,9 @@ public class Level3Controller {
             return ResponseEntity.notFound().build();
         }
 
-        Level3Entity updatedEntry = leaderboardService.updateStudentTotalScoreAndTime(student);
+        GlobalEntity updatedEntry = leaderboardService.updateStudentTotalScoreAndTime(student);
         return ResponseEntity.ok(updatedEntry);
     }
+
+
 }

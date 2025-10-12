@@ -1,4 +1,4 @@
-package capstone.cyberkids.CyberKids.LeaderboardLevel1.Daily;
+package capstone.cyberkids.CyberKids.Leaderboard.LeaderboardLevel1;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -8,7 +8,7 @@ import java.time.LocalDate;
 import java.util.List;
 
 @Repository
-public interface DailyInfoSortingLeaderboardRepo extends JpaRepository<DailyInfoSortingLeaderboardEntry, Long> {
+public interface Level1Repo extends JpaRepository<Level1Entity, Long> {
 
     // Get best entry per student for a specific date
     @Query("SELECT e FROM DailyInfoSortingLeaderboardEntry e WHERE e.date = :date " +
@@ -18,5 +18,5 @@ public interface DailyInfoSortingLeaderboardRepo extends JpaRepository<DailyInfo
             "WHERE e3.student = e2.student AND e3.date = :date) " +
             "GROUP BY e2.student) " +
             "ORDER BY e.score DESC, e.totalTimeTaken ASC")
-    List<DailyInfoSortingLeaderboardEntry> findBestScoresByDate(@Param("date") LocalDate date);
+    List<Level1Entity> findBestScoresByDate(@Param("date") LocalDate date);
 }
