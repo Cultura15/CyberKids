@@ -1,12 +1,12 @@
-package capstone.cyberkids.CyberKids.LeaderboardLevel1.Daily;
+package capstone.cyberkids.CyberKids.Leaderboard.LeaderboardLevel2;
 
 import capstone.cyberkids.CyberKids.Entity.Student;
 import jakarta.persistence.*;
 import java.time.LocalDate;
 
 @Entity
-@Table(name = "daily_leaderboard_level1")
-public class DailyInfoSortingLeaderboardEntry {
+@Table(name = "daily_leaderboard_level2")
+public class Level2Entity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -20,9 +20,9 @@ public class DailyInfoSortingLeaderboardEntry {
     private LocalDate date;
 
     // Default constructor
-    public DailyInfoSortingLeaderboardEntry() {}
+    public Level2Entity() {}
 
-    public DailyInfoSortingLeaderboardEntry(Student student, int score, String totalTimeTaken, LocalDate date) {
+    public Level2Entity(Student student, int score, String totalTimeTaken, LocalDate date) {
         this.student = student;
         this.score = score;
         this.totalTimeTaken = totalTimeTaken;

@@ -1,12 +1,14 @@
-package capstone.cyberkids.CyberKids.LeaderboardLevel2;
+package capstone.cyberkids.CyberKids.Leaderboard.Global;
 
 import capstone.cyberkids.CyberKids.Entity.Student;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import jakarta.persistence.Entity;
+
 import jakarta.persistence.*;
 
 @Entity
-@Table(name = "leaderboard_password_game")
-public class Level2Entity {
+@Table(name = "leaderboard_global_infosorting")
+public class GlobalEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -23,9 +25,9 @@ public class Level2Entity {
     @Column(nullable = false)
     private String totalTimeTaken;
 
-    public Level2Entity() {}
+    public GlobalEntity() {}
 
-    public Level2Entity(Student student, int totalScore, String totalTimeTaken) {
+    public GlobalEntity(Student student, int totalScore, String totalTimeTaken) {
         this.student = student;
         this.totalScore = totalScore;
         this.totalTimeTaken = totalTimeTaken;
@@ -63,3 +65,4 @@ public class Level2Entity {
         this.totalTimeTaken = totalTimeTaken;
     }
 }
+

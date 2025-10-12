@@ -1,24 +1,24 @@
-package capstone.cyberkids.CyberKids.LeaderboardLevel1.Daily;
+package capstone.cyberkids.CyberKids.Leaderboard.LeaderboardLevel3;
 
 import capstone.cyberkids.CyberKids.Entity.Student;
 import capstone.cyberkids.CyberKids.Repository.StudentRepo;
 import capstone.cyberkids.CyberKids.dtos.LeaderboardResponseDTO;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.stream.Collectors;
+import org.springframework.stereotype.Service;
 
 @Service
-public class DailyInfoSortingLeaderboardService {
+public class Level3Service {
 
     @Autowired
-    private DailyInfoSortingLeaderboardRepo leaderboardRepo;
+    private Level3Repo leaderboardRepo;
 
     @Autowired
     private StudentRepo studentRepo;
 
-    public DailyInfoSortingLeaderboardEntry updateStudentDailyScoreAndTimeByRobloxId(String robloxId, int score, String totalTimeTaken, LocalDate date) {
+    public Level3Entity updateStudentDailyScoreAndTimeByRobloxId(String robloxId, int score, String totalTimeTaken, LocalDate date) {
         // Find student by Roblox ID
         Student student = studentRepo.findByRobloxId(robloxId);
         if (student == null) {
@@ -36,8 +36,8 @@ public class DailyInfoSortingLeaderboardService {
         System.out.println("Cleaned time: '" + cleanTime + "'");
 
         // Create and save the entry
-        DailyInfoSortingLeaderboardEntry entry = new DailyInfoSortingLeaderboardEntry(student, score, cleanTime, date);
-        DailyInfoSortingLeaderboardEntry savedEntry = leaderboardRepo.save(entry);
+        Level3Entity entry = new Level3Entity(student, score, cleanTime, date);
+        Level3Entity savedEntry = leaderboardRepo.save(entry);
 
         System.out.println("Saved entry - ID: " + savedEntry.getId() + ", Time: '" + savedEntry.getTotalTimeTaken() + "'");
         System.out.println("=== END DEBUG ===");
@@ -82,7 +82,7 @@ public class DailyInfoSortingLeaderboardService {
     public List<LeaderboardResponseDTO> getLeaderboardByDate(LocalDate date) {
         System.out.println("Fetching best scores for date: " + date);
 
-        List<DailyInfoSortingLeaderboardEntry> entries = leaderboardRepo.findBestScoresByDate(date);
+        List<Level3Entity> entries = leaderboardRepo.findBestScoresByDate(date);
 
         return entries.stream()
                 .limit(10)
