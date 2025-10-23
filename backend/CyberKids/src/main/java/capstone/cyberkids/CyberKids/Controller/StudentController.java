@@ -87,10 +87,11 @@ public class StudentController {
                 && student.getClassEntity() != null;
 
         // ✅ Check for name uniqueness (case-insensitive)
-        if (!alreadyManual && studentRepo.existsByRealNameIgnoreCase(req.getRealName())) {
+        if (!alreadyManual && studentRepo.existsByRealNameIgnoreCaseAndClassEntity_ClassCode(req.getRealName(), req.getClassCode())) {
             return ResponseEntity.status(HttpStatus.CONFLICT)
-                    .body(Map.of("error", "That name is already taken. Please choose a different name."));
+                    .body(Map.of("error", "That name is already taken in this class. Please choose a different name."));
         }
+
 
         if (!alreadyManual) {
             student.setRealName(req.getRealName());

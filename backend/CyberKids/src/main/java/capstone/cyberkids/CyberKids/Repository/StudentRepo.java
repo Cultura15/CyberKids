@@ -13,7 +13,7 @@ public interface StudentRepo extends JpaRepository<Student, Long> {
     Student findByRobloxId(String robloxId);
 
     List<Student> findAllByClassEntity_Section(String section);
-    boolean existsByRealNameIgnoreCase(String realName);
+    boolean existsByRealNameIgnoreCaseAndClassEntity_ClassCode(String realName, String classCode);
 
     // Existing method for summary list (no change needed)
     @EntityGraph(attributePaths = {"classEntity"})
