@@ -10,7 +10,7 @@ import java.util.Date;
 import java.util.List;
 
 @Entity
-@Table(name = "classes")
+@Table(name = "classes", uniqueConstraints = @UniqueConstraint(columnNames = {"grade", "section", "teacher_id"}))
 public class Classes {
 
     @Id

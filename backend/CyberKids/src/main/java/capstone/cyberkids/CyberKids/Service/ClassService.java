@@ -28,11 +28,18 @@ public class ClassService {
         Teacher teacher = teacherRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("Teacher not found with email: " + email));
 
+        // Check if class with same grade, section, and teacher exists
+        boolean exists = classRepository.findByGradeAndSectionAndTeacherId(grade, section, teacher.getId()).isPresent();
+        if (exists) {
+            throw new RuntimeException("Class with Grade " + grade + " and Section " + section + " already exists for this teacher.");
+        }
+
         String classCode = generateUniqueClassCode();
 
         Classes classEntity = new Classes(grade, section, teacher, classCode);
         return classRepository.save(classEntity);
     }
+
 
     private String generateUniqueClassCode() {
         String code;

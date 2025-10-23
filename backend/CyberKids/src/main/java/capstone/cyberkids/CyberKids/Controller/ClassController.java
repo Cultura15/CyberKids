@@ -5,6 +5,7 @@ import capstone.cyberkids.CyberKids.Entity.Student;
 import capstone.cyberkids.CyberKids.Service.ClassService;
 import capstone.cyberkids.CyberKids.Service.StudentService;
 import capstone.cyberkids.CyberKids.dtos.*;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -27,18 +28,24 @@ public class ClassController {
     }
 
     @PostMapping
-    public ResponseEntity<Classes> createClass(@RequestBody ClassRequest request) {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+    public ResponseEntity<?> createClass(@RequestBody ClassRequest request) {
+        try {
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
-        String email;
-        if (authentication.getPrincipal() instanceof UserDetails) {
-            email = ((UserDetails) authentication.getPrincipal()).getUsername();
-        } else {
-            email = authentication.getPrincipal().toString();
+            String email;
+            if (authentication.getPrincipal() instanceof UserDetails) {
+                email = ((UserDetails) authentication.getPrincipal()).getUsername();
+            } else {
+                email = authentication.getPrincipal().toString();
+            }
+
+            Classes createdClass = classService.createClassByEmail(email, request.getGrade(), request.getSection());
+            return ResponseEntity.ok(createdClass);
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         }
-        Classes createdClass = classService.createClassByEmail(email, request.getGrade(), request.getSection());
-        return ResponseEntity.ok(createdClass);
     }
+
 
     // Lightweight list of students for table view
     @GetMapping("/grade/{grade}/section/{section}/students/summary")
