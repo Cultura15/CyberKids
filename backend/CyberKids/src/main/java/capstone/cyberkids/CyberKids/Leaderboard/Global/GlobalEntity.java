@@ -1,13 +1,10 @@
 package capstone.cyberkids.CyberKids.Leaderboard.Global;
 
 import capstone.cyberkids.CyberKids.Entity.Student;
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import jakarta.persistence.Entity;
-
 import jakarta.persistence.*;
 
 @Entity
-@Table(name = "leaderboard_global_infosorting")
+@Table(name = "global_leaderboard")
 public class GlobalEntity {
 
     @Id
@@ -15,54 +12,37 @@ public class GlobalEntity {
     private Long id;
 
     @OneToOne
-    @JoinColumn(name = "student_id", nullable = false, unique = true)
-    @JsonIgnore
     private Student student;
 
-    @Column(nullable = false)
-    private int totalScore;
+    private int highestScore;
+    private String bestTimeTaken;  // optional tie-breaker
+    private int globalRank;
 
-    @Column(nullable = false)
-    private String totalTimeTaken;
+    private String level; // <-- new field
 
     public GlobalEntity() {}
 
-    public GlobalEntity(Student student, int totalScore, String totalTimeTaken) {
+    public GlobalEntity(Student student, int highestScore, String bestTimeTaken, int globalRank, String level) {
         this.student = student;
-        this.totalScore = totalScore;
-        this.totalTimeTaken = totalTimeTaken;
+        this.highestScore = highestScore;
+        this.bestTimeTaken = bestTimeTaken;
+        this.globalRank = globalRank;
+        this.level = level;
     }
 
-    public Long getId() {
-        return id;
-    }
+    public Long getId() { return id; }
+    public Student getStudent() { return student; }
+    public void setStudent(Student student) { this.student = student; }
 
-    public void setId(Long id) {
-        this.id = id;
-    }
+    public int getHighestScore() { return highestScore; }
+    public void setHighestScore(int highestScore) { this.highestScore = highestScore; }
 
-    public Student getStudent() {
-        return student;
-    }
+    public String getBestTimeTaken() { return bestTimeTaken; }
+    public void setBestTimeTaken(String bestTimeTaken) { this.bestTimeTaken = bestTimeTaken; }
 
-    public void setStudent(Student student) {
-        this.student = student;
-    }
+    public int getGlobalRank() { return globalRank; }
+    public void setGlobalRank(int globalRank) { this.globalRank = globalRank; }
 
-    public int getTotalScore() {
-        return totalScore;
-    }
-
-    public void setTotalScore(int totalScore) {
-        this.totalScore = totalScore;
-    }
-
-    public String getTotalTimeTaken() {
-        return totalTimeTaken;
-    }
-
-    public void setTotalTimeTaken(String totalTimeTaken) {
-        this.totalTimeTaken = totalTimeTaken;
-    }
+    public String getLevel() { return level; } // <-- getter
+    public void setLevel(String level) { this.level = level; } // <-- setter
 }
-

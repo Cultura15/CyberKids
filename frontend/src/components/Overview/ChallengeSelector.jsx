@@ -1,4 +1,5 @@
 "use client"
+
 import { ChevronDown } from "lucide-react"
 
 const ChallengeSelector = ({ challenges, selectedChallenge, onChallengeSelect, isOpen, onToggle }) => {

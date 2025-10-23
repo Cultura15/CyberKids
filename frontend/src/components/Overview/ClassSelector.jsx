@@ -1,4 +1,5 @@
 "use client"
+
 import { ChevronDown } from "lucide-react"
 
 const ClassSelector = ({ classes, selectedClass, onClassSelect, isOpen, onToggle }) => {

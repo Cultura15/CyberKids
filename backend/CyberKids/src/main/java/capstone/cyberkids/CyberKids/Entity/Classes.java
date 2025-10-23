@@ -107,4 +107,12 @@ public class Classes {
     public void setClassCode(String classCode) {
         this.classCode = classCode;
     }
+
+    public List<Student> getStudents() {
+        return students;
+    }
+
+    public void setStudents(List<Student> students) {
+        this.students = students;
+    }
 }
