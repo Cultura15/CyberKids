@@ -20,13 +20,11 @@ import {
 } from "lucide-react"
 import fetchWithAuth from "../../jwt/authInterceptor"
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, Label } from "recharts"
-// import { useStudentStatus } from "../../hooks/useStudentStatus";
 import { useStudentStatusContext } from "../../context/StudentStatusContext";
 
 
 const API_BASE_URL = process.env.REACT_APP_API_BASE_URL
 const TEACHER_API_URL = process.env.REACT_APP_TEACHER_API_URL
-const WS_ENDPOINT = process.env.REACT_APP_WS_ENDPOINT
 
 // Level badge colors
 const LEVEL_COLORS = {
@@ -164,99 +162,6 @@ const ClassComponent = () => {
     }
   }
 
-  // useEffect(() => {
-  //   const connectWebSocket = async () => {
-  //     if (isConnectingRef.current || typeof window === "undefined") return
-
-  //     isConnectingRef.current = true
-
-  //     try {
-  //       const token = localStorage.getItem("jwtToken")
-  //       if (!token) {
-  //         isConnectingRef.current = false
-  //         return
-  //       }
-
-  //       console.log("Connecting to student status WebSocket...")
-
-  //       // Dynamically import the required libraries
-  //       const [{ Client }, { default: SockJS }] = await Promise.all([import("@stomp/stompjs"), import("sockjs-client")])
-
-  //       const client = new Client({
-  //         webSocketFactory: () => new SockJS(WS_ENDPOINT),
-  //         connectHeaders: {
-  //           Authorization: `Bearer ${token}`,
-  //         },
-  //         debug: (str) => {
-  //           console.log(str)
-  //         },
-  //         reconnectDelay: 5000,
-  //         heartbeatIncoming: 4000,
-  //         heartbeatOutgoing: 4000,
-  //         onConnect: () => {
-  //           console.log("Connected to student status WebSocket")
-  //           isConnectingRef.current = false
-
-  //           client.subscribe("/topic/student-status", (message) => {
-  //             if (message.body) {
-  //               try {
-  //                 const statusUpdate = JSON.parse(message.body)
-  //                 console.log("Received student status update:", statusUpdate)
-
-  //                 // Update the student status immediately when a message is received
-  //                 if (statusUpdate.robloxId) {
-  //                   setStudentStatuses((prev) => ({
-  //                     ...prev,
-  //                     [statusUpdate.robloxId]: statusUpdate.isOnline || statusUpdate.online,
-  //                   }))
-
-  //                   // Also update the students array to ensure consistency
-  //                   setStudents((prevStudents) =>
-  //                     prevStudents.map((student) =>
-  //                       student.robloxId === statusUpdate.robloxId
-  //                         ? { ...student, online: statusUpdate.isOnline || statusUpdate.online }
-  //                         : student,
-  //                     ),
-  //                   )
-  //                 }
-  //               } catch (e) {
-  //                 console.error("Error parsing student status message:", e)
-  //               }
-  //             }
-  //           })
-  //         },
-  //         onStompError: (frame) => {
-  //           console.error("STOMP error:", frame.headers, frame.body)
-  //           isConnectingRef.current = false
-  //         },
-  //         onWebSocketClose: () => {
-  //           console.log("WebSocket connection closed")
-  //           isConnectingRef.current = false
-  //         },
-  //       })
-
-  //       client.activate()
-  //       stompClientRef.current = client
-  //     } catch (error) {
-  //       console.error("Error initializing WebSocket:", error)
-  //       isConnectingRef.current = false
-
-  //       // Try to reconnect after a delay
-  //       setTimeout(connectWebSocket, 5000)
-  //     }
-  //   }
-
-  //   connectWebSocket()
-
-  //   // Cleanup function
-  //   return () => {
-  //     if (stompClientRef.current) {
-  //       stompClientRef.current.deactivate()
-  //       stompClientRef.current = null
-  //     }
-  //   }
-  // }, [])
-
   // Fetch teacher's classes on component mount
   useEffect(() => {
     const fetchClasses = async () => {
@@ -386,6 +291,25 @@ const ClassComponent = () => {
       }
     }
   }
+
+  const getChallengesCompletedCount = (attempts) => {
+  if (!attempts || attempts.length === 0) return 0
+
+  // Create a Set of unique challenge types that are marked as Completed
+  const completedChallenges = new Set()
+
+  attempts.forEach((attempt) => {
+   if (
+      attempt.completionStatus &&
+      attempt.completionStatus.toLowerCase() === "completed"
+    ) {
+      completedChallenges.add(attempt.challengeType)
+    }
+  })
+
+  return completedChallenges.size
+}
+
 
   // Format time from seconds to MM:SS
   const formatTimeFromSeconds = (seconds) => {
@@ -641,16 +565,18 @@ const ClassComponent = () => {
   }
 
   // Format date for display with +8 hour advance
-  const formatDate = (dateString) => {
-    if (!dateString) return "N/A"
-    const date = new Date(dateString)
-    // Add 8 hours to the date (UTC+8)
-    const adjustedDate = new Date(date.getTime() + 8 * 60 * 60 * 1000)
-    return adjustedDate.toLocaleString("en-US", {
-      dateStyle: "short",
-      timeStyle: "short",
-    })
-  }
+  const formatDate = (dateString, options = { showTime: true, showDate: true }) => {
+  if (!dateString) return "N/A";
+  const date = new Date(dateString);
+  const adjustedDate = new Date(date.getTime() + 8 * 60 * 60 * 1000);
+  
+  const opts = {};
+  if (options.showDate) opts.dateStyle = "short";
+  if (options.showTime) opts.timeStyle = "short";
+
+  return adjustedDate.toLocaleString("en-US", opts);
+};
+
 
   // Get online status from WebSocket data or fallback to stored status
   // const getOnlineStatus = (student) => {
@@ -754,52 +680,81 @@ const ClassComponent = () => {
     }
   }
 
-  // Sort and filter challenge attempts
-  const sortedChallengeAttempts = () => {
-    if (!selectedStudent || !selectedStudent.challengeAttempts) return []
+  // Assign chronological attempt numbers once
+const getChronologicalAttempts = (attempts) => {
+  if (!attempts) return []
 
-    let filteredAttempts = [...selectedStudent.challengeAttempts]
+  // Sort by earliest date/time
+  const sortedByTime = [...attempts].sort((a, b) => {
+    const dateA = a.dateCompleted
+      ? new Date(a.dateCompleted)
+      : a.startTime
+      ? new Date(a.startTime)
+      : new Date(0)
+    const dateB = b.dateCompleted
+      ? new Date(b.dateCompleted)
+      : b.startTime
+      ? new Date(b.startTime)
+      : new Date(0)
+    return dateA - dateB // oldest first
+  })
 
-    // Apply challenge filter
-    if (challengeFilter !== "all") {
-      filteredAttempts = filteredAttempts.filter((attempt) => attempt.challengeType === challengeFilter)
+  // Assign attemptNumber (1 = first)
+  return sortedByTime.map((attempt, index) => ({
+    ...attempt,
+    attemptNumber: index + 1,
+  }))
+}
+
+
+ const sortedChallengeAttempts = () => {
+  if (!selectedStudent || !selectedStudent.challengeAttempts) return []
+
+  // Always start from chronologically numbered attempts
+  let filteredAttempts = getChronologicalAttempts(selectedStudent.challengeAttempts)
+
+  // Apply challenge filter (Level 1, 2, 3)
+  if (challengeFilter !== "all") {
+    filteredAttempts = filteredAttempts.filter(
+      (attempt) => attempt.challengeType === challengeFilter
+    )
+  }
+
+  // Then apply your normal sort logic (points, time, etc.)
+  filteredAttempts.sort((a, b) => {
+    let aValue = a[historySortField]
+    let bValue = b[historySortField]
+
+    // same logic you already had …
+    if (
+      historySortField === "dateCompleted" ||
+      historySortField === "startTime" ||
+      historySortField === "endTime"
+    ) {
+      aValue = aValue ? new Date(aValue) : new Date(0)
+      bValue = bValue ? new Date(bValue) : new Date(0)
+    } else if (historySortField === "points") {
+      aValue = aValue !== null ? aValue : -1
+      bValue = bValue !== null ? bValue : -1
+    } else if (historySortField === "timeTaken") {
+      const toSeconds = (v) => {
+        if (!v) return -1
+        const parts = v.split(":").map(Number)
+        return parts.length === 2 ? parts[0] * 60 + parts[1] : parts[0] * 60
+      }
+      aValue = toSeconds(aValue)
+      bValue = toSeconds(bValue)
     }
 
-    return filteredAttempts.sort((a, b) => {
-      let aValue = a[historySortField]
-      let bValue = b[historySortField]
+    return historySortDirection === "asc"
+      ? aValue - bValue
+      : bValue - aValue
+  })
 
-      // Handle special cases
-      if (historySortField === "dateCompleted" || historySortField === "startTime" || historySortField === "endTime") {
-        aValue = aValue ? new Date(aValue) : new Date(0)
-        bValue = bValue ? new Date(bValue) : new Date(0)
-      } else if (historySortField === "points") {
-        aValue = aValue !== null ? aValue : -1
-        bValue = bValue !== null ? bValue : -1
-      } else if (historySortField === "timeTaken") {
-        // Convert MM:SS to seconds for comparison
-        if (aValue) {
-          const [aMin, aSec] = aValue.split(":").map(Number)
-          aValue = aMin * 60 + aSec
-        } else {
-          aValue = -1
-        }
-        if (bValue) {
-          const [bMin, bSec] = bValue.split(":").map(Number)
-          bValue = bMin * 60 + bSec
-        } else {
-          bValue = -1
-        }
-      }
+  return filteredAttempts
+}
 
-      // Compare based on direction
-      if (historySortDirection === "asc") {
-        return aValue > bValue ? 1 : aValue < bValue ? -1 : 0
-      } else {
-        return aValue < bValue ? 1 : aValue > bValue ? -1 : 0
-      }
-    })
-  }
+
 
   // Calculate statistics for the selected challenge
   const calculateChallengeStats = () => {
@@ -1612,18 +1567,19 @@ const ClassComponent = () => {
                 <span className="text-lg text-gray-500">Total Points:</span>
                 <span className="text-lg font-medium text-gray-800">{getTotalPoints(selectedStudent)}</span>
               </div>
-              <div className="flex justify-between">
-                <span className="text-lg text-gray-500">Challenges Completed:</span>
-                <span className="text-lg font-medium text-gray-800">
-                  {selectedStudent.challengeAttempts
-                    ? new Set(
-                        selectedStudent.challengeAttempts
-                          .filter((attempt) => attempt.completionStatus === "Completed")
-                          .map((attempt) => attempt.challengeType),
-                      ).size
-                    : 0}
-                </span>
-              </div>
+             <div className="flex justify-between">
+              <span className="text-lg text-gray-500">Challenges Completed:</span>
+              <span
+                className={`text-lg font-medium ${
+                  getChallengesCompletedCount(selectedStudent.challengeAttempts) === 3
+                    ? "text-green-600"
+                    : "text-indigo-600"
+                }`}
+              >
+                {getChallengesCompletedCount(selectedStudent.challengeAttempts)} / 3
+              </span>
+            </div>
+
               <div className="flex justify-between">
                 <span className="text-lg text-gray-500">Average Score:</span>
                 <span className="text-lg font-medium text-gray-800">
@@ -1657,8 +1613,8 @@ const ClassComponent = () => {
               </div>
               {/* Add this to the Performance Summary Card in the student detail view, right after the "Last Activity:" section */}
               <div className="flex justify-between items-center relative">
-                <span className="text-lg text-gray-500">Status History:</span>
-                <button
+                {/* <span className="text-lg text-gray-500">Status History:</span> */}
+                {/* <button
                   onClick={() => {
                     if (!showStatusHistory) {
                       fetchStudentStatusHistory(selectedStudent.id)
@@ -1672,7 +1628,7 @@ const ClassComponent = () => {
                   <ChevronDown
                     className={`ml-1 h-4 w-4 transition-transform ${showStatusHistory ? "rotate-180" : ""}`}
                   />
-                </button>
+                </button> */}
 
                 {/* Status History Expandable Section */}
                 {showStatusHistory && (
@@ -1766,6 +1722,7 @@ const ClassComponent = () => {
               </select>
             </div>
           </div>
+          
 
           {/* Performance Indicator */}
           <div
@@ -1798,7 +1755,8 @@ const ClassComponent = () => {
                     return new Date(value).getFullYear().toString()
                   }}
                 >
-                  <Label value="Date" position="bottom" offset={5} />
+                  {/* <Label value="Date" position="bottom" offset={5} /> */}
+                  
                 </XAxis>
                 <YAxis
                   label={{
@@ -1808,6 +1766,7 @@ const ClassComponent = () => {
                     style: { textAnchor: "middle" },
                   }}
                 />
+
                 <Tooltip
                   formatter={(value, name) => {
                     if (name === "points") return [`${value} points`, "Score"]
@@ -1831,7 +1790,7 @@ const ClassComponent = () => {
                   }
                   activeDot={{ r: 8 }}
                   strokeWidth={2}
-                  name={chartMetric === "points" ? "Score" : "Time Taken"}
+                  name={chartMetric === "points" ? "Points" : "Time Taken"}
                 />
               </LineChart>
             </ResponsiveContainer>
@@ -1931,6 +1890,11 @@ const ClassComponent = () => {
               <table className="min-w-full divide-y divide-gray-200">
                 <thead className="bg-gray-50 sticky top-0 z-10">
                   <tr>
+
+                     <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-10">
+                        Attempt
+                      </th>
+                      
                     <th
                       className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
                       onClick={() => handleHistorySort("dateCompleted")}
@@ -2036,8 +2000,15 @@ const ClassComponent = () => {
                     .slice(0, 15)
                     .map((attempt, index) => (
                       <tr key={index} className="hover:bg-gray-50">
+                         <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">
+                            <div className="flex items-center justify-center">
+                              <span className="h-6 w-6 flex items-center justify-center rounded-full bg-indigo-100 text-indigo-700 font-medium text-xs">
+                                     {attempt.attemptNumber}
+                              </span>
+                            </div>
+                          </td>
                         <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">
-                          {attempt.dateCompleted ? formatDate(attempt.dateCompleted) : "N/A"}
+                         {attempt.dateCompleted ? formatDate(attempt.dateCompleted, { showDate: true, showTime: false }) : "N/A"}
                         </td>
                         <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">{attempt.challengeType}</td>
                         <td className="px-4 py-3 whitespace-nowrap text-sm">
@@ -2069,13 +2040,23 @@ const ClassComponent = () => {
                           )}
                         </td>
                         <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500">
-                          {attempt.timeTaken || "N/A"}
+                            {attempt.timeTaken ? (
+                              <span className="inline-flex items-center px-2 py-0.5 rounded-full bg-green-100 text-green-800 text-xs font-medium">
+                                {attempt.timeTaken.includes(":")
+                                  ? attempt.timeTaken
+                                  : `${attempt.timeTaken} minutes`}
+                              </span>
+                            ) : (
+                              "N/A"
+                            )}
                         </td>
                         <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500">
-                          {attempt.startTime ? formatDate(attempt.startTime) : "N/A"}
+                          {attempt.startTime ? formatDate(attempt.startTime, { showDate: false, showTime: true }) : "N/A"}
+
                         </td>
                         <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500">
-                          {attempt.endTime ? formatDate(attempt.endTime) : "N/A"}
+                          {attempt.endTime ? formatDate(attempt.endTime, { showDate: false, showTime: true }) : "N/A"}
+
                         </td>
                       </tr>
                     ))}
@@ -2094,7 +2075,8 @@ const ClassComponent = () => {
                           .map((attempt, index) => (
                             <tr key={index + 15} className="hover:bg-gray-50">
                               <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">
-                                {attempt.dateCompleted ? formatDate(attempt.dateCompleted) : "N/A"}
+                              {attempt.dateCompleted ? formatDate(attempt.dateCompleted, { showDate: true, showTime: false }) : "N/A"}
+
                               </td>
                               <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">
                                 {attempt.challengeType}
@@ -2128,13 +2110,22 @@ const ClassComponent = () => {
                                 )}
                               </td>
                               <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500">
-                                {attempt.timeTaken || "N/A"}
+                                  {attempt.timeTaken ? (
+                                    <span className="inline-flex items-center px-2 py-0.5 rounded-full bg-green-100 text-green-800 text-xs font-medium">
+                                      {attempt.timeTaken.includes(":")
+                                        ? attempt.timeTaken
+                                        : `${attempt.timeTaken} minutes`}
+                                    </span>
+                                  ) : (
+                                    "N/A"
+                                  )}
                               </td>
                               <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500">
-                                {attempt.startTime ? formatDate(attempt.startTime) : "N/A"}
+                               {attempt.startTime ? formatDate(attempt.startTime, { showDate: false, showTime: true }) : "N/A"}
                               </td>
                               <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500">
-                                {attempt.endTime ? formatDate(attempt.endTime) : "N/A"}
+                                {attempt.endTime ? formatDate(attempt.endTime, { showDate: false, showTime: true }) : "N/A"}
+
                               </td>
                             </tr>
                           ))}
