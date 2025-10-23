@@ -48,8 +48,15 @@ public class StudentDetailDTO {
         allChallengeTypes.addAll(scoresByType.keySet());
 
         for (String type : allChallengeTypes) {
-            List<Timer> timers = timersByType.getOrDefault(type, List.of());
-            List<Score> scores = scoresByType.getOrDefault(type, List.of());
+            List<Timer> timers = timersByType.getOrDefault(type, List.of())
+                    .stream()
+                    .sorted(Comparator.comparing(Timer::getStartTime, Comparator.nullsLast(Comparator.naturalOrder())))
+                    .collect(Collectors.toList());
+
+            List<Score> scores = scoresByType.getOrDefault(type, List.of())
+                    .stream()
+                    .sorted(Comparator.comparing(Score::getDateCompleted, Comparator.nullsLast(Comparator.naturalOrder())))
+                    .collect(Collectors.toList());
 
             int maxSize = Math.max(timers.size(), scores.size());
 
@@ -58,9 +65,11 @@ public class StudentDetailDTO {
 
                 if (i < timers.size()) dto.mergeWith(timers.get(i));
                 if (i < scores.size()) dto.mergeWith(scores.get(i));
+
                 challengeAttempts.add(dto);
             }
         }
+
     }
 
     // Getters and setters for all fields
