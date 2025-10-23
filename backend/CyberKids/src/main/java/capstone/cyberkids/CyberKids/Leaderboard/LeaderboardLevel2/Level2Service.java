@@ -1,6 +1,7 @@
 package capstone.cyberkids.CyberKids.Leaderboard.LeaderboardLevel2;
 
 import capstone.cyberkids.CyberKids.Entity.Student;
+import capstone.cyberkids.CyberKids.Leaderboard.Global.GlobalService;
 import capstone.cyberkids.CyberKids.Repository.StudentRepo;
 import capstone.cyberkids.CyberKids.dtos.LeaderboardResponseDTO;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,6 +18,9 @@ public class Level2Service {
 
     @Autowired
     private StudentRepo studentRepo;
+
+    @Autowired
+    private GlobalService globalLeaderboardService;
 
     public Level2Entity updateStudentDailyScoreAndTimeByRobloxId(String robloxId, int score, String totalTimeTaken, LocalDate date) {
         // Find student by Roblox ID
@@ -41,6 +45,8 @@ public class Level2Service {
 
         System.out.println("Saved entry - ID: " + savedEntry.getId() + ", Time: '" + savedEntry.getTotalTimeTaken() + "'");
         System.out.println("=== END DEBUG ===");
+
+        globalLeaderboardService.rebuildFromLevel2();
 
         return savedEntry;
     }
