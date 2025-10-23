@@ -86,6 +86,12 @@ public class StudentController {
         boolean alreadyManual = student.getRealName() != null && !student.getRealName().isBlank()
                 && student.getClassEntity() != null;
 
+        // ✅ Check for name uniqueness (case-insensitive)
+        if (!alreadyManual && studentRepo.existsByRealNameIgnoreCase(req.getRealName())) {
+            return ResponseEntity.status(HttpStatus.CONFLICT)
+                    .body(Map.of("error", "That name is already taken. Please choose a different name."));
+        }
+
         if (!alreadyManual) {
             student.setRealName(req.getRealName());
             student.setClassEntity(classEntity);
@@ -99,6 +105,7 @@ public class StudentController {
 
         return ResponseEntity.ok(Map.of("student", new StudentDTO(student), "manualRegistered", true));
     }
+
 
     @GetMapping("/by-roblox-id/{robloxId}")
     public ResponseEntity<Map<String, Object>> getStudentByRobloxId(@PathVariable String robloxId) {
@@ -173,9 +180,6 @@ public class StudentController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
-
-
-
 
     @GetMapping("/game/npc-info")
     public ResponseEntity<Map<String, Object>> getNpcInfo() {

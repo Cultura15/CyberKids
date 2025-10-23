@@ -21,7 +21,7 @@ public class Student {
     @Column(nullable = true)
     private String robloxName;
 
-    @Column(nullable = true)
+    @Column(nullable = true, unique = true)
     private String realName;
 
     @Column(name = "is_online", nullable = true)
