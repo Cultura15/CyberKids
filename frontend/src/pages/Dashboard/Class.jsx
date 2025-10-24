@@ -358,63 +358,60 @@ const ClassComponent = () => {
   }
 
   // Move student to a specific world
-  const moveStudentToWorld = async (student, level) => {
-    if (!student.robloxId) {
-      alert("Cannot assign player: No Roblox ID found for this student.")
+const moveStudentToWorld = async (student, level) => {
+  if (!student.robloxId) {
+    alert("Cannot assign player: No Roblox ID found for this student.")
+    return
+  }
+
+  const worldName = LEVEL_TO_WORLD[level]
+  const levelNumber = LEVEL_TO_NUMBER[level]
+  const levelKey = `${student.id}-${level}`
+
+  // Set loading state for this specific student and level
+  setMovingStudent((prev) => ({
+    ...prev,
+    [levelKey]: true,
+  }))
+
+  try {
+    const response = await fetchWithAuth(`${TEACHER_API_URL}/move-student`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        robloxId: student.robloxId,
+        targetWorld: worldName,
+        targetLevel: levelNumber,
+      }),
+    })
+
+    const message = await response.text()
+
+    if (!response.ok) {
+      // ✅ Specific handling for offline error
+      if (message.includes("Player is offline")) {
+        alert("⚠️ Player cannot be moved because they are offline.")
+      } else if (message.includes("Student not found")) {
+        alert("❌ Student record not found in the database.")
+      } else {
+        alert(`❌ Failed to assign player: ${message}`)
+      }
       return
     }
 
-    const worldName = LEVEL_TO_WORLD[level]
-    const levelNumber = LEVEL_TO_NUMBER[level]
-    const levelKey = `${student.id}-${level}`
-
-    // Set loading state for this specific student and level
-    setMovingStudent((prev) => ({
-      ...prev,
-      [levelKey]: true,
-    }))
-
-    try {
-      const response = await fetchWithAuth(`${TEACHER_API_URL}/move-student`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          robloxId: student.robloxId,
-          targetWorld: worldName,
-          targetLevel: levelNumber,
-        }),
-      })
-
-      if (!response.ok) {
-        throw new Error("Failed to assign player")
-      }
-
-      // Set success state for this specific student and level
-      setMoveSuccess((prev) => ({
-        ...prev,
-        [levelKey]: true,
-      }))
-
-      // Clear success message after 3 seconds
-      setTimeout(() => {
-        setMoveSuccess((prev) => ({
-          ...prev,
-          [levelKey]: false,
-        }))
-      }, 3000)
-    } catch (err) {
-      console.error("Error assigning player:", err)
-      alert(`Failed to assign player: ${err.message}`)
-    } finally {
-      // Clear loading state
-      setMovingStudent((prev) => ({
-        ...prev,
-        [levelKey]: false,
-      }))
-    }
+    // ✅ Success
+    setMoveSuccess((prev) => ({ ...prev, [levelKey]: true }))
+    setTimeout(() => {
+      setMoveSuccess((prev) => ({ ...prev, [levelKey]: false }))
+    }, 3000)
+  } catch (err) {
+    console.error("Error assigning player:", err)
+    alert(`Failed to assign player: ${err.message}`)
+  } finally {
+    setMovingStudent((prev) => ({ ...prev, [levelKey]: false }))
   }
+}
+
 
   // Change student level
   const changeStudentLevel = (studentId, newLevel) => {
