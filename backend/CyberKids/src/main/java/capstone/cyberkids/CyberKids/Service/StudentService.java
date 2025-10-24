@@ -50,13 +50,21 @@ public class StudentService {
 
     public boolean moveStudentToWorld(String robloxId, String targetWorld, String targetLevel) {
         Student student = repo.findByRobloxId(robloxId);
-        if (student != null) {
-            student.setTargetWorld(targetWorld);
-            student.setTargetLevel(targetLevel);
-            repo.save(student);
-            return true;
+        if (student == null) {
+            return false; // Student not found
         }
-        return false;
+
+        // ✅ Check if student is online
+        if (student.getOnline() == null || !student.getOnline()) {
+            // Student is offline
+            return false; // indicate not allowed
+        }
+
+        // Proceed only if online
+        student.setTargetWorld(targetWorld);
+        student.setTargetLevel(targetLevel);
+        repo.save(student);
+        return true;
     }
 
     public void delete(Long id) {
