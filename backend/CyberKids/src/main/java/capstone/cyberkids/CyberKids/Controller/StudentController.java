@@ -107,6 +107,50 @@ public class StudentController {
         return ResponseEntity.ok(Map.of("student", new StudentDTO(student), "manualRegistered", true));
     }
 
+    @PostMapping("/game-complete")
+    public ResponseEntity<Map<String, Object>> studentCompletedGame(@RequestBody Map<String, String> req) {
+        String robloxId = req.get("robloxId");
+        String challengeType = req.get("challengeType"); // expect enum string e.g. "PASSWORD_SECURITY"
+
+        if (robloxId == null || challengeType == null) {
+            return ResponseEntity.badRequest().body(Map.of("error", "Missing robloxId or challengeType"));
+        }
+
+        Student student = studentRepo.findByRobloxId(robloxId);
+        if (student == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("error", "Student not found"));
+        }
+
+        if (student.getClassEntity() == null || student.getClassEntity().getTeacher() == null) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(Map.of("error", "Student is not assigned to a class or teacher"));
+        }
+
+        String teacherEmail = student.getClassEntity().getTeacher().getEmail();
+
+        // 🧠 Convert challengeType to readable mission name
+        String missionName;
+        try {
+            missionName = capstone.cyberkids.CyberKids.Model.ChallengeType.valueOf(challengeType).name().replace("_", " ");
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(Map.of("error", "Invalid challenge type"));
+        }
+
+        // 🔔 Notify teacher
+        notificationService.notifyTeacherStudentCompletedGame(
+                teacherEmail,
+                student.getRealName() != null ? student.getRealName() : student.getRobloxName(),
+                missionName
+        );
+
+        return ResponseEntity.ok(Map.of(
+                "message", "Game completion notification sent to teacher",
+                "student", student.getRealName(),
+                "challengeType", missionName
+        ));
+    }
+
+
 
     @GetMapping("/by-roblox-id/{robloxId}")
     public ResponseEntity<Map<String, Object>> getStudentByRobloxId(@PathVariable String robloxId) {

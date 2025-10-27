@@ -7,7 +7,9 @@ import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Entity
 @Table(name = "classes", uniqueConstraints = @UniqueConstraint(columnNames = {"grade", "section", "teacher_id"}))
@@ -22,6 +24,13 @@ public class Classes {
 
     @Column(nullable = false)
     private String section;
+
+    @Column(nullable = false)
+    private String colorTheme;
+
+    @Column(nullable = true)
+    private Integer maxStudents;
+
 
     @Column(nullable = false, unique = true)
     private String classCode;
@@ -43,14 +52,22 @@ public class Classes {
     @Column(name = "updated_at")
     private Date updatedAt;
 
+    @ElementCollection
+    @CollectionTable(name = "class_locked_worlds", joinColumns = @JoinColumn(name = "class_id"))
+    @Column(name = "world_name")
+    private Set<String> lockedWorlds = new HashSet<>();
+
     public Classes() {}
 
-    public Classes(String grade, String section, Teacher teacher, String classCode) {
+    public Classes(String grade, String section, Teacher teacher, String classCode, String colorTheme, Integer maxStudents) {
         this.grade = grade;
         this.section = section;
         this.teacher = teacher;
         this.classCode = classCode;
+        this.colorTheme = colorTheme;
+        this.maxStudents = maxStudents;
     }
+
 
     public Long getId() {
         return id;
@@ -75,6 +92,9 @@ public class Classes {
     public void setSection(String section) {
         this.section = section;
     }
+
+    public String getColorTheme() { return colorTheme; }
+    public Integer getMaxStudents() { return maxStudents; }
 
     public Teacher getTeacher() {
         return teacher;
@@ -115,4 +135,7 @@ public class Classes {
     public void setStudents(List<Student> students) {
         this.students = students;
     }
+
+    public Set<String> getLockedWorlds() { return lockedWorlds; }
+    public void setLockedWorlds(Set<String> lockedWorlds) { this.lockedWorlds = lockedWorlds; }
 }

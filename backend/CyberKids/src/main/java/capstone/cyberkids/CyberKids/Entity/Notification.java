@@ -21,12 +21,21 @@ public class Notification {
     @JoinColumn(name = "teacher_id", nullable = false)
     private Teacher teacher;
 
+    @Column(name = "type")
+    private String type;
+
 
     public Notification() {}
 
     public Notification(String message, Teacher teacher) {
         this.message = message;
         this.teacher = teacher;
+    }
+
+    public Notification(String message, Teacher teacher, String type) {
+        this.message = message;
+        this.teacher = teacher;
+        this.type = type;
     }
 
     public Long getId() {
@@ -68,4 +77,7 @@ public class Notification {
     public void setTimestamp(LocalDateTime timestamp) {
         this.timestamp = timestamp;
     }
+
+    public String getType() { return type; }
+    public void setType(String type) { this.type = type; }
 }
