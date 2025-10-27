@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from "react"
 import SockJS from "sockjs-client"
 import { Client } from "@stomp/stompjs"
 
-const API_URL = process.env.REACT_APP_API_URL;
+const API_URL = process.env.REACT_APP_API_URL
 
 const useWebSocket = (teacherProfile, userData, setNotifications, setUnreadCount) => {
   const [wsConnected, setWsConnected] = useState(false)
@@ -12,119 +12,102 @@ const useWebSocket = (teacherProfile, userData, setNotifications, setUnreadCount
 
   useEffect(() => {
     const connectWebSocket = async () => {
-      try {
-        // Get teacher email from profile or userData
-        const email = teacherProfile?.email || userData?.email
-        if (!email) return // Don't connect if we don't have an email
+      // Fallback to localStorage if props are not ready
+      const storedUser = JSON.parse(localStorage.getItem("teacherData"))
+      const email = teacherProfile?.email || userData?.email || storedUser?.email
+      if (!email) return
 
-        // Get auth token
-        const token = localStorage.getItem("jwtToken")
-        if (!token) return
+      const token = localStorage.getItem("jwtToken")
+      if (!token) return
 
-        console.log("Attempting to connect to WebSocket...")
+      console.log("Attempting to connect to WebSocket...")
 
-        // Create STOMP client
-        const stompClientInstance = new Client({
-          // Use SockJS for the WebSocket connection
-          webSocketFactory: () => new SockJS(`${API_URL}/ws`),
+      const stompClientInstance = new Client({
+        webSocketFactory: () => new SockJS(`${API_URL}/ws`),
+        connectHeaders: { Authorization: `Bearer ${token}` },
+        debug: (str) => console.log(str),
+        reconnectDelay: 5000,
+        heartbeatIncoming: 4000,
+        heartbeatOutgoing: 4000,
+        onConnect: () => {
+          console.log("Connected to WebSocket")
+          setWsConnected(true)
 
-          // Connection headers with authentication
-          connectHeaders: {
-            Authorization: `Bearer ${token}`,
-          },
+          const destination = `/topic/teacher/${email.replace("@", "_")}`
+          console.log(`Subscribing to ${destination}`)
 
-          // Debug settings
-          debug: (str) => {
-            console.log(str)
-          },
+          stompClientInstance.subscribe(destination, (message) => {
+            if (message.body) {
+              try {
+                const payload = JSON.parse(message.body)
+                console.log("Received WebSocket payload:", payload)
 
-          // Reconnect settings
-          reconnectDelay: 5000,
-          heartbeatIncoming: 4000,
-          heartbeatOutgoing: 4000,
-
-          // Connection callbacks
-          onConnect: (frame) => {
-            console.log("Connected to WebSocket")
-            setWsConnected(true)
-
-            // Format the destination topic - replace @ with _ as done in the backend
-            const destination = `/topic/teacher/${email.replace("@", "_")}`
-            console.log(`Subscribing to ${destination}`)
-
-            // Subscribe to the topic
-            stompClientInstance.subscribe(destination, (message) => {
-              console.log("Received WebSocket message:", message)
-              if (message.body) {
-                try {
-                  const student = JSON.parse(message.body)
-                  console.log("Parsed student data:", student)
-
-                  // Create a new notification
-                  const newNotification = {
-                    id: Date.now(), // Use timestamp as ID
-                    title: "New Student Joined",
-                    message: `${student.realName} has joined ${student.grade} - ${student.section}`,
-                    time: "Just now",
-                    read: false,
-                    student: student,
-                  }
-
-                  // Add the notification to the state
-                  setNotifications((prev) => [newNotification, ...prev])
-
-                  // Increment unread count
-                  setUnreadCount((prev) => prev + 1)
-                } catch (e) {
-                  console.error("Error parsing WebSocket message:", e)
+                // Determine notification details based on type
+                let title, priority
+                switch (payload.type) {
+                  case "REGISTRATION":
+                    title = "New Student Registered"
+                    priority = "high"
+                    break
+                  case "MISSION_COMPLETION":
+                    title = "Challenge Completed"
+                    priority = "medium"
+                    break
+                  default:
+                    title = "Notification"
+                    priority = "medium"
                 }
+
+                const newNotification = {
+                  id: payload.id || Date.now(),
+                  title: title,
+                  message: payload.message,
+                  timestamp: payload.timestamp, // Keep original format from backend
+                  time: "Just now",
+                  read: false,
+                  student: payload.student || null,
+                  type: payload.type || "info",
+                  priority: priority
+                }
+
+                console.log("Created notification:", newNotification)
+
+                setNotifications(prev => [newNotification, ...prev])
+                setUnreadCount(prev => prev + 1)
+              } catch (e) {
+                console.error("Error parsing WebSocket message:", e)
               }
-            })
-          },
+            }
+          })
+        },
+        onStompError: (frame) => {
+          console.error("STOMP error:", frame)
+          setWsConnected(false)
+        },
+        onWebSocketClose: () => {
+          console.log("WebSocket connection closed")
+          setWsConnected(false)
+        },
+      })
 
-          // Error callback
-          onStompError: (frame) => {
-            console.error("STOMP error:", frame)
-            setWsConnected(false)
-          },
+      stompClientInstance.activate()
+      stompClient.current = stompClientInstance
 
-          // WebSocket closed callback
-          onWebSocketClose: () => {
-            console.log("WebSocket connection closed")
-            setWsConnected(false)
-          },
-        })
-
-        // Activate the client
-        stompClientInstance.activate()
-
-        // Store the client reference
-        stompClient.current = stompClientInstance
-
-        // Clean up on unmount
-        return () => {
-          if (stompClientInstance.active) {
-            stompClientInstance.deactivate()
-          }
-        }
-      } catch (error) {
-        console.error("WebSocket connection error:", error)
-        setWsConnected(false)
+      return () => {
+        if (stompClientInstance.active) stompClientInstance.deactivate()
       }
     }
 
-    // Connect to WebSocket when we have the teacher profile
-    if (teacherProfile || userData) {
+    if (teacherProfile || userData || localStorage.getItem("teacherData")) {
       connectWebSocket()
     }
 
     return () => {
-      // Disconnect WebSocket on cleanup
       if (stompClient.current && stompClient.current.active) {
         stompClient.current.deactivate()
       }
     }
-  }, [teacherProfile, userData, setNotifications, setUnreadCount])
+  }, [teacherProfile?.email, userData?.email, setNotifications, setUnreadCount])
 
   const disconnect = () => {
     if (stompClient.current && stompClient.current.active) {

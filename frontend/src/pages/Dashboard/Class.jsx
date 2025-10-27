@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import { Outlet, useLocation } from "react-router-dom"
 import {
   Plus,
   Search,
@@ -21,6 +22,7 @@ import {
 import fetchWithAuth from "../../jwt/authInterceptor"
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, Label } from "recharts"
 import { useStudentStatusContext } from "../../context/StudentStatusContext";
+import ClassSidebar from "../../components/Class/ClassSidebar"
 
 
 const API_BASE_URL = process.env.REACT_APP_API_BASE_URL
@@ -73,12 +75,15 @@ const PERFORMANCE_THRESHOLDS = {
   },
 }
 
-// Font style to apply Poppins font
-const poppinsFont = {
-  fontFamily: "'Poppins', sans-serif",
+const nunitoFont = {
+  fontFamily: "'Nunito', sans-serif",  
 }
 
 const ClassComponent = () => {
+
+  const location = useLocation()
+  const isNestedRoute = location.pathname.includes("/create-class")
+
   // State management
   const [classes, setClasses] = useState([])
   const [students, setStudents] = useState([])
@@ -117,6 +122,7 @@ const ClassComponent = () => {
   const [loadingStatusHistory, setLoadingStatusHistory] = useState(false)
 
   const { studentStatuses, initializeStatuses, getOnlineStatus } = useStudentStatusContext();
+  
 
 
   // const [studentStatuses, setStudentStatuses] = useState({})
@@ -163,7 +169,7 @@ const ClassComponent = () => {
   }
 
   // Fetch teacher's classes on component mount
-  useEffect(() => {
+  // ✅ Move this function OUTSIDE useEffect so it’s reusable
     const fetchClasses = async () => {
       setLoading(true)
       try {
@@ -181,8 +187,18 @@ const ClassComponent = () => {
       }
     }
 
-    fetchClasses()
-  }, [])
+    // ✅ Call it when component mounts
+    useEffect(() => {
+      fetchClasses()
+    }, [])
+
+    // ✅ Call again when coming from CreateClass with state.refresh
+    useEffect(() => {
+      if (location.state?.refresh) {
+        fetchClasses()
+      }
+    }, [location.state])
+
 
   // Update performance status when chart metric or student changes
   useEffect(() => {
@@ -210,6 +226,7 @@ const ClassComponent = () => {
       initializeStatuses(students)
     }
   }, [students])
+  
 
   // Calculate student performance status
   const calculatePerformanceStatus = () => {
@@ -358,60 +375,63 @@ const ClassComponent = () => {
   }
 
   // Move student to a specific world
-const moveStudentToWorld = async (student, level) => {
-  if (!student.robloxId) {
-    alert("Cannot assign player: No Roblox ID found for this student.")
-    return
-  }
-
-  const worldName = LEVEL_TO_WORLD[level]
-  const levelNumber = LEVEL_TO_NUMBER[level]
-  const levelKey = `${student.id}-${level}`
-
-  // Set loading state for this specific student and level
-  setMovingStudent((prev) => ({
-    ...prev,
-    [levelKey]: true,
-  }))
-
-  try {
-    const response = await fetchWithAuth(`${TEACHER_API_URL}/move-student`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        robloxId: student.robloxId,
-        targetWorld: worldName,
-        targetLevel: levelNumber,
-      }),
-    })
-
-    const message = await response.text()
-
-    if (!response.ok) {
-      // ✅ Specific handling for offline error
-      if (message.includes("Player is offline")) {
-        alert("⚠️ Player cannot be moved because they are offline.")
-      } else if (message.includes("Student not found")) {
-        alert("❌ Student record not found in the database.")
-      } else {
-        alert(`❌ Failed to assign player: ${message}`)
-      }
+  const moveStudentToWorld = async (student, level) => {
+    if (!student.robloxId) {
+      alert("Cannot assign player: No Roblox ID found for this student.")
       return
     }
 
-    // ✅ Success
-    setMoveSuccess((prev) => ({ ...prev, [levelKey]: true }))
-    setTimeout(() => {
-      setMoveSuccess((prev) => ({ ...prev, [levelKey]: false }))
-    }, 3000)
-  } catch (err) {
-    console.error("Error assigning player:", err)
-    alert(`Failed to assign player: ${err.message}`)
-  } finally {
-    setMovingStudent((prev) => ({ ...prev, [levelKey]: false }))
-  }
-}
+    const worldName = LEVEL_TO_WORLD[level]
+    const levelNumber = LEVEL_TO_NUMBER[level]
+    const levelKey = `${student.id}-${level}`
 
+    // Set loading state for this specific student and level
+    setMovingStudent((prev) => ({
+      ...prev,
+      [levelKey]: true,
+    }))
+
+    try {
+      const response = await fetchWithAuth(`${TEACHER_API_URL}/move-student`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          robloxId: student.robloxId,
+          targetWorld: worldName,
+          targetLevel: levelNumber,
+        }),
+      })
+
+      if (!response.ok) {
+        throw new Error("Failed to assign player")
+      }
+
+      // Set success state for this specific student and level
+      setMoveSuccess((prev) => ({
+        ...prev,
+        [levelKey]: true,
+      }))
+
+      // Clear success message after 3 seconds
+      setTimeout(() => {
+        setMoveSuccess((prev) => ({
+          ...prev,
+          [levelKey]: false,
+        }))
+      }, 3000)
+    } catch (err) {
+      console.error("Error assigning player:", err)
+      alert(`Failed to assign player: ${err.message}`)
+    } finally {
+      // Clear loading state
+      setMovingStudent((prev) => ({
+        ...prev,
+        [levelKey]: false,
+      }))
+    }
+  }
 
   // Change student level
   const changeStudentLevel = (studentId, newLevel) => {
@@ -868,10 +888,38 @@ const getChronologicalAttempts = (attempts) => {
     })
   }
 
+  // Map backend colorTheme values to Tailwind gradients
+const getGradientFromTheme = (theme) => {
+  switch (theme) {
+    case "indigo-purple": return "from-indigo-500 to-purple-600";
+    case "blue-cyan": return "from-blue-500 to-cyan-600";
+    case "green-emerald": return "from-green-500 to-emerald-600";
+    case "orange-red": return "from-orange-500 to-red-600";
+    case "pink-rose": return "from-pink-500 to-rose-600";
+    case "violet-fuchsia": return "from-violet-500 to-fuchsia-600";
+    default: return "from-gray-500 to-gray-700";
+  }
+};
+
+
+
+  // START OF THE CONTENT HERE
+
+   if (isNestedRoute) {
+    return (
+      <div className="flex gap-6" style={nunitoFont}>
+        <ClassSidebar />
+        <div className="flex-1 p-6 bg-gray-50 min-h-screen">
+          <Outlet /> {/* ✅ This will render your CreateClass page */}
+        </div>
+      </div>
+    )
+  }
+
   // Render loading state
   if (loading && viewMode === "classes") {
     return (
-      <div className="flex items-center justify-center h-64" style={poppinsFont}>
+      <div className="flex items-center justify-center h-64" style={nunitoFont}>
         <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-indigo-500"></div>
       </div>
     )
@@ -880,7 +928,7 @@ const getChronologicalAttempts = (attempts) => {
   // Render error state
   if (error && viewMode === "classes") {
     return (
-      <div className="bg-red-50 p-4 rounded-lg text-red-700" style={poppinsFont}>
+      <div className="bg-red-50 p-4 rounded-lg text-red-700" style={nunitoFont}>
         <p className="font-medium text-lg">Error loading class data</p>
         <p className="text-base">{error}</p>
       </div>
@@ -890,7 +938,9 @@ const getChronologicalAttempts = (attempts) => {
   // Render classes view
   if (viewMode === "classes") {
     return (
-      <div className="space-y-6 mt-8" style={poppinsFont}>
+      <div className="space-y-6 mt-8" style={nunitoFont}>
+       
+
         {/* Page Header */}
         <div className="bg-white rounded-lg shadow-sm p-6">
           <h2 className="text-2xl font-semibold text-gray-800">Class Management</h2>
@@ -899,67 +949,7 @@ const getChronologicalAttempts = (attempts) => {
 
         {/* Class Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {/* Create Class Card */}
-          <div className="bg-white rounded-lg shadow-sm p-6 border border-dashed border-gray-200 flex flex-col items-center justify-center min-h-[200px]">
-            {isCreatingClass ? (
-              <div className="w-full">
-                <div className="mb-4">
-                  <label htmlFor="grade" className="block text-base font-medium text-gray-700 mb-1">
-                    Grade
-                  </label>
-                  <input
-                    id="grade"
-                    type="text"
-                    placeholder="e.g. Grade 5"
-                    className="w-full p-2 border border-gray-300 rounded-lg text-base"
-                    value={newGrade}
-                    onChange={(e) => setNewGrade(e.target.value)}
-                  />
-                </div>
-                <div className="mb-4">
-                  <label htmlFor="section" className="block text-base font-medium text-gray-700 mb-1">
-                    Section
-                  </label>
-                  <input
-                    id="section"
-                    type="text"
-                    placeholder="e.g. A"
-                    className="w-full p-2 border border-gray-300 rounded-lg text-base"
-                    value={newSection}
-                    onChange={(e) => setNewSection(e.target.value)}
-                  />
-                </div>
-                <div className="flex space-x-2">
-                  <button
-                    onClick={handleCreateClass}
-                    className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors flex-1 text-base"
-                  >
-                    Create
-                  </button>
-                  <button
-                    onClick={() => {
-                      setIsCreatingClass(false)
-                      setNewGrade("")
-                      setNewSection("")
-                    }}
-                    className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors text-base"
-                  >
-                    Cancel
-                  </button>
-                </div>
-              </div>
-            ) : (
-              <button
-                onClick={() => setIsCreatingClass(true)}
-                className="flex flex-col items-center text-indigo-600 hover:text-indigo-800 transition-colors"
-              >
-                <div className="h-14 w-14 rounded-full bg-indigo-100 flex items-center justify-center mb-2">
-                  <Plus className="h-7 w-7" />
-                </div>
-                <span className="font-medium text-lg">Create New Class</span>
-              </button>
-            )}
-          </div>
+        
 
           {/* Class Cards */}
           {classes.map((cls) => (
@@ -969,7 +959,7 @@ const getChronologicalAttempts = (attempts) => {
               className="bg-white rounded-lg shadow-sm overflow-hidden border border-transparent hover:border-indigo-300 hover:shadow-md transition-all cursor-pointer"
             >
               {/* Class Header */}
-              <div className="bg-gradient-to-r from-indigo-500 to-purple-600 p-6 text-white">
+            <div className={`bg-gradient-to-r ${getGradientFromTheme(cls.colorTheme)} p-6 text-white`}>
                 <div className="flex flex-col items-center justify-center text-center">
                   <GraduationCap className="h-14 w-14 mb-2" />
                   <h3 className="font-bold text-2xl mb-1">
@@ -1008,7 +998,15 @@ const getChronologicalAttempts = (attempts) => {
 
               {/* Class Footer */}
               <div className="bg-gray-50 p-4 border-t border-gray-100 text-center">
-                <span className="text-indigo-600 font-medium text-base">Click to view students</span>
+                <div className="flex flex-col items-center space-y-1">
+                  <div className="flex items-center space-x-2 text-gray-700">
+                    <Users className="h-5 w-5 text-indigo-600" />
+                    <span className="text-base font-medium">
+                      {cls.students ? cls.students.length : 0} / {cls.maxStudents || "∞"} students
+                    </span>
+                  </div>
+                  <span className="text-indigo-600 font-medium text-base">Click to view students</span>
+                </div>
               </div>
             </div>
           ))}
@@ -1037,7 +1035,7 @@ const getChronologicalAttempts = (attempts) => {
     const classObj = classes.find((c) => c.id === selectedClass)
 
     return (
-      <div className="space-y-6 mt-8" style={poppinsFont}>
+      <div className="space-y-6 mt-8" style={nunitoFont}>
         {/* Page Header with Back Button, Edit and Delete */}
         <div className="bg-white rounded-lg shadow-sm p-6">
           <div className="flex items-center justify-between">
@@ -1490,7 +1488,7 @@ const getChronologicalAttempts = (attempts) => {
   // Render student detail view
   if (viewMode === "studentDetail" && selectedStudent) {
     return (
-      <div className="space-y-6 mt-8" style={poppinsFont}>
+      <div className="space-y-6 mt-8" style={nunitoFont}>
         {/* Page Header with Back Button */}
         <div className="bg-white rounded-lg shadow-sm p-6">
           <div className="flex items-center">

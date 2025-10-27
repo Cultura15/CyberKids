@@ -1,9 +1,76 @@
 "use client"
-import { Lock, Unlock } from "lucide-react"
+import { useNavigate } from "react-router-dom"
 
-const GameWorldsSection = ({ gameWorlds, worldStatus, actionLoading, onWorldToggle }) => {
+const GameWorldsSection = ({ gameWorlds, worldStatus }) => {
+  const navigate = useNavigate()
+
+  // Include Main World (CyberKids0) at the top — ensures it's always visible
+  const mainWorld = gameWorlds.find((w) => w.name === "CyberKids0")
+  const otherWorlds = gameWorlds.filter((w) => w.name !== "CyberKids0")
+
+  // Helper to render a single world card
+  const renderWorldCard = (world) => {
+    const isLocked = worldStatus[world.name]
+    const IconComponent = world.icon
+
+    return (
+      <div
+        key={world.name}
+        onClick={() => navigate(`/dashboard/world-management/${world.name}`)}
+        className={`cursor-pointer group rounded-xl p-5 border transition-all transform 
+          hover:-translate-y-1 hover:shadow-xl hover:bg-opacity-90 active:scale-95 
+          ${isLocked
+            ? "bg-gray-50 border-gray-200 hover:border-gray-300"
+            : `bg-${world.color}-50 border-${world.color}-200 hover:border-${world.color}-300`
+          }`}
+      >
+        <div className="flex justify-between items-start mb-4">
+          {/* Icon + Info */}
+          <div className="flex items-center">
+            <div
+              className={`p-3 rounded-lg transition-colors duration-300 mr-3 shadow-sm 
+                ${isLocked ? "bg-gray-200" : `bg-${world.color}-100 group-hover:bg-${world.color}-200`}
+              `}
+            >
+              <IconComponent
+                className={`h-6 w-6 transition-colors duration-300 
+                  ${isLocked ? "text-gray-500" : `text-${world.color}-600 group-hover:text-${world.color}-800`}
+                `}
+              />
+            </div>
+            <div>
+              <h3
+                className={`text-lg font-bold transition-colors duration-300 
+                  ${isLocked ? "text-gray-700" : `text-${world.color}-800 group-hover:text-${world.color}-900`}
+                `}
+              >
+                {world.displayName}
+              </h3>
+              <div className="text-sm text-gray-600 font-medium">{world.level}</div>
+            </div>
+          </div>
+
+          {/* Status Tag */}
+          <span
+            className={`text-xs font-medium px-2 py-1 rounded-full transition-colors duration-300 
+              ${isLocked
+                ? "bg-red-100 text-red-700 group-hover:bg-red-200"
+                : "bg-green-100 text-green-700 group-hover:bg-green-200"
+              }`}
+          >
+            {isLocked ? "Locked" : "Unlocked"}
+          </span>
+        </div>
+
+        {/* Description */}
+        <p className="text-sm text-gray-600">{world.description}</p>
+      </div>
+    )
+  }
+
   return (
     <div className="bg-white rounded-xl shadow-sm p-6">
+      {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center">
           <div className="mr-3">
@@ -11,71 +78,29 @@ const GameWorldsSection = ({ gameWorlds, worldStatus, actionLoading, onWorldTogg
           </div>
           <div>
             <h2 className="text-xl font-semibold text-gray-800">Roblox Game Worlds</h2>
-            <p className="text-sm text-gray-500">Manage access to CyberKids learning environments</p>
+            <p className="text-sm text-gray-500">
+              Select a world below to manage lock/unlock permissions per class
+            </p>
           </div>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        {gameWorlds.map((world) => {
-          const isLocked = worldStatus[world.name]
-          const IconComponent = world.icon
-          return (
-            <div
-              key={world.name}
-              className={`rounded-xl p-5 border transition-all ${
-                isLocked ? "bg-gray-50 border-gray-200" : `bg-${world.color}-50 border-${world.color}-200`
-              }`}
-            >
-              <div className="flex justify-between items-start mb-4">
-                <div className="flex items-center">
-                  <div
-                    className={`p-3 rounded-lg ${isLocked ? "bg-gray-200" : `bg-${world.color}-100`} mr-3 shadow-sm`}
-                  >
-                    <IconComponent className={`h-6 w-6 ${isLocked ? "text-gray-500" : `text-${world.color}-600`}`} />
-                  </div>
-                  <div>
-                    <div className="flex items-center">
-                      <h3 className={`text-lg font-bold ${isLocked ? "text-gray-700" : `text-${world.color}-800`}`}>
-                        {world.displayName}
-                      </h3>
-                      <span
-                        className={`ml-2 text-xs font-medium px-2 py-1 rounded-full ${
-                          isLocked ? "bg-red-100 text-red-700" : "bg-green-100 text-green-700"
-                        }`}
-                      >
-                        {isLocked ? "Locked" : "Unlocked"}
-                      </span>
-                    </div>
-                    <div className="text-sm text-gray-600 font-medium">{world.level}</div>
-                  </div>
-                </div>
-              </div>
+      {/* ✅ Main World Section */}
+      {mainWorld && (
+        <div className="mb-8">
+          <h3 className="text-md font-semibold text-gray-700 mb-3">Main World</h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {renderWorldCard(mainWorld)}
+          </div>
+        </div>
+      )}
 
-              <p className="text-sm text-gray-600 mb-4">{world.description}</p>
-
-              <button
-                onClick={() => onWorldToggle(world.name)}
-                disabled={actionLoading[world.name]}
-                className={`w-full py-2.5 rounded-lg flex items-center justify-center text-sm font-medium transition-colors ${
-                  isLocked ? "bg-green-600 hover:bg-green-700 text-white" : "bg-gray-600 hover:bg-gray-700 text-white"
-                }`}
-              >
-                {actionLoading[world.name] ? (
-                  <>
-                    <div className="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full mr-2"></div>
-                    {isLocked ? "Unlocking..." : "Locking..."}
-                  </>
-                ) : (
-                  <>
-                    {isLocked ? <Unlock className="h-4 w-4 mr-1.5" /> : <Lock className="h-4 w-4 mr-1.5" />}
-                    {isLocked ? "Unlock World" : "Lock World"}
-                  </>
-                )}
-              </button>
-            </div>
-          )
-        })}
+      {/* ✅ Other Worlds Section */}
+      <div>
+        <h3 className="text-md font-semibold text-gray-700 mb-3">Game Worlds</h3>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {otherWorlds.map((world) => renderWorldCard(world))}
+        </div>
       </div>
     </div>
   )
