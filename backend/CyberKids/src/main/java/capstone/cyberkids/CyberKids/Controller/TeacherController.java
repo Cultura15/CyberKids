@@ -1,9 +1,11 @@
 package capstone.cyberkids.CyberKids.Controller;
 
+import capstone.cyberkids.CyberKids.Entity.Notification;
 import capstone.cyberkids.CyberKids.Entity.Student;
 import capstone.cyberkids.CyberKids.Entity.StudentStatusLog;
 import capstone.cyberkids.CyberKids.Entity.Teacher;
 import capstone.cyberkids.CyberKids.Model.StudentTeleportRequest;
+import capstone.cyberkids.CyberKids.Repository.NotificationRepo;
 import capstone.cyberkids.CyberKids.Repository.StudentRepo;
 import capstone.cyberkids.CyberKids.Repository.StudentStatusLogRepository;
 import capstone.cyberkids.CyberKids.Service.NotificationService;
@@ -13,6 +15,8 @@ import capstone.cyberkids.CyberKids.dtos.TeacherDTO;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -26,13 +30,15 @@ public class TeacherController {
     private final NotificationService notificationService;
     private final StudentStatusLogRepository statusLogRepository;
     private final StudentRepo studentRepo;
+    private final NotificationRepo notificationRepo;
 
-    public TeacherController(TeacherService teacherService, StudentService studentService, NotificationService notificationService,  StudentStatusLogRepository statusLogRepository, StudentRepo studentRepo) {
+    public TeacherController(TeacherService teacherService, StudentService studentService, NotificationService notificationService,  StudentStatusLogRepository statusLogRepository, StudentRepo studentRepo, NotificationRepo notificationRepo) {
         this.teacherService = teacherService;
         this.studentService = studentService;
         this.notificationService = notificationService;
         this.statusLogRepository = statusLogRepository;
         this.studentRepo = studentRepo;
+        this.notificationRepo = notificationRepo;
     }
 
     @PostMapping("/register")
@@ -47,23 +53,25 @@ public class TeacherController {
         return ResponseEntity.ok(new TeacherDTO(teacher));
     }
 
-    @PostMapping("/lock-world")
-    public ResponseEntity<?> lockWorld(@RequestParam String worldName) {
-        teacherService.lockWorld(worldName);
-        return ResponseEntity.ok(Map.of("message", "World locked"));
-    }
-
-    @PostMapping("/unlock-world")
-    public ResponseEntity<?> unlockWorld(@RequestParam String worldName) {
-        teacherService.unlockWorld(worldName);
-        return ResponseEntity.ok(Map.of("message", "World unlocked"));
-    }
-
-    @GetMapping("/is-world-locked")
-    public ResponseEntity<Map<String, Boolean>> isWorldLocked(@RequestParam String worldName) {
-        boolean isLocked = teacherService.isWorldLocked(worldName);
-        return ResponseEntity.ok(Map.of("locked", isLocked));
-    }
+//    @PostMapping("/lock-world")
+//    public ResponseEntity<?> lockWorld(@RequestParam String worldName) {
+//        teacherService.lockWorld(worldName);
+//        return ResponseEntity.ok(Map.of("message", "World locked"));
+//    }
+//
+//    @PostMapping("/unlock-world")
+//    public ResponseEntity<?> unlockWorld(@RequestParam String worldName) {
+//        teacherService.unlockWorld(worldName);
+//        return ResponseEntity.ok(Map.of("message", "World unlocked"));
+//    }
+//
+//
+//    // SA ROBLOX NI
+//    @GetMapping("/is-world-locked")
+//    public ResponseEntity<Map<String, Boolean>> isWorldLocked(@RequestParam String worldName) {
+//        boolean isLocked = teacherService.isWorldLocked(worldName);
+//        return ResponseEntity.ok(Map.of("locked", isLocked));
+//    }
 
     @PostMapping("/move-student")
     public ResponseEntity<String> moveStudentToWorld(@RequestBody StudentTeleportRequest request) {
@@ -88,6 +96,7 @@ public class TeacherController {
                 : ResponseEntity.badRequest().body("Failed to move student.");
     }
 
+
     @GetMapping("/student-status-history/{studentId}")
     public ResponseEntity<?> getStudentStatusHistory(@PathVariable Long studentId) {
         Student student = studentRepo.findById(studentId)
@@ -96,6 +105,13 @@ public class TeacherController {
         List<StudentStatusLog> logs = statusLogRepository.findByStudentOrderByTimestampDesc(student);
 
         return ResponseEntity.ok(logs);
+    }
+
+    @GetMapping("/notification/me")
+    public ResponseEntity<List<Notification>> getMyNotifications(@AuthenticationPrincipal UserDetails userDetails) {
+        String email = userDetails.getUsername(); // or get from JWT claims
+        List<Notification> notifications = notificationRepo.findByTeacherEmailOrderByTimestampDesc(email);
+        return ResponseEntity.ok(notifications);
     }
 
     @DeleteMapping("/notification/{id}")

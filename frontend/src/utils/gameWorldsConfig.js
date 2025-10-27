@@ -4,27 +4,27 @@ import { Shield, Key, Eye } from "lucide-react"
 export const GAME_WORLDS = [
   {
     name: "CyberKids1", // Correct backend world name
-    displayName: "Info Classification",
+    displayName: "Information Sorting Game",
     level: "Level 1",
-    icon: Shield,
+    icon: Shield, // ✅ component, not object
     color: "emerald",
     challengeType: "INFORMATION_CLASSIFICATION_SORTING",
     description: "Learn to classify information and protect sensitive data",
   },
   {
     name: "CyberKids2", // Correct backend world name
-    displayName: "Password Security",
+    displayName: "Password Security Game",
     level: "Level 2",
-    icon: Key,
+    icon: Key, // ✅ component, not object
     color: "blue",
     challengeType: "PASSWORD_SECURITY",
     description: "Master the art of creating and managing secure passwords",
   },
   {
     name: "CyberKids3", // Correct backend world name
-    displayName: "Phishing ID",
+    displayName: "Phishing Awareness Game",
     level: "Level 3",
-    icon: Eye,
+    icon: Eye, // ✅ component, not object
     color: "purple",
     challengeType: "PHISHING_IDENTIFICATION",
     description: "Identify and avoid phishing attempts and online scams",

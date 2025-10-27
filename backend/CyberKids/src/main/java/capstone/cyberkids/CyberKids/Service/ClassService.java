@@ -6,11 +6,11 @@ import capstone.cyberkids.CyberKids.Entity.Teacher;
 import capstone.cyberkids.CyberKids.Repository.ClassRepo;
 import capstone.cyberkids.CyberKids.Repository.TeacherRepo;
 import capstone.cyberkids.CyberKids.dtos.ClassDTO;
+import jakarta.transaction.Transactional;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -24,7 +24,7 @@ public class ClassService {
         this.teacherRepository = teacherRepository;
     }
 
-    public Classes createClassByEmail(String email, String grade, String section) {
+    public Classes createClassByEmail(String email, String grade, String section, String colorTheme, Integer maxStudents) {
         Teacher teacher = teacherRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("Teacher not found with email: " + email));
 
@@ -34,11 +34,21 @@ public class ClassService {
             throw new RuntimeException("Class with Grade " + grade + " and Section " + section + " already exists for this teacher.");
         }
 
+        // Validate colorTheme
+        List<String> validThemes = Arrays.asList(
+                "indigo-purple", "blue-cyan", "green-emerald",
+                "orange-red", "pink-rose", "violet-fuchsia"
+        );
+        if (!validThemes.contains(colorTheme)) {
+            throw new RuntimeException("Invalid color theme selected.");
+        }
+
         String classCode = generateUniqueClassCode();
 
-        Classes classEntity = new Classes(grade, section, teacher, classCode);
+        Classes classEntity = new Classes(grade, section, teacher, classCode, colorTheme, maxStudents);
         return classRepository.save(classEntity);
     }
+
 
 
     private String generateUniqueClassCode() {
@@ -59,14 +69,79 @@ public class ClassService {
         return classRepository.findByTeacherId(teacherId);
     }
 
-    public Classes getClassById(Long classId) {
-        return classRepository.findById(classId)
-                .orElseThrow(() -> new RuntimeException("Class not found with id: " + classId));
+
+    @Transactional
+    public void lockWorldForClass(String classCode, String worldName, String teacherEmail) {
+        Teacher teacher = teacherRepository.findByEmail(teacherEmail)
+                .orElseThrow(() -> new RuntimeException("Teacher not found"));
+
+        Classes clazz = classRepository.findByClassCode(classCode)
+                .orElseThrow(() -> new RuntimeException("Class not found"));
+
+        if (!clazz.getTeacher().getId().equals(teacher.getId())) {
+            throw new RuntimeException("You are not authorized to lock worlds for this class.");
+        }
+
+        if (clazz.getLockedWorlds() == null) {
+            clazz.setLockedWorlds(new HashSet<>());
+        }
+
+        clazz.getLockedWorlds().add(worldName);
+        classRepository.save(clazz);
     }
+
+
+    @Transactional
+    public void unlockWorldForClass(String classCode, String worldName, String teacherEmail) {
+        Teacher teacher = teacherRepository.findByEmail(teacherEmail)
+                .orElseThrow(() -> new RuntimeException("Teacher not found"));
+
+        Classes clazz = classRepository.findByClassCode(classCode)
+                .orElseThrow(() -> new RuntimeException("Class not found"));
+
+        if (!clazz.getTeacher().getId().equals(teacher.getId())) {
+            throw new RuntimeException("You are not authorized to unlock worlds for this class.");
+        }
+
+        if (clazz.getLockedWorlds() != null) {
+            clazz.getLockedWorlds().remove(worldName);
+        }
+
+        classRepository.save(clazz);
+    }
+
 
     public Classes getClassByCode(String classCode) {
         return classRepository.findByClassCode(classCode)
                 .orElseThrow(() -> new RuntimeException("Class not found for code: " + classCode));
+    }
+
+//    public Optional<Classes> getClassByCode(String classCode) {
+//        return classRepository.findByClassCode(classCode);
+//    }
+
+
+
+
+//    public Set<String> getLockedWorldsForClass(String classCode, String teacherEmail) {
+//        Teacher teacher = teacherRepository.findByEmail(teacherEmail)
+//                .orElseThrow(() -> new RuntimeException("Teacher not found"));
+//
+//        Classes clazz = classRepository.findByClassCode(classCode)
+//                .orElseThrow(() -> new RuntimeException("Class not found"));
+//
+//        // Security check: ensure the class belongs to the logged-in teacher
+//        if (!clazz.getTeacher().getId().equals(teacher.getId())) {
+//            throw new RuntimeException("You are not authorized to access this class.");
+//        }
+//
+//        return clazz.getLockedWorlds();
+//    }
+
+
+    public Classes getClassById(Long classId) {
+        return classRepository.findById(classId)
+                .orElseThrow(() -> new RuntimeException("Class not found with id: " + classId));
     }
 
 

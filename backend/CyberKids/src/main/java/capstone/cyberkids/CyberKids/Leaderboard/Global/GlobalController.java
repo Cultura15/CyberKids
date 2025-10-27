@@ -74,5 +74,12 @@ public class GlobalController {
         return ResponseEntity.ok(leaderboard);
     }
 
+    /** ===== OVERALL LEADERBOARD (ALL CLASSES OF TEACHER) ===== **/
+    @GetMapping("/overall")
+    public ResponseEntity<List<GlobalLeaderboardDTO>> getOverallLeaderboardForTeacher() {
+        return ResponseEntity.ok(globalLeaderboardService.getAllRankedOverallForTeacher());
+    }
+
+
 
 }

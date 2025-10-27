@@ -12,6 +12,7 @@ public class GlobalEntity {
     private Long id;
 
     @OneToOne
+    @JoinColumn(name = "student_student_id", unique = true)
     private Student student;
 
     private int highestScore;

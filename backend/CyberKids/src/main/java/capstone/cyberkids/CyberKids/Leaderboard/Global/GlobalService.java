@@ -157,16 +157,38 @@ public class GlobalService {
                 student = e.getStudent(); score = e.getScore(); totalTime = e.getTotalTimeTaken();
             } else continue;
 
-            GlobalEntity global = new GlobalEntity();
-            global.setStudent(student);
-            global.setHighestScore(score);
-            global.setBestTimeTaken(totalTime);
-            global.setLevel(levelName);
-            newEntries.add(global);
+            GlobalEntity existing = globalRepo.findByStudent(student);
+
+            if (existing != null) {
+                // ✅ Only update if new score is higher or time is better
+                if (score > existing.getHighestScore() ||
+                        (score == existing.getHighestScore() && compareTime(totalTime, existing.getBestTimeTaken()) < 0)) {
+
+                    existing.setHighestScore(score);
+                    existing.setBestTimeTaken(totalTime);
+                    existing.setLevel(levelName);
+
+                    globalRepo.save(existing); // 🔥 update individually
+                }
+
+            } else {
+                // New student — add to batch insert
+                GlobalEntity global = new GlobalEntity();
+                global.setStudent(student);
+                global.setHighestScore(score);
+                global.setBestTimeTaken(totalTime);
+                global.setLevel(levelName);
+                newEntries.add(global);
+            }
         }
 
-        globalRepo.saveAll(newEntries);
+        // 🧩 Only insert *new* entities (not existing ones)
+        if (!newEntries.isEmpty()) {
+            globalRepo.saveAll(newEntries);
+        }
     }
+
+
 
     private List<GlobalLeaderboardDTO> getRankedLeaderboardForTeacher(List<?> entries, String levelName) {
         Long teacherId = getLoggedInTeacherId();
@@ -335,6 +357,60 @@ public class GlobalService {
                 ))
                 .collect(Collectors.toList());
     }
+
+    public List<GlobalLeaderboardDTO> getAllRankedOverallForTeacher() {
+        Long teacherId = getLoggedInTeacherId();
+        Set<Student> students = getStudentsForTeacher(teacherId);
+
+        List<Object> allEntries = new ArrayList<>();
+        allEntries.addAll(level1Repo.findAll());
+        allEntries.addAll(level2Repo.findAll());
+        allEntries.addAll(level3Repo.findAll());
+
+        Map<Student, ScoreTime> bestPerStudent = new HashMap<>();
+
+        for (Object entry : allEntries) {
+            Student s;
+            int score;
+            String time;
+            String level;
+
+            if (entry instanceof Level1Entity e) {
+                s = e.getStudent(); score = e.getScore(); time = e.getTotalTimeTaken(); level = "Level 1";
+            } else if (entry instanceof Level2Entity e) {
+                s = e.getStudent(); score = e.getScore(); time = e.getTotalTimeTaken(); level = "Level 2";
+            } else if (entry instanceof Level3Entity e) {
+                s = e.getStudent(); score = e.getScore(); time = e.getTotalTimeTaken(); level = "Level 3";
+            } else continue;
+
+            if (!students.contains(s)) continue; // only the teacher's students
+
+            ScoreTime currentBest = bestPerStudent.get(s);
+            if (currentBest == null || score > currentBest.score ||
+                    (score == currentBest.score && compareTime(time, currentBest.time) < 0)) {
+                bestPerStudent.put(s, new ScoreTime(score, time, level));
+            }
+        }
+
+        List<Map.Entry<Student, ScoreTime>> sorted = bestPerStudent.entrySet().stream()
+                .sorted(Comparator
+                        .comparing((Map.Entry<Student, ScoreTime> e) -> e.getValue().score).reversed()
+                        .thenComparing(e -> e.getValue().time))
+                .collect(Collectors.toList());
+
+        AtomicInteger rank = new AtomicInteger(1);
+        return sorted.stream()
+                .map(e -> new GlobalLeaderboardDTO(
+                        e.getKey().getRealName(),
+                        e.getKey().getRobloxName(),
+                        e.getValue().score,
+                        e.getValue().time,
+                        rank.getAndIncrement(),
+                        e.getValue().level
+                ))
+                .collect(Collectors.toList());
+    }
+
 
 
 

@@ -2,6 +2,7 @@ package capstone.cyberkids.CyberKids.Controller;
 
 import capstone.cyberkids.CyberKids.Entity.Classes;
 import capstone.cyberkids.CyberKids.Entity.Student;
+import capstone.cyberkids.CyberKids.Entity.Teacher;
 import capstone.cyberkids.CyberKids.Service.ClassService;
 import capstone.cyberkids.CyberKids.Service.StudentService;
 import capstone.cyberkids.CyberKids.dtos.*;
@@ -13,6 +14,8 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @RestController
@@ -39,12 +42,20 @@ public class ClassController {
                 email = authentication.getPrincipal().toString();
             }
 
-            Classes createdClass = classService.createClassByEmail(email, request.getGrade(), request.getSection());
+            Classes createdClass = classService.createClassByEmail(
+                    email,
+                    request.getGrade(),
+                    request.getSection(),
+                    request.getColorTheme(),
+                    request.getMaxStudents()
+            );
+
             return ResponseEntity.ok(createdClass);
         } catch (RuntimeException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         }
     }
+
 
 
     // Lightweight list of students for table view
@@ -78,6 +89,75 @@ public class ClassController {
         List<Classes> classes = classService.getClassesByTeacher(teacherId);
         return ResponseEntity.ok(classes);
     }
+
+
+    @PostMapping("/{classCode}/lock-world")
+    public ResponseEntity<?> lockWorldForClass(
+            @PathVariable String classCode,
+            @RequestParam String worldName) {
+
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String email = authentication.getName();
+
+        try {
+            classService.lockWorldForClass(classCode, worldName, email);
+            return ResponseEntity.ok(Map.of("message", "World locked for class " + classCode));
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of("error", e.getMessage()));
+        }
+    }
+
+
+    @PostMapping("/{classCode}/unlock-world")
+    public ResponseEntity<?> unlockWorldForClass(
+            @PathVariable String classCode,
+            @RequestParam String worldName) {
+
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String email = authentication.getName();
+
+        try {
+            classService.unlockWorldForClass(classCode, worldName, email);
+            return ResponseEntity.ok(Map.of("message", "World unlocked for class " + classCode));
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of("error", e.getMessage()));
+        }
+    }
+
+    @GetMapping("/{classCode}/is-world-locked")
+    public ResponseEntity<?> isWorldLocked(
+            @PathVariable String classCode,
+            @RequestParam String worldName) {
+
+        // Find the class by classCode (throws RuntimeException if not found)
+        Classes classEntity = classService.getClassByCode(classCode);
+
+        // Check if the world is locked by this teacher
+        boolean isLocked = classEntity.getLockedWorlds().contains(worldName);
+
+        return ResponseEntity.ok(Map.of(
+                "classCode", classCode,
+                "worldName", worldName,
+                "locked", isLocked
+        ));
+    }
+
+
+
+//    @GetMapping("/{classCode}/locked-worlds")
+//    public ResponseEntity<?> getLockedWorldsForClass(@PathVariable String classCode) {
+//        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+//        String email = authentication.getName();
+//
+//        try {
+//            Set<String> lockedWorlds = classService.getLockedWorldsForClass(classCode, email);
+//            return ResponseEntity.ok(lockedWorlds);
+//        } catch (RuntimeException e) {
+//            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of("error", e.getMessage()));
+//        }
+//    }
+
+
 
     @GetMapping("/all-classes")
     public ResponseEntity<List<ClassDTO>> getAllClasses() {

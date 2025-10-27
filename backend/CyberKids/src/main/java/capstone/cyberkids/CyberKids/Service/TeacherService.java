@@ -37,21 +37,21 @@ public class TeacherService {
         return teacherRepo.save(teacher);
     }
 
-    public void lockWorld(String worldName) {
-        Teacher teacher = getLoggedInTeacher();
-        teacher.getLockedWorlds().add(worldName);
-        teacherRepo.save(teacher);
-    }
-
-    public void unlockWorld(String worldName) {
-        Teacher teacher = getLoggedInTeacher();
-        teacher.getLockedWorlds().remove(worldName);
-        teacherRepo.save(teacher);
-    }
-
-    public boolean isWorldLocked(String worldName) {
-        List<Teacher> allTeachers = teacherRepo.findAll();
-        return allTeachers.stream()
-                .anyMatch(t -> t.getLockedWorlds().contains(worldName));
-    }
+//    public void lockWorld(String worldName) {
+//        Teacher teacher = getLoggedInTeacher();
+//        teacher.getLockedWorlds().add(worldName);
+//        teacherRepo.save(teacher);
+//    }
+//
+//    public void unlockWorld(String worldName) {
+//        Teacher teacher = getLoggedInTeacher();
+//        teacher.getLockedWorlds().remove(worldName);
+//        teacherRepo.save(teacher);
+//    }
+//
+//    public boolean isWorldLocked(String worldName) {
+//        List<Teacher> allTeachers = teacherRepo.findAll();
+//        return allTeachers.stream()
+//                .anyMatch(t -> t.getLockedWorlds().contains(worldName));
+//    }
 }

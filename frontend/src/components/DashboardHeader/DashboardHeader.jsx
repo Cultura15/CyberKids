@@ -1,15 +1,10 @@
 "use client"
 
-import { useState, useRef, useEffect } from "react"
-import { Bell } from "lucide-react"
+import { useState, useRef, useEffect, useTransition } from "react"
+import { Bell, Settings, Info, Home, Compass, BookOpen } from "lucide-react"
+import { useNavigate, useLocation } from "react-router-dom"
 import ProfileDropdown from "./ProfileDropdown"
 import NotificationDropdown from "./NotificationDropdown"
-
-// Cybersecurity font style
-const cyberFont = {
-  fontFamily: "'Orbitron', sans-serif",
-  letterSpacing: "1px",
-}
 
 const DashboardHeader = ({
   teacherProfile,
@@ -21,13 +16,23 @@ const DashboardHeader = ({
   onMarkAllAsRead,
   onDeleteNotification,
   onShowNotificationModal,
+  activeTab,
+  setActiveTab,
 }) => {
   const [dropdownOpen, setDropdownOpen] = useState(false)
   const [notificationDropdownOpen, setNotificationDropdownOpen] = useState(false)
+  const [isPending, startTransition] = useTransition()
   const dropdownRef = useRef(null)
   const notificationDropdownRef = useRef(null)
+  const navigate = useNavigate()
+  const location = useLocation()
 
-  // Get teacher name
+  const navItems = [
+    { id: "overview", label: "Overview", icon: Home, path: "/dashboard" },
+    { id: "kahoots", label: "My Class", icon: BookOpen, path: "/dashboard/myclass" },
+    { id: "game-management", label: "Game Management", icon: Compass, path: "/dashboard/world-management/CyberKids1" },
+  ]
+
   const getTeacherName = () => {
     if (teacherProfile && teacherProfile.name) {
       return teacherProfile.name
@@ -38,15 +43,26 @@ const DashboardHeader = ({
     return "Teacher"
   }
 
-  // Get profile picture or placeholder
   const getProfilePicture = () => {
     if (teacherProfile && teacherProfile.profilePicture) {
       return teacherProfile.profilePicture
     }
-    return "https://ui-avatars.com/api/?name=" + encodeURIComponent(getTeacherName()) + "&background=4F46E5&color=fff"
+    return "https://ui-avatars.com/api/?name=" + encodeURIComponent(getTeacherName()) + "&background=7B2CBF&color=fff"
   }
 
-  // Close dropdowns when clicking outside
+  const handleNavClick = (item) => {
+    startTransition(() => {
+      setActiveTab(item.id)
+      navigate(item.path)
+    })
+  }
+
+  const isNavActive = (item) => {
+    if (item.id === "kahoots" && location.pathname.startsWith("/dashboard/myclass")) return true
+    if (item.id === "game-management" && location.pathname.startsWith("/dashboard/world-management")) return true
+    return activeTab === item.id
+  }
+
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
@@ -64,33 +80,68 @@ const DashboardHeader = ({
   }, [])
 
   return (
-    <header className="bg-white shadow-sm">
-      <div className="px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
-        <div className="pl-0">
-          <h1 className="text-2xl font-bold text-gray-800" style={cyberFont}>
-            <span className="bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 to-purple-600">
-              CyberKids
-            </span>
-            <span className="text-gray-800"> Dashboard</span>
-          </h1>
-          <p className="text-sm text-gray-500">
-            <span className="font-medium">Capstone Project by Group 28</span>
-          </p>
+    <header className="bg-[#54168C] sticky top-0 z-50">
+      <div className="px-6 py-3 flex justify-between items-center">
+        {/* Left side - Logo and Navigation */}
+        <div className="flex items-center gap-6">
+          {/* Logo and Brand */}
+          <div className="flex items-center gap-3">
+            
+            <h1 className="text-2xl font-bold text-white tracking-tight">CyberKids</h1>
+          </div>
+
+          {/* Navigation Items */}
+          <nav className="flex items-center gap-1">
+            {navItems.map((item) => {
+              const Icon = item.icon
+              const isActive = isNavActive(item)
+              return (
+                <button
+                  key={item.id}
+                  onClick={() => handleNavClick(item)}
+                  disabled={isPending}
+                  className={`relative flex items-center gap-2 px-4 py-2 font-semibold text-xs transition-all ${
+                    isActive 
+                      ? "text-white" 
+                      : "text-purple-100 hover:text-white"
+                  }`}
+                >
+                  <Icon className="h-5 w-5" />
+                  <span>{item.label}</span>
+                  {/* Active indicator line */}
+                  {isActive && (
+                    <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-white rounded-full animate-expand-line"></span>
+                  )}
+                </button>
+              )
+            })}
+          </nav>
         </div>
 
-        {/* Header Actions */}
-        <div className="flex items-center space-x-4">
+        {/* Right side - Actions */}
+        <div className="flex items-center gap-3">
+          {/* Create Button */}
+         <button
+            className="btn-create"
+            disabled={isPending}
+            onClick={() => navigate("/dashboard/myclass/create-class")}
+          >
+            Create
+          </button>
+
+
           {/* Notification Bell */}
           <div className="relative" ref={notificationDropdownRef}>
             <button
               onClick={() => setNotificationDropdownOpen(!notificationDropdownOpen)}
-              className="p-2 rounded-lg hover:bg-gray-100 transition-colors duration-200 relative"
+              className="icon-btn"
               aria-label="Notifications"
+              disabled={isPending}
             >
-              <Bell className="h-5 w-5 text-gray-600" />
+              <Bell className="h-5 w-5" />
               {unreadCount > 0 && (
-                <span className="absolute top-0 right-0 h-4 w-4 bg-red-500 text-white text-xs rounded-full flex items-center justify-center transform translate-x-1 -translate-y-1">
-                  {unreadCount}
+                <span className="absolute -top-1 -right-1 h-5 w-5 bg-red-500 text-white text-xs rounded-full flex items-center justify-center font-bold">
+                  {unreadCount > 9 ? "9+" : unreadCount}
                 </span>
               )}
             </button>
@@ -108,6 +159,11 @@ const DashboardHeader = ({
               />
             )}
           </div>
+
+          {/* Settings Icon */}
+          <button className="icon-btn" aria-label="Settings" disabled={isPending}>
+            <Settings className="h-5 w-5" />
+          </button>
 
           {/* User dropdown menu */}
           <div className="relative" ref={dropdownRef}>
