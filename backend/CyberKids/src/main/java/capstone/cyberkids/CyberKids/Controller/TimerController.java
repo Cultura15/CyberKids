@@ -48,4 +48,19 @@ public class TimerController {
             return ResponseEntity.badRequest().build();
         }
     }
+
+    @DeleteMapping("/delete-latest/{robloxId}")
+    public ResponseEntity<String> deleteLatestTimer(@PathVariable String robloxId) {
+        try {
+            boolean deleted = timerService.deleteLatestTimerByRobloxId(robloxId);
+            if (deleted) {
+                return ResponseEntity.ok("Latest unfinished timer deleted for robloxId: " + robloxId);
+            } else {
+                return ResponseEntity.notFound().build();
+            }
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().body("Error deleting timer: " + e.getMessage());
+        }
+    }
+
 }
