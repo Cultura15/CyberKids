@@ -33,7 +33,7 @@ public class Timer {
 
     public Timer() {}
 
-    public Timer(Long id, Student student, ChallengeType challengeType, String timeTaken, LocalDateTime startTime, LocalDateTime endTimem) {
+    public Timer(Long id, Student student, ChallengeType challengeType, String timeTaken, LocalDateTime startTime, LocalDateTime endTime) {
         this.student = student;
         this.challengeType = challengeType;
         this.timeTaken = timeTaken;

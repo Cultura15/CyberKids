@@ -6,6 +6,7 @@ import capstone.cyberkids.CyberKids.Model.ChallengeType;
 import capstone.cyberkids.CyberKids.Model.TimerRequest;
 import capstone.cyberkids.CyberKids.Repository.StudentRepo;
 import capstone.cyberkids.CyberKids.Repository.TimerRepo;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -58,4 +59,17 @@ public class TimerService {
     public List<Timer> getTimersByChallengeType(ChallengeType challengeType) {
         return timerRepository.findByChallengeType(challengeType);
     }
+
+    public boolean deleteLatestTimerByRobloxId(String robloxId) {
+        Student student = studentRepo.findByRobloxId(robloxId);
+        if (student == null) return false;
+
+        List<Timer> timers = timerRepository.findLatestUnfinishedTimer(student.getId(), PageRequest.of(0, 1));
+        if (!timers.isEmpty()) {
+            timerRepository.delete(timers.get(0));
+            return true;
+        }
+        return false;
+    }
+
 }
