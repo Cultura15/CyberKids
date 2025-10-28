@@ -217,6 +217,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/leaderboard/password-sec/**").permitAll()
                         .requestMatchers("/api/leaderboard/phishing/**").permitAll()
                         .requestMatchers("/api/teacher/**").hasRole("TEACHER")
+                        .requestMatchers("/api/classes/{classCode}/is-world-locked").permitAll()
                         .requestMatchers("/api/classes/**").hasRole("TEACHER")
                         .requestMatchers("/api/scenarios/**").permitAll()
                         .anyRequest().authenticated()
