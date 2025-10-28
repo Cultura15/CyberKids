@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import { useNavigate } from "react-router-dom"
-import { ArrowLeft, GraduationCap, Plus, Palette, Users, Sparkles, Info } from "lucide-react"
+import { ArrowLeft, GraduationCap, Plus, Palette, Users, Sparkles, Info, AlertCircle, X } from "lucide-react"
 import fetchWithAuth from "../../jwt/authInterceptor"
 
 const API_BASE_URL = process.env.REACT_APP_API_BASE_URL
@@ -11,7 +11,6 @@ const nunitoFont = {
   fontFamily: "'Nunito', sans-serif",
 }
 
-// Enhanced color theme options
 const COLOR_THEMES = [
   { 
     name: "Indigo Purple", 
@@ -65,17 +64,20 @@ const CreateClass = () => {
   const [maxStudents, setMaxStudents] = useState("")
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
+  const [isDuplicate, setIsDuplicate] = useState(false)
   const [successMessage, setSuccessMessage] = useState(false)
 
   const handleCreateClass = async () => {
     if (!newGrade.trim() || !newSection.trim()) {
       setError("Please enter both grade and section")
+      setIsDuplicate(false)
       setTimeout(() => setError(null), 3000)
       return
     }
 
     setLoading(true)
     setError(null)
+    setIsDuplicate(false)
 
     try {
       const response = await fetchWithAuth(API_BASE_URL, {
@@ -92,12 +94,20 @@ const CreateClass = () => {
       })
 
       if (!response.ok) {
-        throw new Error("Failed to create class")
+        // Backend returns text error message for BAD_REQUEST
+        const errorMessage = await response.text()
+        
+        // Check if it's a duplicate error based on the message content
+        if (errorMessage.includes('already exists')) {
+          setIsDuplicate(true)
+          setError(errorMessage)
+        } else {
+          setError(errorMessage || "Failed to create class")
+        }
+        throw new Error(errorMessage)
       }
 
       const createdClass = await response.json()
-
-      // Show success animation
       setSuccessMessage(true)
       
       setTimeout(() => {
@@ -105,7 +115,6 @@ const CreateClass = () => {
       }, 1500)
     } catch (err) {
       console.error("Error creating class:", err)
-      setError(err.message)
     } finally {
       setLoading(false)
     }
@@ -115,9 +124,14 @@ const CreateClass = () => {
     navigate("/dashboard/myclass")
   }
 
+  const clearError = () => {
+    setError(null)
+    setIsDuplicate(false)
+  }
+
   return (
     <div className="space-y-6 mt-8" style={nunitoFont}>
-      {/* Page Header with enhanced design */}
+      {/* Page Header */}
       <div className="bg-white rounded-2xl shadow-md border border-gray-100 p-6 hover:shadow-lg transition-shadow">
         <div className="flex items-center gap-4">
           <button
@@ -138,9 +152,9 @@ const CreateClass = () => {
 
       {/* Success Message */}
       {successMessage && (
-        <div className="bg-gradient-to-r from-green-50 to-emerald-50 border-2 border-green-200 p-4 rounded-xl animate-slideIn">
-          <div className="flex items-center gap-3">
-            <div className="h-10 w-10 bg-green-500 rounded-full flex items-center justify-center">
+        <div className="bg-gradient-to-r from-green-50 to-emerald-50 border-2 border-green-200 rounded-xl overflow-hidden animate-slideIn">
+          <div className="flex items-center gap-3 p-4">
+            <div className="h-10 w-10 bg-green-500 rounded-full flex items-center justify-center flex-shrink-0">
               <svg className="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
               </svg>
@@ -153,16 +167,86 @@ const CreateClass = () => {
         </div>
       )}
 
-      {/* Error Display */}
-      {error && (
-        <div className="bg-gradient-to-r from-red-50 to-rose-50 border-2 border-red-200 p-4 rounded-xl animate-shake">
-          <div className="flex items-center gap-3">
-            <div className="h-10 w-10 bg-red-500 rounded-full flex items-center justify-center">
+      {/* Duplicate Error Banner */}
+      {isDuplicate && error && (
+        <div className="bg-gradient-to-r from-amber-50 to-orange-50 border-2 border-amber-300 rounded-xl overflow-hidden animate-slideIn">
+          <div className="p-4">
+            <div className="flex items-start gap-3">
+              <div className="h-10 w-10 bg-amber-500 rounded-full flex items-center justify-center flex-shrink-0">
+                <AlertCircle className="h-6 w-6 text-white" />
+              </div>
+              <div className="flex-1">
+                <div className="flex items-start justify-between gap-2">
+                  <div>
+                    <p className="font-bold text-amber-900">Class Already Exists</p>
+                    <p className="text-sm text-amber-800 mt-1">{error}</p>
+                  </div>
+                  <button
+                    onClick={clearError}
+                    className="p-1 hover:bg-amber-200 rounded-lg transition-colors"
+                  >
+                    <X className="h-4 w-4 text-amber-700" />
+                  </button>
+                </div>
+                <div className="mt-3 flex flex-wrap gap-2">
+                  <button
+                    onClick={() => {
+                      setNewSection("")
+                      clearError()
+                      document.getElementById('section')?.focus()
+                    }}
+                    className="px-3 py-1.5 bg-white border-2 border-amber-300 text-amber-800 rounded-lg text-sm font-bold hover:bg-amber-50 transition-colors"
+                  >
+                    Try Different Section
+                  </button>
+                  <button
+                    onClick={() => {
+                      setNewGrade("")
+                      clearError()
+                      document.getElementById('grade')?.focus()
+                    }}
+                    className="px-3 py-1.5 bg-white border-2 border-amber-300 text-amber-800 rounded-lg text-sm font-bold hover:bg-amber-50 transition-colors"
+                  >
+                    Try Different Grade
+                  </button>
+                  <button
+                    onClick={() => {
+                      setNewGrade("")
+                      setNewSection("")
+                      clearError()
+                      document.getElementById('grade')?.focus()
+                    }}
+                    className="px-3 py-1.5 bg-amber-600 text-white rounded-lg text-sm font-bold hover:bg-amber-700 transition-colors"
+                  >
+                    Start Over
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Regular Error Display */}
+      {error && !isDuplicate && (
+        <div className="bg-gradient-to-r from-red-50 to-rose-50 border-2 border-red-200 rounded-xl overflow-hidden animate-shake">
+          <div className="flex items-center gap-3 p-4">
+            <div className="h-10 w-10 bg-red-500 rounded-full flex items-center justify-center flex-shrink-0">
               <Info className="h-6 w-6 text-white" />
             </div>
-            <div>
-              <p className="font-bold text-red-800">Error Creating Class</p>
-              <p className="text-sm text-red-700">{error}</p>
+            <div className="flex-1">
+              <div className="flex items-start justify-between gap-2">
+                <div>
+                  <p className="font-bold text-red-800">Error Creating Class</p>
+                  <p className="text-sm text-red-700">{error}</p>
+                </div>
+                <button
+                  onClick={clearError}
+                  className="p-1 hover:bg-red-200 rounded-lg transition-colors"
+                >
+                  <X className="h-4 w-4 text-red-700" />
+                </button>
+              </div>
             </div>
           </div>
         </div>
@@ -181,9 +265,17 @@ const CreateClass = () => {
               <input
                 id="grade"
                 type="text"
-                className="w-full px-4 py-3.5 border-2 border-gray-200 rounded-xl text-sm font-semibold focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all hover:border-gray-300"
+                placeholder="e.g., Grade 7"
+                className={`w-full px-4 py-3.5 border-2 rounded-xl text-sm font-semibold focus:ring-2 transition-all hover:border-gray-300 ${
+                  isDuplicate 
+                    ? 'border-amber-300 focus:ring-amber-500 focus:border-amber-500 bg-amber-50' 
+                    : 'border-gray-200 focus:ring-indigo-500 focus:border-indigo-500'
+                }`}
                 value={newGrade}
-                onChange={(e) => setNewGrade(e.target.value)}
+                onChange={(e) => {
+                  setNewGrade(e.target.value)
+                  if (isDuplicate) clearError()
+                }}
                 disabled={loading}
               />
             </div>
@@ -197,9 +289,17 @@ const CreateClass = () => {
               <input
                 id="section"
                 type="text"
-                className="w-full px-4 py-3.5 border-2 border-gray-200 rounded-xl text-sm font-semibold focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all hover:border-gray-300"
+                placeholder="e.g., A, B, Diamond"
+                className={`w-full px-4 py-3.5 border-2 rounded-xl text-sm font-semibold focus:ring-2 transition-all hover:border-gray-300 ${
+                  isDuplicate 
+                    ? 'border-amber-300 focus:ring-amber-500 focus:border-amber-500 bg-amber-50' 
+                    : 'border-gray-200 focus:ring-purple-500 focus:border-purple-500'
+                }`}
                 value={newSection}
-                onChange={(e) => setNewSection(e.target.value)}
+                onChange={(e) => {
+                  setNewSection(e.target.value)
+                  if (isDuplicate) clearError()
+                }}
                 disabled={loading}
               />
             </div>
@@ -215,6 +315,7 @@ const CreateClass = () => {
                 <input
                   id="maxStudents"
                   type="number"
+                  placeholder="Leave empty for unlimited"
                   className="w-full pl-12 pr-4 py-3.5 border-2 border-gray-200 rounded-xl text-sm font-semibold focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all hover:border-gray-300"
                   value={maxStudents}
                   onChange={(e) => setMaxStudents(e.target.value)}
@@ -304,7 +405,6 @@ const CreateClass = () => {
             {/* Class Card Preview */}
             <div className="bg-white rounded-xl shadow-lg overflow-hidden border-2 border-gray-200 transform hover:scale-105 transition-transform">
               <div className={`bg-gradient-to-br ${selectedTheme.gradient} p-6 text-white relative overflow-hidden`}>
-                {/* Decorative circles */}
                 <div className="absolute top-0 right-0 w-20 h-20 bg-white/10 rounded-full -mr-10 -mt-10"></div>
                 <div className="absolute bottom-0 left-0 w-16 h-16 bg-white/10 rounded-full -ml-8 -mb-8"></div>
                 
@@ -356,11 +456,11 @@ const CreateClass = () => {
               <ul className="text-xs text-amber-800 font-semibold space-y-1.5">
                 <li className="flex items-start gap-2">
                   <span className="text-amber-500 font-bold">•</span>
-                  <span>Choose a distinct color for easy identification</span>
+                  <span>Each Grade + Section combination must be unique</span>
                 </li>
                 <li className="flex items-start gap-2">
                   <span className="text-amber-500 font-bold">•</span>
-                  <span>Grade and Section are required fields</span>
+                  <span>Choose a distinct color for easy identification</span>
                 </li>
                 <li className="flex items-start gap-2">
                   <span className="text-amber-500 font-bold">•</span>

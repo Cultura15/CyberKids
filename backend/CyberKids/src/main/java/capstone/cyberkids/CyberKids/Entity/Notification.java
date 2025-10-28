@@ -1,6 +1,8 @@
 package capstone.cyberkids.CyberKids.Entity;
 
 import jakarta.persistence.*;
+
+import java.time.Instant;
 import java.time.LocalDateTime;
 
 @Entity
@@ -15,7 +17,7 @@ public class Notification {
 
     private boolean isRead = false;
 
-    private LocalDateTime timestamp = LocalDateTime.now();
+    private Instant timestamp = Instant.now();
 
     @ManyToOne
     @JoinColumn(name = "teacher_id", nullable = false)
@@ -70,11 +72,11 @@ public class Notification {
         this.teacher = teacher;
     }
 
-    public LocalDateTime getTimestamp() {
+    public Instant getTimestamp() {
         return timestamp;
     }
 
-    public void setTimestamp(LocalDateTime timestamp) {
+    public void setTimestamp(Instant timestamp) {
         this.timestamp = timestamp;
     }
 
