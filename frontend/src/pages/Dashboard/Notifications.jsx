@@ -14,6 +14,29 @@ const Notifications = () => {
   const [filter, setFilter] = useState("all") // all, unread, read
   const navigate = useNavigate()
 
+ // ✅ Convert Manila timestamp to properly formatted local time
+const formatToPhilippineTime = (timestamp) => {
+  if (!timestamp) return "Unknown time"
+  try {
+    const date = new Date(timestamp) // interpret as-is (already Manila time)
+    return date.toLocaleString("en-PH", {
+      timeZone: "Asia/Manila",
+      year: "numeric",
+      month: "short",
+      day: "2-digit",
+      hour: "2-digit",
+      minute: "2-digit",
+      second: "2-digit",
+      hour12: true
+    })
+  } catch (error) {
+    console.error("Error formatting timestamp:", error)
+    return "Invalid time"
+  }
+}
+
+
+
   // Fetch notifications from backend
   useEffect(() => {
     const fetchNotifications = async () => {
@@ -35,8 +58,9 @@ const Notifications = () => {
           id: n.id,
           title: n.type === "MISSION_COMPLETION" ? "Student Completed a Challenge" : "New Student Joined",
           message: n.message || "A student has registered",
-          timestamp: n.timestamp,
-          time: getTimeAgo(n.timestamp),
+         timestamp: n.timestampManila || n.timestampInstant || n.timestamp,
+time: getTimeAgo(n.timestampManila || n.timestampInstant || n.timestamp),
+
           read: n.read || false,
           student: n.student || null,
           studentId: n.student?.id || null,
@@ -56,6 +80,8 @@ const Notifications = () => {
     }
 
     fetchNotifications()
+
+
 
     // Update timestamps every minute
     const interval = setInterval(() => {
@@ -120,46 +146,48 @@ const Notifications = () => {
     }
   }
 
-  const getTimeAgo = (timestamp) => {
-    if (!timestamp) return "Recently"
-    if (timestamp === "Just now") return "Just now"
-    
-    try {
-      const now = new Date()
-      let time
-      if (Array.isArray(timestamp)) {
-        const [year, month, day, hour, minute, second] = timestamp
-        time = new Date(year, month - 1, day, hour, minute, second)
-      } else {
-        time = new Date(timestamp)
-      }
+  // ✅ Helper: Convert UTC timestamp to Asia/Manila time and compute time ago
+const getTimeAgo = (timestamp) => {
+  if (!timestamp) return "Just now"
 
-      const diffInSeconds = Math.floor((now - time) / 1000)
+  try {
+    // Always interpret both times in Asia/Manila
+    const now = new Date(
+      new Date().toLocaleString("en-US", { timeZone: "Asia/Manila" })
+    )
 
-      if (diffInSeconds < 60) return "Just now"
-      if (diffInSeconds < 3600) {
-        const minutes = Math.floor(diffInSeconds / 60)
-        return `${minutes} ${minutes === 1 ? 'min' : 'mins'} ago`
-      }
-      if (diffInSeconds < 86400) {
-        const hours = Math.floor(diffInSeconds / 3600)
-        return `${hours} ${hours === 1 ? 'hr' : 'hrs'} ago`
-      }
-      if (diffInSeconds < 2592000) {
-        const days = Math.floor(diffInSeconds / 86400)
-        return `${days} ${days === 1 ? 'day' : 'days'} ago`
-      }
-      if (diffInSeconds < 31536000) {
-        const months = Math.floor(diffInSeconds / 2592000)
-        return `${months} ${months === 1 ? 'month' : 'months'} ago`
-      }
-      
-      const years = Math.floor(diffInSeconds / 31536000)
-      return `${years} ${years === 1 ? 'year' : 'years'} ago`
-    } catch (error) {
-      return "Recently"
+    const time = new Date(
+      new Date(timestamp).toLocaleString("en-US", { timeZone: "Asia/Manila" })
+    )
+
+    const diffInSeconds = Math.floor((now - time) / 1000)
+
+    if (diffInSeconds < 60) return "Just now"
+    if (diffInSeconds < 3600) {
+      const minutes = Math.floor(diffInSeconds / 60)
+      return `${minutes} ${minutes === 1 ? "min" : "mins"} ago`
     }
+    if (diffInSeconds < 86400) {
+      const hours = Math.floor(diffInSeconds / 3600)
+      return `${hours} ${hours === 1 ? "hr" : "hrs"} ago`
+    }
+    if (diffInSeconds < 2592000) {
+      const days = Math.floor(diffInSeconds / 86400)
+      return `${days} ${days === 1 ? "day" : "days"} ago`
+    }
+    if (diffInSeconds < 31536000) {
+      const months = Math.floor(diffInSeconds / 2592000)
+      return `${months} ${months === 1 ? "month" : "months"} ago`
+    }
+
+    const years = Math.floor(diffInSeconds / 31536000)
+    return `${years} ${years === 1 ? "year" : "years"} ago`
+  } catch (error) {
+    console.error("Error calculating time ago:", error)
+    return "Recently"
   }
+}
+
 
   const handleMarkAsRead = async (id) => {
     setNotifications(prev => 
@@ -380,7 +408,12 @@ const Notifications = () => {
                         <div className="flex items-center gap-4 text-sm">
                           <div className="flex items-center gap-1.5 text-gray-500">
                             <Clock className="h-4 w-4" />
-                            <span className="font-bold">{notification.time}</span>
+                            <span className="font-bold">
+  {getTimeAgo(notification.timestampManila || notification.timestampInstant || notification.timestamp)} •{" "}
+  {formatToPhilippineTime(notification.timestampManila || notification.timestampInstant || notification.timestamp)}
+</span>
+
+
                           </div>
 
                           {notification.student && (

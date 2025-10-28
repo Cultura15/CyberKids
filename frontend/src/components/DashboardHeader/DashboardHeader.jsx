@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useRef, useEffect, useTransition } from "react"
-import { Bell, Settings, Info, Home, Compass, BookOpen } from "lucide-react"
+import { Bell, Settings, Home, Compass, BookOpen } from "lucide-react"
 import { useNavigate, useLocation } from "react-router-dom"
 import ProfileDropdown from "./ProfileDropdown"
 import NotificationDropdown from "./NotificationDropdown"
@@ -10,7 +10,6 @@ const DashboardHeader = ({
   teacherProfile,
   userData,
   notifications,
-  unreadCount,
   onLogout,
   onMarkAsRead,
   onMarkAllAsRead,
@@ -21,6 +20,7 @@ const DashboardHeader = ({
 }) => {
   const [dropdownOpen, setDropdownOpen] = useState(false)
   const [notificationDropdownOpen, setNotificationDropdownOpen] = useState(false)
+  const [unreadCount, setUnreadCount] = useState(0) // ✅ local unread count
   const [isPending, startTransition] = useTransition()
   const dropdownRef = useRef(null)
   const notificationDropdownRef = useRef(null)
@@ -34,20 +34,14 @@ const DashboardHeader = ({
   ]
 
   const getTeacherName = () => {
-    if (teacherProfile && teacherProfile.name) {
-      return teacherProfile.name
-    }
-    if (userData && userData.fullName) {
-      return userData.fullName
-    }
+    if (teacherProfile?.name) return teacherProfile.name
+    if (userData?.fullName) return userData.fullName
     return "Teacher"
   }
 
   const getProfilePicture = () => {
-    if (teacherProfile && teacherProfile.profilePicture) {
-      return teacherProfile.profilePicture
-    }
-    return "https://ui-avatars.com/api/?name=" + encodeURIComponent(getTeacherName()) + "&background=7B2CBF&color=fff"
+    if (teacherProfile?.profilePicture) return teacherProfile.profilePicture
+    return `https://ui-avatars.com/api/?name=${encodeURIComponent(getTeacherName())}&background=7B2CBF&color=fff`
   }
 
   const handleNavClick = (item) => {
@@ -74,23 +68,18 @@ const DashboardHeader = ({
     }
 
     document.addEventListener("mousedown", handleClickOutside)
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside)
-    }
+    return () => document.removeEventListener("mousedown", handleClickOutside)
   }, [])
 
   return (
     <header className="bg-[#54168C] sticky top-0 z-50">
       <div className="px-6 py-3 flex justify-between items-center">
-        {/* Left side - Logo and Navigation */}
+        {/* Left side - Logo + Navigation */}
         <div className="flex items-center gap-6">
-          {/* Logo and Brand */}
           <div className="flex items-center gap-3">
-            
             <h1 className="text-2xl font-bold text-white tracking-tight">CyberKids</h1>
           </div>
 
-          {/* Navigation Items */}
           <nav className="flex items-center gap-1">
             {navItems.map((item) => {
               const Icon = item.icon
@@ -101,14 +90,11 @@ const DashboardHeader = ({
                   onClick={() => handleNavClick(item)}
                   disabled={isPending}
                   className={`relative flex items-center gap-2 px-4 py-2 font-semibold text-xs transition-all ${
-                    isActive 
-                      ? "text-white" 
-                      : "text-purple-100 hover:text-white"
+                    isActive ? "text-white" : "text-purple-100 hover:text-white"
                   }`}
                 >
                   <Icon className="h-5 w-5" />
                   <span>{item.label}</span>
-                  {/* Active indicator line */}
                   {isActive && (
                     <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-white rounded-full animate-expand-line"></span>
                   )}
@@ -121,14 +107,13 @@ const DashboardHeader = ({
         {/* Right side - Actions */}
         <div className="flex items-center gap-3">
           {/* Create Button */}
-         <button
+          <button
             className="btn-create"
             disabled={isPending}
             onClick={() => navigate("/dashboard/myclass/create-class")}
           >
             Create
           </button>
-
 
           {/* Notification Bell */}
           <div className="relative" ref={notificationDropdownRef}>
@@ -156,16 +141,17 @@ const DashboardHeader = ({
                   onShowNotificationModal()
                   setNotificationDropdownOpen(false)
                 }}
+                onUnreadChange={(count) => setUnreadCount(count)} // ✅ now valid
               />
             )}
           </div>
 
-          {/* Settings Icon */}
+          {/* Settings */}
           <button className="icon-btn" aria-label="Settings" disabled={isPending}>
             <Settings className="h-5 w-5" />
           </button>
 
-          {/* User dropdown menu */}
+          {/* Profile Dropdown */}
           <div className="relative" ref={dropdownRef}>
             <ProfileDropdown
               teacherProfile={teacherProfile}

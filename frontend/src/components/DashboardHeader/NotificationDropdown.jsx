@@ -27,14 +27,14 @@ const formatRelativeTime = (timestamp) => {
     if (diffInSeconds < 60) return "Just now"
     if (diffInSeconds < 3600) {
       const mins = Math.floor(diffInSeconds / 60)
-      return `${mins} min${mins === 1 ? '' : 's'} ago`
+      return `${mins} min${mins === 1 ? "" : "s"} ago`
     }
     if (diffInSeconds < 86400) {
       const hrs = Math.floor(diffInSeconds / 3600)
-      return `${hrs} hr${hrs === 1 ? '' : 's'} ago`
+      return `${hrs} hr${hrs === 1 ? "" : "s"} ago`
     }
     const days = Math.floor(diffInSeconds / 86400)
-    return `${days} day${days === 1 ? '' : 's'} ago`
+    return `${days} day${days === 1 ? "" : "s"} ago`
   } catch {
     return "Recently"
   }
@@ -43,6 +43,7 @@ const formatRelativeTime = (timestamp) => {
 const NotificationDropdown = ({
   onMarkAsRead,
   onMarkAllAsRead,
+  onUnreadChange, // ✅ new prop for syncing unread count to header
 }) => {
   const [notifications, setNotifications] = useState([])
   const [loading, setLoading] = useState(true)
@@ -66,9 +67,8 @@ const NotificationDropdown = ({
       }
 
       const response = await axios.get(`${API_URL}/api/teacher/notification/me`, { headers })
-      
-      // Format and deduplicate by student
-      const formattedNotifications = response.data.map(n => ({
+
+      const formattedNotifications = response.data.map((n) => ({
         id: n.id,
         title: n.type === "MISSION_COMPLETION" ? "Challenge Completed" : "New Student Joined",
         message: n.message || "A student has registered",
@@ -80,9 +80,13 @@ const NotificationDropdown = ({
         type: n.type || "info",
       }))
 
-      // Deduplicate and get latest 6
       const unique = deduplicateByStudent(formattedNotifications)
-      setNotifications(unique.slice(0, 6))
+      const latest = unique.slice(0, 6)
+      setNotifications(latest)
+
+      // ✅ update unread count in parent
+      const unreadCount = latest.filter((n) => !n.read).length
+      if (onUnreadChange) onUnreadChange(unreadCount)
     } catch (error) {
       console.error("Error fetching notifications:", error)
     } finally {
@@ -92,14 +96,13 @@ const NotificationDropdown = ({
 
   const deduplicateByStudent = (notifications) => {
     const studentMap = new Map()
-    
-    notifications.forEach(notification => {
+    notifications.forEach((notification) => {
       const studentId = notification.studentId
       if (studentId) {
         const existing = studentMap.get(studentId)
         const current = parseTimestamp(notification.timestamp)
         const existingTime = existing ? parseTimestamp(existing.timestamp) : 0
-        
+
         if (!existing || current > existingTime) {
           studentMap.set(studentId, notification)
         }
@@ -108,8 +111,8 @@ const NotificationDropdown = ({
       }
     })
 
-    return Array.from(studentMap.values()).sort((a, b) => 
-      parseTimestamp(b.timestamp) - parseTimestamp(a.timestamp)
+    return Array.from(studentMap.values()).sort(
+      (a, b) => parseTimestamp(b.timestamp) - parseTimestamp(a.timestamp)
     )
   }
 
@@ -127,26 +130,39 @@ const NotificationDropdown = ({
   }
 
   const handleNotificationClick = (notification) => {
-    // Instantly mark this notification as read in local state
-    setNotifications((prev) =>
-      prev.map((n) =>
-        n.id === notification.id ? { ...n, read: true } : n
-      )
+    // Mark as read locally
+    const updated = notifications.map((n) =>
+      n.id === notification.id ? { ...n, read: true } : n
     )
+    setNotifications(updated)
 
-    // Notify parent (so unread count / dropdown badge updates globally)
+    // ✅ update unread count in parent
+    const unreadCount = updated.filter((n) => !n.read).length
+    if (onUnreadChange) onUnreadChange(unreadCount)
+
+    // Notify backend or parent handler
     if (onMarkAsRead) {
       onMarkAsRead(notification.id)
     }
 
-    // Navigate to Notifications page
+    // Navigate to full notifications page
     navigate("/dashboard/notifications")
   }
 
-  const unreadCount = notifications.filter(n => !n.read).length
+  const handleMarkAllAsRead = () => {
+    const updated = notifications.map((n) => ({ ...n, read: true }))
+    setNotifications(updated)
+
+    if (onMarkAllAsRead) onMarkAllAsRead()
+
+    // ✅ Reset unread count in parent
+    if (onUnreadChange) onUnreadChange(0)
+  }
+
+  const unreadCount = notifications.filter((n) => !n.read).length
 
   return (
-    <div 
+    <div
       className="absolute right-0 mt-2 w-96 bg-white rounded-xl shadow-xl border border-gray-200 overflow-hidden"
       style={{ fontFamily: "'Nunito', sans-serif" }}
     >
@@ -154,8 +170,8 @@ const NotificationDropdown = ({
       <div className="px-5 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 flex justify-between items-center">
         <h3 className="font-bold text-white text-sm">NOTIFICATIONS</h3>
         {unreadCount > 0 && (
-          <button 
-            onClick={onMarkAllAsRead} 
+          <button
+            onClick={handleMarkAllAsRead}
             className="text-xs text-white hover:text-purple-100 font-bold transition-colors"
           >
             Mark all read
@@ -163,7 +179,7 @@ const NotificationDropdown = ({
         )}
       </div>
 
-      {/* Notifications List - Fixed Height, No Scroll */}
+      {/* List */}
       <div className="bg-gray-50">
         {loading ? (
           <div className="px-5 py-12 text-center">
@@ -177,22 +193,40 @@ const NotificationDropdown = ({
                 key={notification.id}
                 className={`px-4 py-3 hover:bg-white cursor-pointer transition-all ${
                   notification.type === "MISSION_COMPLETION"
-                    ? !notification.read ? "bg-yellow-50 border-l-4 border-yellow-500" : "bg-white"
-                    : !notification.read ? "bg-indigo-50 border-l-4 border-indigo-500" : "bg-white"
+                    ? !notification.read
+                      ? "bg-yellow-50 border-l-4 border-yellow-500"
+                      : "bg-white"
+                    : !notification.read
+                      ? "bg-indigo-50 border-l-4 border-indigo-500"
+                      : "bg-white"
                 }`}
                 onClick={() => handleNotificationClick(notification)}
               >
                 <div className="flex items-start gap-3">
-                  {/* Icon - Award for mission completion, User for registration */}
-                  <div className={`flex-shrink-0 w-10 h-10 rounded-lg flex items-center justify-center ${
-                    notification.type === "MISSION_COMPLETION"
-                      ? !notification.read ? "bg-yellow-100" : "bg-yellow-50"
-                      : !notification.read ? "bg-indigo-100" : "bg-gray-100"
-                  }`}>
+                  {/* Icon */}
+                  <div
+                    className={`flex-shrink-0 w-10 h-10 rounded-lg flex items-center justify-center ${
+                      notification.type === "MISSION_COMPLETION"
+                        ? !notification.read
+                          ? "bg-yellow-100"
+                          : "bg-yellow-50"
+                        : !notification.read
+                          ? "bg-indigo-100"
+                          : "bg-gray-100"
+                    }`}
+                  >
                     {notification.type === "MISSION_COMPLETION" ? (
-                      <Award className={`h-5 w-5 ${!notification.read ? "text-yellow-600" : "text-yellow-500"}`} />
+                      <Award
+                        className={`h-5 w-5 ${
+                          !notification.read ? "text-yellow-600" : "text-yellow-500"
+                        }`}
+                      />
                     ) : (
-                      <User className={`h-5 w-5 ${!notification.read ? "text-indigo-600" : "text-gray-500"}`} />
+                      <User
+                        className={`h-5 w-5 ${
+                          !notification.read ? "text-indigo-600" : "text-gray-500"
+                        }`}
+                      />
                     )}
                   </div>
 
@@ -200,7 +234,11 @@ const NotificationDropdown = ({
                   <div className="flex-1 min-w-0">
                     <div className="flex items-start justify-between gap-2">
                       <div className="flex-1">
-                        <p className={`text-sm font-bold ${!notification.read ? "text-gray-900" : "text-gray-600"}`}>
+                        <p
+                          className={`text-sm font-bold ${
+                            !notification.read ? "text-gray-900" : "text-gray-600"
+                          }`}
+                        >
                           {notification.title}
                         </p>
                         <p className="text-xs text-gray-600 mt-0.5 font-medium line-clamp-1">
@@ -208,12 +246,16 @@ const NotificationDropdown = ({
                         </p>
                       </div>
                       {!notification.read && (
-                        <span className={`flex-shrink-0 w-2 h-2 rounded-full mt-1 ${
-                          notification.type === "MISSION_COMPLETION" ? "bg-yellow-600" : "bg-indigo-600"
-                        }`}></span>
+                        <span
+                          className={`flex-shrink-0 w-2 h-2 rounded-full mt-1 ${
+                            notification.type === "MISSION_COMPLETION"
+                              ? "bg-yellow-600"
+                              : "bg-indigo-600"
+                          }`}
+                        ></span>
                       )}
                     </div>
-                    
+
                     <div className="flex items-center gap-2 mt-2 text-xs">
                       <Clock className="h-3 w-3 text-gray-400" />
                       <span className="text-gray-500 font-semibold">{notification.time}</span>
@@ -235,8 +277,8 @@ const NotificationDropdown = ({
 
       {/* Footer */}
       <div className="px-4 py-3 bg-white border-t border-gray-200">
-        <button 
-          onClick={() => navigate('/dashboard/notifications')} 
+        <button
+          onClick={() => navigate("/dashboard/notifications")}
           className="w-full flex items-center justify-center gap-2 text-sm text-indigo-600 hover:text-indigo-700 font-bold transition-colors py-2 hover:bg-indigo-50 rounded-lg"
         >
           See previous notifications
