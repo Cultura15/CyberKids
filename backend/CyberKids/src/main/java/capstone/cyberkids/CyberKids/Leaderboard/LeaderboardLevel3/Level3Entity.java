@@ -43,5 +43,3 @@ public class Level3Entity {
     public LocalDate getDate() { return date; }
     public void setDate(LocalDate date) { this.date = date; }
 }
-
-// CodeRabbit audit trigger

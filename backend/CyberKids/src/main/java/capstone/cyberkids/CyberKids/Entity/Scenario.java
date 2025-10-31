@@ -58,20 +58,25 @@ public class Scenario {
 
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
+
     public String getContent() { return content; }
     public void setContent(String content) { this.content = content; }
+
     public boolean isActive() { return active; }
     public void setActive(boolean active) { this.active = active; }
+
     public Teacher getTeacher() { return teacher; }
     public void setTeacher(Teacher teacher) { this.teacher = teacher; }
+
     public Date getCreatedAt() { return createdAt; }
     public void setCreatedAt(Date createdAt) { this.createdAt = createdAt; }
+
     public Date getUpdatedAt() { return updatedAt; }
     public void setUpdatedAt(Date updatedAt) { this.updatedAt = updatedAt; }
+
     public Classes getClassEntity() { return classEntity;}
     public void setClassEntity(Classes classEntity) { this.classEntity = classEntity;}
+
     public AnswerTypeLvl1 getCorrectAnswer() { return correctAnswer; }
     public void setCorrectAnswer(AnswerTypeLvl1 correctAnswer) { this.correctAnswer = correctAnswer; }
 }
-
-// CodeRabbit audit trigger

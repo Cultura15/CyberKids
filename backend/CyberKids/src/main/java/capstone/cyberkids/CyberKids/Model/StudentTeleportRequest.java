@@ -26,5 +26,3 @@ public class StudentTeleportRequest {
         this.targetLevel = targetLevel;
     }
 }
-
-// CodeRabbit audit trigger

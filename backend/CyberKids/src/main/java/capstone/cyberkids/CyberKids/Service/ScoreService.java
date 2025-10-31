@@ -5,7 +5,6 @@ import capstone.cyberkids.CyberKids.Repository.ScoreRepo;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import java.util.List;
 
 @Service
 public class ScoreService {
@@ -24,9 +23,7 @@ public class ScoreService {
         return scoreRepository.save(score);
     }
 
-    public List<Score> getAllScores() {
-        return scoreRepository.findAll();
-    }
+//    public List<Score> getAllScores() {
+//        return scoreRepository.findAll();
+//    }
 }
-
-// CodeRabbit audit trigger

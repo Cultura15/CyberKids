@@ -14,9 +14,7 @@ public class Notification {
     private Long id;
 
     private String message;
-
     private boolean isRead = false;
-
     private Instant timestamp = Instant.now();
 
     @ManyToOne
@@ -25,7 +23,6 @@ public class Notification {
 
     @Column(name = "type")
     private String type;
-
 
     public Notification() {}
 
@@ -43,7 +40,6 @@ public class Notification {
     public Long getId() {
         return id;
     }
-
     public void setId(Long id) {
         this.id = id;
     }
@@ -51,7 +47,6 @@ public class Notification {
     public String getMessage() {
         return message;
     }
-
     public void setMessage(String message) {
         this.message = message;
     }
@@ -59,7 +54,6 @@ public class Notification {
     public boolean isRead() {
         return isRead;
     }
-
     public void setRead(boolean read) {
         isRead = read;
     }
@@ -67,7 +61,6 @@ public class Notification {
     public Teacher getTeacher() {
         return teacher;
     }
-
     public void setTeacher(Teacher teacher) {
         this.teacher = teacher;
     }
@@ -75,7 +68,6 @@ public class Notification {
     public Instant getTimestamp() {
         return timestamp;
     }
-
     public void setTimestamp(Instant timestamp) {
         this.timestamp = timestamp;
     }
@@ -84,4 +76,3 @@ public class Notification {
     public void setType(String type) { this.type = type; }
 }
 
-// CodeRabbit audit trigger

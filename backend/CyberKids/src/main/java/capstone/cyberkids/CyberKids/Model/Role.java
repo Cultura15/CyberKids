@@ -5,5 +5,3 @@ public enum Role {
     STUDENT,
     ADMIN
 }
-
-// CodeRabbit audit trigger

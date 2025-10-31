@@ -4,5 +4,3 @@ public enum AnswerTypeLvl1 {
     SAFE,
     UNSAFE
 }
-
-// CodeRabbit audit trigger

@@ -33,5 +33,3 @@ public class CustomUserDetailsService implements UserDetailsService {
                 .build();
     }
 }
-
-// CodeRabbit audit trigger

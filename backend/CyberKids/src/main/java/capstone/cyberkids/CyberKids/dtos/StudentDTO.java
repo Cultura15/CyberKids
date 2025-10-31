@@ -55,7 +55,5 @@ public class StudentDTO {
     public void setOnline(Boolean online) {isOnline = online;}
 
     public Long getClassId() {return classId;}
-
     public void setClassId(Long classId) {this.classId = classId;}
-
 }

@@ -71,5 +71,3 @@ public class StudentService {
         repo.deleteById(id);
     }
 }
-
-// CodeRabbit audit trigger

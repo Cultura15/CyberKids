@@ -115,19 +115,19 @@ public class ScenarioService {
         return scenarioRepository.save(scenario);
     }
 
-    public void toggleScenarioStatus(Long scenarioId) {
-        Teacher teacher = teacherService.getLoggedInTeacher();
-
-        Scenario scenario = scenarioRepository.findById(scenarioId)
-                .orElseThrow(() -> new RuntimeException("Scenario not found"));
-
-        if (!scenario.getTeacher().getId().equals(teacher.getId())) {
-            throw new RuntimeException("You can only modify your own scenarios");
-        }
-
-        scenario.setActive(!scenario.isActive());
-        scenarioRepository.save(scenario);
-    }
+//    public void toggleScenarioStatus(Long scenarioId) {
+//        Teacher teacher = teacherService.getLoggedInTeacher();
+//
+//        Scenario scenario = scenarioRepository.findById(scenarioId)
+//                .orElseThrow(() -> new RuntimeException("Scenario not found"));
+//
+//        if (!scenario.getTeacher().getId().equals(teacher.getId())) {
+//            throw new RuntimeException("You can only modify your own scenarios");
+//        }
+//
+//        scenario.setActive(!scenario.isActive());
+//        scenarioRepository.save(scenario);
+//    }
 
     public void deleteScenario(Long scenarioId) {
         Teacher teacher = teacherService.getLoggedInTeacher();
@@ -190,5 +190,3 @@ public class ScenarioService {
         return scenarioRepository.countByTeacherAndActiveTrue(teacher);
     }
 }
-
-// CodeRabbit audit trigger

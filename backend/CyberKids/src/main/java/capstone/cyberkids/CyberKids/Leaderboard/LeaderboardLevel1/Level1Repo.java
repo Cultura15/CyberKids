@@ -10,7 +10,6 @@ import java.util.List;
 @Repository
 public interface Level1Repo extends JpaRepository<Level1Entity, Long> {
 
-    // Get best entry per student for a specific date
     @Query("SELECT e FROM Level1Entity e WHERE e.date = :date " +
             "AND e.id IN (SELECT MAX(e2.id) FROM Level1Entity e2 " +
             "WHERE e2.date = :date AND e2.score = " +
@@ -20,5 +19,3 @@ public interface Level1Repo extends JpaRepository<Level1Entity, Long> {
             "ORDER BY e.score DESC, e.totalTimeTaken ASC")
     List<Level1Entity> findBestScoresByDate(@Param("date") LocalDate date);
 }
-
-// CodeRabbit audit trigger

@@ -23,6 +23,7 @@ public class AuthController {
         this.jwtUtil = jwtUtil;
     }
 
+    // Teacher Login with JWT
     @PostMapping("/login")
     public ResponseEntity<Map<String, Object>> login(@RequestBody AuthRequest request) {
         String token = authService.login(request.getEmail(), request.getPassword());
@@ -42,7 +43,7 @@ public class AuthController {
         return ResponseEntity.ok(response);
     }
 
-
+    // Validate teacher via token
     @GetMapping("/token-login")
     public ResponseEntity<Map<String, String>> tokenLogin(@RequestHeader("Authorization") String authHeader) {
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
@@ -67,4 +68,3 @@ public class AuthController {
     }
 }
 
-// CodeRabbit audit trigger

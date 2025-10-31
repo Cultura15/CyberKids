@@ -23,6 +23,7 @@ public class TimerController {
         this.studentRepo = studentRepo;
     }
 
+    // Roblox endpoint to create timer entry
     @PostMapping("/update")
     public ResponseEntity<Timer> updateTimer(@RequestBody TimerRequest request) {
         try {
@@ -33,22 +34,7 @@ public class TimerController {
         }
     }
 
-    @GetMapping("/student/{studentId}")
-    public ResponseEntity<List<Timer>> getByStudent(@PathVariable Long studentId) {
-        List<Timer> list = timerService.getTimersByStudentId(studentId);
-        return ResponseEntity.ok(list);
-    }
-
-    @GetMapping("/challenge/{type}")
-    public ResponseEntity<List<Timer>> getByChallenge(@PathVariable String type) {
-        try {
-            ChallengeType ct = ChallengeType.valueOf(type.toUpperCase());
-            return ResponseEntity.ok(timerService.getTimersByChallengeType(ct));
-        } catch (IllegalArgumentException ex) {
-            return ResponseEntity.badRequest().build();
-        }
-    }
-
+    // Roblox endpoint to delete timer entry for unfinished game
     @DeleteMapping("/delete-latest/{robloxId}")
     public ResponseEntity<String> deleteLatestTimer(@PathVariable String robloxId) {
         try {
@@ -62,6 +48,23 @@ public class TimerController {
             return ResponseEntity.internalServerError().body("Error deleting timer: " + e.getMessage());
         }
     }
+
+
+//    @GetMapping("/student/{studentId}")
+//    public ResponseEntity<List<Timer>> getByStudent(@PathVariable Long studentId) {
+//        List<Timer> list = timerService.getTimersByStudentId(studentId);
+//        return ResponseEntity.ok(list);
+//    }
+//
+//    @GetMapping("/challenge/{type}")
+//    public ResponseEntity<List<Timer>> getByChallenge(@PathVariable String type) {
+//        try {
+//            ChallengeType ct = ChallengeType.valueOf(type.toUpperCase());
+//            return ResponseEntity.ok(timerService.getTimersByChallengeType(ct));
+//        } catch (IllegalArgumentException ex) {
+//            return ResponseEntity.badRequest().build();
+//        }
+//    }
 }
 
 // CodeRabbit audit trigger

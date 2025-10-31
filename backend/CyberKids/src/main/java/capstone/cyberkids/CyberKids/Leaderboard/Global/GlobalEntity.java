@@ -18,7 +18,6 @@ public class GlobalEntity {
     private int highestScore;
     private String bestTimeTaken;
     private int globalRank;
-
     private String level;
 
     public GlobalEntity() {}
@@ -48,5 +47,3 @@ public class GlobalEntity {
     public String getLevel() { return level; }
     public void setLevel(String level) { this.level = level; }
 }
-
-// CodeRabbit audit trigger

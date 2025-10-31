@@ -37,5 +37,3 @@ public class TeacherService {
         return teacherRepo.save(teacher);
     }
 }
-
-// CodeRabbit audit trigger

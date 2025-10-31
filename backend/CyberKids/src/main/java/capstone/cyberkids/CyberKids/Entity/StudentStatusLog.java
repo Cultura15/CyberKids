@@ -15,7 +15,6 @@ public class StudentStatusLog {
     private Student student;
 
     private boolean isOnline;
-
     private LocalDateTime timestamp;
 
     public StudentStatusLog() {}
@@ -29,16 +28,11 @@ public class StudentStatusLog {
     public Long getId() { return id; }
 
     public Student getStudent() { return student; }
-
     public void setStudent(Student student) { this.student = student; }
 
     public boolean isOnline() { return isOnline; }
-
     public void setOnline(boolean online) { isOnline = online; }
 
     public LocalDateTime getTimestamp() { return timestamp; }
-
     public void setTimestamp(LocalDateTime timestamp) { this.timestamp = timestamp; }
 }
-
-// CodeRabbit audit trigger

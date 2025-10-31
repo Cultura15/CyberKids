@@ -15,7 +15,6 @@ public class ClassDTO {
     public String getGrade() {
         return grade;
     }
-
     public void setGrade(String grade) {
         this.grade = grade;
     }
@@ -23,11 +22,10 @@ public class ClassDTO {
     public String getSection() {
         return section;
     }
-
     public void setSection(String section) {
         this.section = section;
     }
 }
 
-// CodeRabbit audit trigger
+
 

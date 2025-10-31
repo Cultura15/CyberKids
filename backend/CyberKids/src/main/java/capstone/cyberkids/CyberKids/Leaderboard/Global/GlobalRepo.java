@@ -8,7 +8,7 @@ import java.util.Optional;
 
 @Repository
 public interface GlobalRepo extends JpaRepository<GlobalEntity, Long> {
+
     GlobalEntity findByStudent(Student student);
 }
 
-// CodeRabbit audit trigger

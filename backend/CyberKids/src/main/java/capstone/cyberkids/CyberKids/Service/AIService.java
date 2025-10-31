@@ -26,8 +26,10 @@ public class AIService {
 
         Map<String, Object> requestBody = new HashMap<>();
         requestBody.put("model", "gpt-4o-mini");
+
         // OPTIMIZED: Reduced max_tokens for faster responses
         requestBody.put("max_tokens", 100);
+
         // OPTIMIZED: Slightly higher temperature for more natural responses
         requestBody.put("temperature", 0.7);
 
@@ -89,5 +91,3 @@ public class AIService {
         return prompt.toString();
     }
 }
-
-// CodeRabbit audit trigger

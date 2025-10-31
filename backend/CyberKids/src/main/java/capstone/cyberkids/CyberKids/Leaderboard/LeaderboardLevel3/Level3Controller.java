@@ -27,19 +27,16 @@ public class Level3Controller {
             System.out.println("Roblox ID: " + robloxId);
             System.out.println("Request body: " + requestData);
 
-            // Extract data from request
             Integer score = (Integer) requestData.get("score");
             String totalTimeTaken = (String) requestData.get("totalTimeTaken");
 
             System.out.println("Parsed score: " + score);
             System.out.println("Parsed time: '" + totalTimeTaken + "'");
 
-            // Basic validation
             if (score == null || score < 0) {
                 return ResponseEntity.badRequest().body("Invalid score provided");
             }
 
-            // Update the leaderboard
             Level3Entity updatedEntry =
                     leaderboardService.updateStudentDailyScoreAndTimeByRobloxId(
                             robloxId, score, totalTimeTaken, LocalDate.now());
@@ -90,4 +87,3 @@ public class Level3Controller {
     }
 }
 
-// CodeRabbit audit trigger
