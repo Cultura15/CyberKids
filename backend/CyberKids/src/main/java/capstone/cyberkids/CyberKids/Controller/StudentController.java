@@ -215,27 +215,4 @@ public class StudentController {
         }
         return ResponseEntity.notFound().build();
     }
-
-
-
-//    @GetMapping("/{id}")
-//    public ResponseEntity<Student> getById(@PathVariable Long id) {
-//        return studentRepo.findById(id)
-//                .map(ResponseEntity::ok)
-//                .orElse(ResponseEntity.notFound().build());
-//    }
-//
-//    @GetMapping
-//    public List<Student> listAll() {
-//        return studentRepo.findAll();
-//    }
-//
-//    @DeleteMapping("/{id}")
-//    public ResponseEntity<Void> delete(@PathVariable Long id) {
-//        if (!studentRepo.existsById(id)) {
-//            return ResponseEntity.notFound().build();
-//        }
-//        studentService.delete(id);
-//        return ResponseEntity.noContent().build();
-//    }
 }

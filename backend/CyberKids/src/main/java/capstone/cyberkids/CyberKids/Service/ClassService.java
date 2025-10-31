@@ -1,11 +1,9 @@
 package capstone.cyberkids.CyberKids.Service;
 
 import capstone.cyberkids.CyberKids.Entity.Classes;
-import capstone.cyberkids.CyberKids.Entity.Student;
 import capstone.cyberkids.CyberKids.Entity.Teacher;
 import capstone.cyberkids.CyberKids.Repository.ClassRepo;
 import capstone.cyberkids.CyberKids.Repository.TeacherRepo;
-import capstone.cyberkids.CyberKids.dtos.ClassDTO;
 import jakarta.transaction.Transactional;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
@@ -28,13 +26,11 @@ public class ClassService {
         Teacher teacher = teacherRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("Teacher not found with email: " + email));
 
-        // Check if class with same grade, section, and teacher exists
         boolean exists = classRepository.findByGradeAndSectionAndTeacherId(grade, section, teacher.getId()).isPresent();
         if (exists) {
             throw new RuntimeException("Class with Grade " + grade + " and Section " + section + " already exists for this teacher.");
         }
 
-        // Validate colorTheme
         List<String> validThemes = Arrays.asList(
                 "indigo-purple", "blue-cyan", "green-emerald",
                 "orange-red", "pink-rose", "violet-fuchsia"
@@ -48,8 +44,6 @@ public class ClassService {
         Classes classEntity = new Classes(grade, section, teacher, classCode, colorTheme, maxStudents);
         return classRepository.save(classEntity);
     }
-
-
 
     private String generateUniqueClassCode() {
         String code;
@@ -120,23 +114,6 @@ public class ClassService {
     public Classes getClassById(Long classId) {
         return classRepository.findById(classId)
                 .orElseThrow(() -> new RuntimeException("Class not found with id: " + classId));
-    }
-
-
-    public List<ClassDTO> getAllClasses() {
-        List<Classes> classes = classRepository.findAll();
-        return classes.stream()
-                .map(c -> new ClassDTO(c.getGrade(), c.getSection()))
-                .collect(Collectors.toList());
-    }
-
-    public Classes updateClass(Long classId, String grade, String section) {
-        Classes existingClass = classRepository.findById(classId)
-                .orElseThrow(() -> new RuntimeException("Class not found"));
-
-        existingClass.setGrade(grade);
-        existingClass.setSection(section);
-        return classRepository.save(existingClass);
     }
 
     public void deleteClass(Long classId) {

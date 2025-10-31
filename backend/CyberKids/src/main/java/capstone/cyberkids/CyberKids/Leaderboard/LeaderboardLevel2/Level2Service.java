@@ -23,23 +23,19 @@ public class Level2Service {
     private GlobalService globalLeaderboardService;
 
     public Level2Entity updateStudentDailyScoreAndTimeByRobloxId(String robloxId, int score, String totalTimeTaken, LocalDate date) {
-        // Find student by Roblox ID
         Student student = studentRepo.findByRobloxId(robloxId);
         if (student == null) {
             throw new RuntimeException("Student not found with Roblox ID: " + robloxId);
         }
 
-        // Debug logging
         System.out.println("=== LEADERBOARD UPDATE DEBUG ===");
         System.out.println("Student: " + student.getRobloxName());
         System.out.println("Raw score: " + score);
         System.out.println("Raw time received: '" + totalTimeTaken + "'");
 
-        // Clean and validate the time input
         String cleanTime = cleanTimeInput(totalTimeTaken);
         System.out.println("Cleaned time: '" + cleanTime + "'");
 
-        // Create and save the entry
         Level2Entity entry = new Level2Entity(student, score, cleanTime, date);
         Level2Entity savedEntry = leaderboardRepo.save(entry);
 
@@ -52,7 +48,6 @@ public class Level2Service {
     }
 
     private String cleanTimeInput(String timeInput) {
-        // Handle null or empty
         if (timeInput == null || timeInput.trim().isEmpty()) {
             System.out.println("Time input is null/empty, defaulting to 00:00");
             return "00:00";
@@ -61,13 +56,11 @@ public class Level2Service {
         String trimmed = timeInput.trim();
         System.out.println("Trimmed input: '" + trimmed + "'");
 
-        // If it's already in MM:SS format, return as-is
         if (trimmed.matches("\\d{1,2}:\\d{2}")) {
             System.out.println("Time already in MM:SS format");
             return trimmed;
         }
 
-        // If it's just a number (seconds), convert to MM:SS
         try {
             int totalSeconds = Integer.parseInt(trimmed);
             int minutes = totalSeconds / 60;
@@ -97,4 +90,3 @@ public class Level2Service {
     }
 }
 
-// CodeRabbit audit trigger

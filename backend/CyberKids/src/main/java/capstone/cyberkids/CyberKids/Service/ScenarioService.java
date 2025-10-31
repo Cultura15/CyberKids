@@ -11,7 +11,6 @@ import capstone.cyberkids.CyberKids.dtos.GameScenarioDTO;
 import capstone.cyberkids.CyberKids.dtos.FeedbackResponseDTO;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -67,24 +66,6 @@ public class ScenarioService {
         return scenarioRepository.save(scenario);
     }
 
-    public List<ScenarioDTO> getMyScenarios() {
-        Teacher teacher = teacherService.getLoggedInTeacher();
-        List<Scenario> scenarios = scenarioRepository.findByTeacherOrderByCreatedAtDesc(teacher);
-
-        return scenarios.stream()
-                .map(ScenarioDTO::new)
-                .collect(Collectors.toList());
-    }
-
-    public List<ScenarioDTO> getActiveScenarios() {
-        Teacher teacher = teacherService.getLoggedInTeacher();
-        List<Scenario> scenarios = scenarioRepository.findByTeacherAndActiveTrue(teacher);
-
-        return scenarios.stream()
-                .map(ScenarioDTO::new)
-                .collect(Collectors.toList());
-    }
-
     public Long getTeacherIdByEmail(String email) {
         Teacher teacher = teacherRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("Teacher not found"));
@@ -115,20 +96,6 @@ public class ScenarioService {
         return scenarioRepository.save(scenario);
     }
 
-//    public void toggleScenarioStatus(Long scenarioId) {
-//        Teacher teacher = teacherService.getLoggedInTeacher();
-//
-//        Scenario scenario = scenarioRepository.findById(scenarioId)
-//                .orElseThrow(() -> new RuntimeException("Scenario not found"));
-//
-//        if (!scenario.getTeacher().getId().equals(teacher.getId())) {
-//            throw new RuntimeException("You can only modify your own scenarios");
-//        }
-//
-//        scenario.setActive(!scenario.isActive());
-//        scenarioRepository.save(scenario);
-//    }
-
     public void deleteScenario(Long scenarioId) {
         Teacher teacher = teacherService.getLoggedInTeacher();
 
@@ -142,7 +109,6 @@ public class ScenarioService {
         scenarioRepository.delete(scenario);
     }
 
-    // Method for Roblox game to fetch all active scenarios
     public List<Scenario> getAllActiveScenariosForGame() {
         return scenarioRepository.findAllActiveScenarios();
     }
@@ -152,10 +118,6 @@ public class ScenarioService {
         return scenarioRepository.findByClassEntityAndActiveTrue(classEntity);
     }
 
-
-
-
-    // New method for Roblox game to get scenarios as GameScenarioDTO
     public List<GameScenarioDTO> getAllActiveScenariosForGameDTO() {
         List<Scenario> scenarios = scenarioRepository.findAllActiveScenarios();
         return scenarios.stream()
@@ -163,7 +125,6 @@ public class ScenarioService {
                 .collect(Collectors.toList());
     }
 
-    // New method to evaluate answer and generate AI feedback
     public FeedbackResponseDTO evaluateAnswerWithAI(Long scenarioId, String userAnswer) {
         Scenario scenario = scenarioRepository.findById(scenarioId)
                 .orElseThrow(() -> new RuntimeException("Scenario not found"));
@@ -172,14 +133,11 @@ public class ScenarioService {
             throw new RuntimeException("This scenario is not active");
         }
 
-        // Normalize user answer
         String normalizedUserAnswer = userAnswer.trim().toUpperCase();
         String correctAnswer = scenario.getCorrectAnswer().name();
 
-        // Check if answer is correct
         boolean isCorrect = normalizedUserAnswer.equals(correctAnswer);
 
-        // Generate AI feedback
         String aiFeedback = aiService.generateScenarioFeedback(scenario, normalizedUserAnswer, isCorrect);
 
         return new FeedbackResponseDTO(aiFeedback, isCorrect, correctAnswer, normalizedUserAnswer, scenarioId);

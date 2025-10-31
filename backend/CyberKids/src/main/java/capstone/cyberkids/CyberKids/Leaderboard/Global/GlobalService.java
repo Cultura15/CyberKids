@@ -32,104 +32,21 @@ public class GlobalService {
     @Autowired private ClassService classService;
     @Autowired private StudentService studentService;
 
-    /** ================== LEVEL 1 ================== **/
+
     @Transactional
     public void rebuildFromLevel1() {
         rebuildFromLevel(level1Repo.findAll(), "Level 1");
     }
 
-    public List<GlobalLeaderboardDTO> getAllRankedLevel1ForTeacher() {
-        return getRankedLeaderboardForTeacher(level1Repo.findAll(), "Level 1");
-    }
 
-    /** ================== LEVEL 2 ================== **/
     @Transactional
     public void rebuildFromLevel2() {
         rebuildFromLevel(level2Repo.findAll(), "Level 2");
     }
 
-    public List<GlobalLeaderboardDTO> getAllRankedLevel2ForTeacher() {
-        return getRankedLeaderboardForTeacher(level2Repo.findAll(), "Level 2");
-    }
-
-    /** ================== LEVEL 3 ================== **/
     @Transactional
     public void rebuildFromLevel3() {
         rebuildFromLevel(level3Repo.findAll(), "Level 3");
-    }
-
-    public List<GlobalLeaderboardDTO> getAllRankedLevel3ForTeacher() {
-        return getRankedLeaderboardForTeacher(level3Repo.findAll(), "Level 3");
-    }
-
-    /** ================== COMBINED ALL LEVELS ================== **/
-    public List<GlobalLeaderboardDTO> getAllRankedCombinedForTeacher() {
-        Long teacherId = getLoggedInTeacherId();
-        Set<Student> students = getStudentsForTeacher(teacherId);
-
-        List<Object> allEntries = new ArrayList<>();
-        allEntries.addAll(level1Repo.findAll());
-        allEntries.addAll(level2Repo.findAll());
-        allEntries.addAll(level3Repo.findAll());
-
-        Map<Student, ScoreTime> bestPerStudent = new HashMap<>();
-
-        for (Object entry : allEntries) {
-            Student s;
-            int score;
-            String time;
-            String level;
-
-            if (entry instanceof Level1Entity e) {
-                s = e.getStudent(); score = e.getScore(); time = e.getTotalTimeTaken(); level = "Level 1";
-            } else if (entry instanceof Level2Entity e) {
-                s = e.getStudent(); score = e.getScore(); time = e.getTotalTimeTaken(); level = "Level 2";
-            } else if (entry instanceof Level3Entity e) {
-                s = e.getStudent(); score = e.getScore(); time = e.getTotalTimeTaken(); level = "Level 3";
-            } else continue;
-
-            if (!students.contains(s)) continue;
-
-            ScoreTime currentBest = bestPerStudent.get(s);
-            if (currentBest == null || score > currentBest.score ||
-                    (score == currentBest.score && compareTime(time, currentBest.time) < 0)) {
-                bestPerStudent.put(s, new ScoreTime(score, time, level));
-            }
-        }
-
-        List<Map.Entry<Student, ScoreTime>> sorted = bestPerStudent.entrySet().stream()
-                .sorted(Comparator
-                        .comparing((Map.Entry<Student, ScoreTime> e) -> e.getValue().score).reversed()
-                        .thenComparing(e -> e.getValue().time))
-                .collect(Collectors.toList());
-
-        AtomicInteger rank = new AtomicInteger(1);
-        return sorted.stream()
-                .map(e -> new GlobalLeaderboardDTO(
-                        e.getKey().getRealName(),
-                        e.getKey().getRobloxName(),
-                        e.getValue().score,
-                        e.getValue().time,
-                        rank.getAndIncrement(),
-                        e.getValue().level
-                ))
-                .collect(Collectors.toList());
-    }
-
-    /** ================== CLASS SPECIFIC LEADERBOARD ================== **/
-    public List<GlobalLeaderboardDTO> getRankedByClass(Long classId) {
-        validateTeacherOwnership(classId);
-        Classes targetClass = classService.getClassById(classId);
-        Set<Student> studentsInClass = new HashSet<>(targetClass.getStudents());
-
-        List<GlobalEntity> filtered = globalRepo.findAll().stream()
-                .filter(g -> studentsInClass.contains(g.getStudent()))
-                .sorted(Comparator.comparing(GlobalEntity::getGlobalRank))
-                .collect(Collectors.toList());
-
-        return filtered.stream()
-                .map(GlobalLeaderboardDTO::new)
-                .collect(Collectors.toList());
     }
 
     private void validateTeacherOwnership(Long classId) {
@@ -160,7 +77,6 @@ public class GlobalService {
             GlobalEntity existing = globalRepo.findByStudent(student);
 
             if (existing != null) {
-                // ✅ Only update if new score is higher or time is better
                 if (score > existing.getHighestScore() ||
                         (score == existing.getHighestScore() && compareTime(totalTime, existing.getBestTimeTaken()) < 0)) {
 
@@ -168,11 +84,10 @@ public class GlobalService {
                     existing.setBestTimeTaken(totalTime);
                     existing.setLevel(levelName);
 
-                    globalRepo.save(existing); // 🔥 update individually
+                    globalRepo.save(existing);
                 }
 
             } else {
-                // New student — add to batch insert
                 GlobalEntity global = new GlobalEntity();
                 global.setStudent(student);
                 global.setHighestScore(score);
@@ -182,13 +97,10 @@ public class GlobalService {
             }
         }
 
-        // 🧩 Only insert *new* entities (not existing ones)
         if (!newEntries.isEmpty()) {
             globalRepo.saveAll(newEntries);
         }
     }
-
-
 
     private List<GlobalLeaderboardDTO> getRankedLeaderboardForTeacher(List<?> entries, String levelName) {
         Long teacherId = getLoggedInTeacherId();
@@ -259,7 +171,6 @@ public class GlobalService {
         Classes targetClass = classService.getClassById(classId);
         Set<Student> studentsInClass = new HashSet<>(targetClass.getStudents());
 
-        // Pick level entries
         List<?> entries;
         switch (levelName) {
             case "Level 1": entries = level1Repo.findAll(); break;
@@ -304,60 +215,6 @@ public class GlobalService {
                 .collect(Collectors.toList());
     }
 
-    public List<GlobalLeaderboardDTO> getAllRankedCombinedByClass(Long classId) {
-        validateTeacherOwnership(classId);  // ensure teacher can access this class
-        Classes targetClass = classService.getClassById(classId);
-        Set<Student> studentsInClass = new HashSet<>(targetClass.getStudents());
-
-        List<Object> allEntries = new ArrayList<>();
-        allEntries.addAll(level1Repo.findAll());
-        allEntries.addAll(level2Repo.findAll());
-        allEntries.addAll(level3Repo.findAll());
-
-        Map<Student, ScoreTime> bestPerStudent = new HashMap<>();
-
-        for (Object entry : allEntries) {
-            Student s;
-            int score;
-            String time;
-            String level;
-
-            if (entry instanceof Level1Entity e) {
-                s = e.getStudent(); score = e.getScore(); time = e.getTotalTimeTaken(); level = "Level 1";
-            } else if (entry instanceof Level2Entity e) {
-                s = e.getStudent(); score = e.getScore(); time = e.getTotalTimeTaken(); level = "Level 2";
-            } else if (entry instanceof Level3Entity e) {
-                s = e.getStudent(); score = e.getScore(); time = e.getTotalTimeTaken(); level = "Level 3";
-            } else continue;
-
-            if (!studentsInClass.contains(s)) continue; // filter only students in this class
-
-            ScoreTime currentBest = bestPerStudent.get(s);
-            if (currentBest == null || score > currentBest.score ||
-                    (score == currentBest.score && compareTime(time, currentBest.time) < 0)) {
-                bestPerStudent.put(s, new ScoreTime(score, time, level));
-            }
-        }
-
-        List<Map.Entry<Student, ScoreTime>> sorted = bestPerStudent.entrySet().stream()
-                .sorted(Comparator
-                        .comparing((Map.Entry<Student, ScoreTime> e) -> e.getValue().score).reversed()
-                        .thenComparing(e -> e.getValue().time))
-                .collect(Collectors.toList());
-
-        AtomicInteger rank = new AtomicInteger(1);
-        return sorted.stream()
-                .map(e -> new GlobalLeaderboardDTO(
-                        e.getKey().getRealName(),
-                        e.getKey().getRobloxName(),
-                        e.getValue().score,
-                        e.getValue().time,
-                        rank.getAndIncrement(),
-                        e.getValue().level
-                ))
-                .collect(Collectors.toList());
-    }
-
     public List<GlobalLeaderboardDTO> getAllRankedOverallForTeacher() {
         Long teacherId = getLoggedInTeacherId();
         Set<Student> students = getStudentsForTeacher(teacherId);
@@ -383,7 +240,7 @@ public class GlobalService {
                 s = e.getStudent(); score = e.getScore(); time = e.getTotalTimeTaken(); level = "Level 3";
             } else continue;
 
-            if (!students.contains(s)) continue; // only the teacher's students
+            if (!students.contains(s)) continue;
 
             ScoreTime currentBest = bestPerStudent.get(s);
             if (currentBest == null || score > currentBest.score ||
@@ -411,9 +268,6 @@ public class GlobalService {
                 .collect(Collectors.toList());
     }
 
-
-
-
     private static class ScoreTime {
         int score;
         String time;
@@ -434,5 +288,3 @@ public class GlobalService {
         }
     }
 }
-
-// CodeRabbit audit trigger

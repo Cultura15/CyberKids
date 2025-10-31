@@ -2,7 +2,6 @@ package capstone.cyberkids.CyberKids.Service;
 
 import capstone.cyberkids.CyberKids.Entity.Student;
 import capstone.cyberkids.CyberKids.Entity.Timer;
-import capstone.cyberkids.CyberKids.Model.ChallengeType;
 import capstone.cyberkids.CyberKids.Model.TimerRequest;
 import capstone.cyberkids.CyberKids.Repository.StudentRepo;
 import capstone.cyberkids.CyberKids.Repository.TimerRepo;
@@ -52,14 +51,6 @@ public class TimerService {
         }
     }
 
-    public List<Timer> getTimersByStudentId(Long studentId) {
-        return timerRepository.findByStudent_Id(studentId);
-    }
-
-    public List<Timer> getTimersByChallengeType(ChallengeType challengeType) {
-        return timerRepository.findByChallengeType(challengeType);
-    }
-
     public boolean deleteLatestTimerByRobloxId(String robloxId) {
         Student student = studentRepo.findByRobloxId(robloxId);
         if (student == null) return false;
@@ -71,5 +62,4 @@ public class TimerService {
         }
         return false;
     }
-
 }

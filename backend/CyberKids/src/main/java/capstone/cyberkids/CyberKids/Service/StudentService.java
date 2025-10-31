@@ -6,9 +6,7 @@ import capstone.cyberkids.CyberKids.dtos.StudentSummaryDTO;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -19,10 +17,6 @@ public class StudentService {
 
     public Student save(Student s) {
         return repo.save(s);
-    }
-
-    public Optional<Student> findById(Long id) {
-        return repo.findById(id);
     }
 
     public List<StudentSummaryDTO> getStudentSummariesByGradeAndSection(String grade, String section) {
@@ -43,31 +37,20 @@ public class StudentService {
                 .orElseThrow(() -> new EntityNotFoundException("Student not found"));
     }
 
-
-    public List<Student> getStudentsBySection(String section) {
-        return repo.findAllByClassEntity_Section(section);
-    }
-
     public boolean moveStudentToWorld(String robloxId, String targetWorld, String targetLevel) {
+
         Student student = repo.findByRobloxId(robloxId);
         if (student == null) {
-            return false; // Student not found
+            return false;
         }
 
-        // ✅ Check if student is online
         if (student.getOnline() == null || !student.getOnline()) {
-            // Student is offline
-            return false; // indicate not allowed
+            return false;
         }
 
-        // Proceed only if online
         student.setTargetWorld(targetWorld);
         student.setTargetLevel(targetLevel);
         repo.save(student);
         return true;
-    }
-
-    public void delete(Long id) {
-        repo.deleteById(id);
     }
 }
