@@ -32,5 +32,6 @@ public class CustomUserDetailsService implements UserDetailsService {
                 .roles(teacher.get().getRole().name())
                 .build();
     }
-
 }
+
+// CodeRabbit audit trigger

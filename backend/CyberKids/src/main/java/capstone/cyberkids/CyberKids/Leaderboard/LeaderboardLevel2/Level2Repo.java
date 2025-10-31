@@ -19,3 +19,5 @@ public interface Level2Repo extends JpaRepository<Level2Entity, Long> {
             "ORDER BY e.score DESC, e.totalTimeTaken ASC")
     List<Level2Entity> findBestScoresByDate(@Param("date") LocalDate date);
 }
+
+// CodeRabbit audit trigger

@@ -16,10 +16,10 @@ public class GlobalEntity {
     private Student student;
 
     private int highestScore;
-    private String bestTimeTaken;  // optional tie-breaker
+    private String bestTimeTaken;
     private int globalRank;
 
-    private String level; // <-- new field
+    private String level;
 
     public GlobalEntity() {}
 
@@ -32,6 +32,7 @@ public class GlobalEntity {
     }
 
     public Long getId() { return id; }
+
     public Student getStudent() { return student; }
     public void setStudent(Student student) { this.student = student; }
 
@@ -44,6 +45,8 @@ public class GlobalEntity {
     public int getGlobalRank() { return globalRank; }
     public void setGlobalRank(int globalRank) { this.globalRank = globalRank; }
 
-    public String getLevel() { return level; } // <-- getter
-    public void setLevel(String level) { this.level = level; } // <-- setter
+    public String getLevel() { return level; }
+    public void setLevel(String level) { this.level = level; }
 }
+
+// CodeRabbit audit trigger

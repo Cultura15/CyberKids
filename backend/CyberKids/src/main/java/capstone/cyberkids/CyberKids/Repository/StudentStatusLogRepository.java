@@ -8,3 +8,5 @@ import java.util.List;
 public interface StudentStatusLogRepository extends JpaRepository<StudentStatusLog, Long> {
     List<StudentStatusLog> findByStudentOrderByTimestampDesc(Student student);
 }
+
+// CodeRabbit audit trigger

@@ -2,8 +2,8 @@ package capstone.cyberkids.CyberKids.dtos;
 
 public class AnswerSubmissionDTO {
     private Long scenarioId;
-    private String userAnswer; // "SAFE" or "UNSAFE"
-    private String playerName; // Optional: for tracking in Roblox
+    private String userAnswer;
+    private String playerName;
 
     public AnswerSubmissionDTO() {}
 
@@ -12,13 +12,16 @@ public class AnswerSubmissionDTO {
         this.userAnswer = userAnswer;
     }
 
-    // Getters and Setters
+
     public Long getScenarioId() { return scenarioId; }
+
     public void setScenarioId(Long scenarioId) { this.scenarioId = scenarioId; }
 
     public String getUserAnswer() { return userAnswer; }
+
     public void setUserAnswer(String userAnswer) { this.userAnswer = userAnswer; }
 
     public String getPlayerName() { return playerName; }
+
     public void setPlayerName(String playerName) { this.playerName = playerName; }
 }

@@ -148,3 +148,5 @@ public class OAuthController {
         response.sendRedirect(frontendUrl + "/login?error=invalid_oauth_request");
     }
 }
+
+// CodeRabbit audit trigger

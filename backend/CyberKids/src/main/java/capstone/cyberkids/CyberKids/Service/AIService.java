@@ -89,3 +89,5 @@ public class AIService {
         return prompt.toString();
     }
 }
+
+// CodeRabbit audit trigger

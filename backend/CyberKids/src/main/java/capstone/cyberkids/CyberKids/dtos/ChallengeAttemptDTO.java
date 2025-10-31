@@ -102,3 +102,5 @@ public class ChallengeAttemptDTO {
         this.endTime = endTime;
     }
 }
+
+// CodeRabbit audit trigger

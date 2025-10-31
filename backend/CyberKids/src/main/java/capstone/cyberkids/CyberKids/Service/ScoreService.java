@@ -28,3 +28,5 @@ public class ScoreService {
         return scoreRepository.findAll();
     }
 }
+
+// CodeRabbit audit trigger

@@ -72,69 +72,28 @@ public class StudentDetailDTO {
 
     }
 
-    // Getters and setters for all fields
 
-    public Long getId() {
-        return id;
-    }
+    public Long getId() {return id;}
+    public void setId(Long id) {this.id = id;}
 
-    public void setId(Long id) {
-        this.id = id;
-    }
+    public String getRealName() {return realName;}
+    public void setRealName(String realName) {this.realName = realName;}
 
-    public String getRealName() {
-        return realName;
-    }
+    public String getRobloxId() {return robloxId;}
+    public void setRobloxId(String robloxId) {this.robloxId = robloxId;}
 
-    public void setRealName(String realName) {
-        this.realName = realName;
-    }
+    public String getGrade() {return grade;}
+    public void setGrade(String grade) {this.grade = grade;}
 
-    public String getRobloxId() {
-        return robloxId;
-    }
+    public String getSection() {return section;}
+    public void setSection(String section) {this.section = section;}
 
-    public void setRobloxId(String robloxId) {
-        this.robloxId = robloxId;
-    }
+    public Boolean getIsOnline() {return isOnline;}
+    public void setIsOnline(Boolean isOnline) {this.isOnline = isOnline;}
 
-    public String getGrade() {
-        return grade;
-    }
+    public Long getClassId() {return classId;}
+    public void setClassId(Long classId) {this.classId = classId;}
 
-    public void setGrade(String grade) {
-        this.grade = grade;
-    }
-
-    public String getSection() {
-        return section;
-    }
-
-    public void setSection(String section) {
-        this.section = section;
-    }
-
-    public Boolean getIsOnline() {
-        return isOnline;
-    }
-
-    public void setIsOnline(Boolean isOnline) {
-        this.isOnline = isOnline;
-    }
-
-    public Long getClassId() {
-        return classId;
-    }
-
-    public void setClassId(Long classId) {
-        this.classId = classId;
-    }
-
-    public List<ChallengeAttemptDTO> getChallengeAttempts() {
-        return challengeAttempts;
-    }
-
-    public void setChallengeAttempts(List<ChallengeAttemptDTO> challengeAttempts) {
-        this.challengeAttempts = challengeAttempts;
-    }
+    public List<ChallengeAttemptDTO> getChallengeAttempts() {return challengeAttempts;}
+    public void setChallengeAttempts(List<ChallengeAttemptDTO> challengeAttempts) {this.challengeAttempts = challengeAttempts;}
 }

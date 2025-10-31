@@ -19,3 +19,5 @@ public interface ScenarioRepository extends JpaRepository<Scenario, Long> {
     List<Scenario> findAllActiveScenarios();
     long countByTeacherAndActiveTrue(Teacher teacher);
 }
+
+// CodeRabbit audit trigger

@@ -29,7 +29,6 @@ public class Level1Entity {
         this.date = date;
     }
 
-    // Getters and setters
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
 
@@ -45,3 +44,5 @@ public class Level1Entity {
     public LocalDate getDate() { return date; }
     public void setDate(LocalDate date) { this.date = date; }
 }
+
+// CodeRabbit audit trigger

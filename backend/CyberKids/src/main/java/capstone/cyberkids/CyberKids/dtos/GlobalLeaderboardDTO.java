@@ -9,7 +9,7 @@ public class GlobalLeaderboardDTO {
     private int highestScore;
     private String bestTimeTaken;
     private int globalRank;
-    private String level;  // <-- new field
+    private String level;
 
     public GlobalLeaderboardDTO(GlobalEntity entity) {
         this.realName = entity.getStudent().getRealNameOrFallback();
@@ -17,7 +17,7 @@ public class GlobalLeaderboardDTO {
         this.highestScore = entity.getHighestScore();
         this.bestTimeTaken = entity.getBestTimeTaken();
         this.globalRank = entity.getGlobalRank();
-        this.level = entity.getLevel();  // <-- set from entity
+        this.level = entity.getLevel();
     }
 
     public GlobalLeaderboardDTO(String realName, String robloxName, int highestScore, String bestTimeTaken, int globalRank, String level) {
@@ -26,16 +26,18 @@ public class GlobalLeaderboardDTO {
         this.highestScore = highestScore;
         this.bestTimeTaken = bestTimeTaken;
         this.globalRank = globalRank;
-        this.level = level;  // <-- set from parameter
+        this.level = level;
     }
 
     public String getRealName() { return realName; }
     public String getRobloxName() { return robloxName; }
+
     public int getHighestScore() { return highestScore; }
     public String getBestTimeTaken() { return bestTimeTaken; }
+
     public int getGlobalRank() { return globalRank; }
-    public String getLevel() { return level; }  // <-- getter
+    public String getLevel() { return level; }
 
     public void setGlobalRank(int globalRank) { this.globalRank = globalRank; }
-    public void setLevel(String level) { this.level = level; }  // <-- setter
+    public void setLevel(String level) { this.level = level; }  //
 }

@@ -139,3 +139,5 @@ public class Classes {
     public Set<String> getLockedWorlds() { return lockedWorlds; }
     public void setLockedWorlds(Set<String> lockedWorlds) { this.lockedWorlds = lockedWorlds; }
 }
+
+// CodeRabbit audit trigger
