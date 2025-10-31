@@ -2,7 +2,6 @@ package capstone.cyberkids.CyberKids.Controller;
 
 import capstone.cyberkids.CyberKids.Entity.Classes;
 import capstone.cyberkids.CyberKids.Entity.Student;
-import capstone.cyberkids.CyberKids.Entity.Teacher;
 import capstone.cyberkids.CyberKids.Service.ClassService;
 import capstone.cyberkids.CyberKids.Service.StudentService;
 import capstone.cyberkids.CyberKids.dtos.*;
@@ -12,11 +11,8 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
-
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/classes")
@@ -30,6 +26,7 @@ public class ClassController {
         this.studentService = studentService;
     }
 
+    // Create Class
     @PostMapping
     public ResponseEntity<?> createClass(@RequestBody ClassRequest request) {
         try {
@@ -56,41 +53,7 @@ public class ClassController {
         }
     }
 
-
-
-    // Lightweight list of students for table view
-    @GetMapping("/grade/{grade}/section/{section}/students/summary")
-    public ResponseEntity<List<StudentSummaryDTO>> getStudentsSummary(
-            @PathVariable String grade,
-            @PathVariable String section) {
-        List<StudentSummaryDTO> summaries = studentService.getStudentSummariesByGradeAndSection(grade, section);
-        return ResponseEntity.ok(summaries);
-    }
-
-    // Full details of a single student
-    @GetMapping("/students/{studentId}/details")
-    public ResponseEntity<StudentDetailDTO> getStudentDetails(@PathVariable Long studentId) {
-        Student student = studentService.getStudentByIdWithScoresAndTimers(studentId);
-        return ResponseEntity.ok(new StudentDetailDTO(student));
-    }
-
-    @GetMapping("/my-classes")
-    public ResponseEntity<List<Classes>> getClassesForLoggedInTeacher() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-
-        String email;
-        if (authentication.getPrincipal() instanceof UserDetails) {
-            email = ((UserDetails) authentication.getPrincipal()).getUsername();
-        } else {
-            email = authentication.getPrincipal().toString();
-        }
-
-        Long teacherId = classService.getTeacherIdByEmail(email);
-        List<Classes> classes = classService.getClassesByTeacher(teacherId);
-        return ResponseEntity.ok(classes);
-    }
-
-
+    // Locks the game for the specified class
     @PostMapping("/{classCode}/lock-world")
     public ResponseEntity<?> lockWorldForClass(
             @PathVariable String classCode,
@@ -108,6 +71,7 @@ public class ClassController {
     }
 
 
+    // Unlocks the game for the specified class
     @PostMapping("/{classCode}/unlock-world")
     public ResponseEntity<?> unlockWorldForClass(
             @PathVariable String classCode,
@@ -124,6 +88,41 @@ public class ClassController {
         }
     }
 
+
+    // Lightweight list of students
+    @GetMapping("/grade/{grade}/section/{section}/students/summary")
+    public ResponseEntity<List<StudentSummaryDTO>> getStudentsSummary(
+            @PathVariable String grade,
+            @PathVariable String section) {
+        List<StudentSummaryDTO> summaries = studentService.getStudentSummariesByGradeAndSection(grade, section);
+        return ResponseEntity.ok(summaries);
+    }
+
+    // Full details of a single student
+    @GetMapping("/students/{studentId}/details")
+    public ResponseEntity<StudentDetailDTO> getStudentDetails(@PathVariable Long studentId) {
+        Student student = studentService.getStudentByIdWithScoresAndTimers(studentId);
+        return ResponseEntity.ok(new StudentDetailDTO(student));
+    }
+
+    // Get classes for logged in teacher
+    @GetMapping("/my-classes")
+    public ResponseEntity<List<Classes>> getClassesForLoggedInTeacher() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        String email;
+        if (authentication.getPrincipal() instanceof UserDetails) {
+            email = ((UserDetails) authentication.getPrincipal()).getUsername();
+        } else {
+            email = authentication.getPrincipal().toString();
+        }
+
+        Long teacherId = classService.getTeacherIdByEmail(email);
+        List<Classes> classes = classService.getClassesByTeacher(teacherId);
+        return ResponseEntity.ok(classes);
+    }
+
+    // Roblox endpoint to check if game is locked/unlocked
     @GetMapping("/{classCode}/is-world-locked")
     public ResponseEntity<?> isWorldLocked(
             @PathVariable String classCode,
@@ -138,27 +137,26 @@ public class ClassController {
         ));
     }
 
-    @GetMapping("/all-classes")
-    public ResponseEntity<List<ClassDTO>> getAllClasses() {
-        List<ClassDTO> classDTOs = classService.getAllClasses();
-        return ResponseEntity.ok(classDTOs);
-    }
-
-    @PutMapping("/{classId}")
-    public ResponseEntity<Classes> updateClass(
-            @PathVariable Long classId,
-            @RequestParam String grade,
-            @RequestParam String section) {
-
-        Classes updatedClass = classService.updateClass(classId, grade, section);
-        return ResponseEntity.ok(updatedClass);
-    }
-
+    // Delete class
     @DeleteMapping("/{classId}")
     public ResponseEntity<Void> deleteClass(@PathVariable Long classId) {
         classService.deleteClass(classId);
         return ResponseEntity.noContent().build();
     }
-}
 
-// CodeRabbit audit trigger
+//    @GetMapping("/all-classes")
+//    public ResponseEntity<List<ClassDTO>> getAllClasses() {
+//        List<ClassDTO> classDTOs = classService.getAllClasses();
+//        return ResponseEntity.ok(classDTOs);
+//    }
+
+//    @PutMapping("/{classId}")
+//    public ResponseEntity<Classes> updateClass(
+//            @PathVariable Long classId,
+//            @RequestParam String grade,
+//            @RequestParam String section) {
+//
+//        Classes updatedClass = classService.updateClass(classId, grade, section);
+//        return ResponseEntity.ok(updatedClass);
+//    }
+}

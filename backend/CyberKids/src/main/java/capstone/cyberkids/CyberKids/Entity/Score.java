@@ -22,7 +22,6 @@ public class Score {
     @Column(nullable = false)
     private ChallengeType challengeType;
 
-
     private int points;
     private String completionStatus;
     private LocalDateTime dateCompleted;
@@ -41,7 +40,6 @@ public class Score {
     public Long getId() {
         return id;
     }
-
     public void setId(Long id) {
         this.id = id;
     }
@@ -49,16 +47,13 @@ public class Score {
     public Student getStudent() {
         return student;
     }
-
     public void setStudent(Student student) {
         this.student = student;
     }
 
-
     public int getPoints() {
         return points;
     }
-
     public void setPoints(int points) {
         this.points = points;
     }
@@ -66,7 +61,6 @@ public class Score {
     public String getCompletionStatus() {
         return completionStatus;
     }
-
     public void setCompletionStatus(String completionStatus) {
         this.completionStatus = completionStatus;
     }
@@ -74,7 +68,6 @@ public class Score {
     public LocalDateTime getDateCompleted() {
         return dateCompleted;
     }
-
     public void setDateCompleted(LocalDateTime dateCompleted) {
         this.dateCompleted = dateCompleted;
     }
@@ -82,10 +75,7 @@ public class Score {
     public ChallengeType getChallengeType() {
         return challengeType;
     }
-
     public void setChallengeType(ChallengeType challengeType) {
         this.challengeType = challengeType;
     }
 }
-
-// CodeRabbit audit trigger

@@ -7,7 +7,6 @@ import capstone.cyberkids.CyberKids.Service.ScoreService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
 import java.util.List;
 
 
@@ -18,13 +17,13 @@ public class ScoreController {
     @Autowired private ScoreService scoreService;
     @Autowired private StudentRepo studentRepository;
 
+    // Roblox endpoint to Save student's score
     @PostMapping("/save-score")
     public ResponseEntity<Score> saveScore(@RequestBody Score score) {
         String robloxId = score.getStudent().getRobloxId();
         Student student = studentRepository.findByRobloxId(robloxId);
 
         if (student == null) {
-
             student = new Student();
             student.setRobloxId(robloxId);
             student.setRobloxName(score.getStudent().getRobloxName() != null
@@ -37,7 +36,6 @@ public class ScoreController {
             System.out.println("Found existing student: " + student.getRealNameOrFallback());
         }
 
-
         score.setStudent(student);
         Score saved = scoreService.saveScore(score);
 
@@ -49,13 +47,11 @@ public class ScoreController {
         return ResponseEntity.ok(saved);
     }
 
-    @GetMapping
-    public List<Score> getAllScores() {
-        return scoreService.getAllScores();
-    }
+//    @GetMapping
+//    public List<Score> getAllScores() {
+//        return scoreService.getAllScores();
+//    }
 }
-
-// CodeRabbit audit trigger
 
 
 

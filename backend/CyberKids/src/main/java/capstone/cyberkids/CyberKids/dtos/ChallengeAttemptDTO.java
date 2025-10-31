@@ -49,7 +49,6 @@ public class ChallengeAttemptDTO {
     public String getChallengeType() {
         return challengeType;
     }
-
     public void setChallengeType(String challengeType) {
         this.challengeType = challengeType;
     }
@@ -57,7 +56,6 @@ public class ChallengeAttemptDTO {
     public Integer getPoints() {
         return points;
     }
-
     public void setPoints(Integer points) {
         this.points = points;
     }
@@ -65,7 +63,6 @@ public class ChallengeAttemptDTO {
     public String getCompletionStatus() {
         return completionStatus;
     }
-
     public void setCompletionStatus(String completionStatus) {
         this.completionStatus = completionStatus;
     }
@@ -73,7 +70,6 @@ public class ChallengeAttemptDTO {
     public LocalDateTime getDateCompleted() {
         return dateCompleted;
     }
-
     public void setDateCompleted(LocalDateTime dateCompleted) {
         this.dateCompleted = dateCompleted;
     }
@@ -81,7 +77,6 @@ public class ChallengeAttemptDTO {
     public String getTimeTaken() {
         return timeTaken;
     }
-
     public void setTimeTaken(String timeTaken) {
         this.timeTaken = timeTaken;
     }
@@ -89,7 +84,6 @@ public class ChallengeAttemptDTO {
     public LocalDateTime getStartTime() {
         return startTime;
     }
-
     public void setStartTime(LocalDateTime startTime) {
         this.startTime = startTime;
     }
@@ -97,10 +91,8 @@ public class ChallengeAttemptDTO {
     public LocalDateTime getEndTime() {
         return endTime;
     }
-
     public void setEndTime(LocalDateTime endTime) {
         this.endTime = endTime;
     }
 }
 
-// CodeRabbit audit trigger

@@ -31,7 +31,6 @@ public class Classes {
     @Column(nullable = true)
     private Integer maxStudents;
 
-
     @Column(nullable = false, unique = true)
     private String classCode;
 
@@ -42,7 +41,6 @@ public class Classes {
     @OneToMany(mappedBy = "classEntity", cascade = CascadeType.ALL)
     @JsonManagedReference
     private List<Student> students;
-
 
     @CreationTimestamp
     @Column(updatable = false, name = "created_at")
@@ -72,7 +70,6 @@ public class Classes {
     public Long getId() {
         return id;
     }
-
     public void setId(Long id) {
         this.id = id;
     }
@@ -80,7 +77,6 @@ public class Classes {
     public String getGrade() {
         return grade;
     }
-
     public void setGrade(String grade) {
         this.grade = grade;
     }
@@ -88,18 +84,17 @@ public class Classes {
     public String getSection() {
         return section;
     }
-
     public void setSection(String section) {
         this.section = section;
     }
 
     public String getColorTheme() { return colorTheme; }
+
     public Integer getMaxStudents() { return maxStudents; }
 
     public Teacher getTeacher() {
         return teacher;
     }
-
     public void setTeacher(Teacher teacher) {
         this.teacher = teacher;
     }
@@ -107,7 +102,6 @@ public class Classes {
     public Date getCreatedAt() {
         return createdAt;
     }
-
     public void setCreatedAt(Date createdAt) {
         this.createdAt = createdAt;
     }
@@ -115,7 +109,6 @@ public class Classes {
     public Date getUpdatedAt() {
         return updatedAt;
     }
-
     public void setUpdatedAt(Date updatedAt) {
         this.updatedAt = updatedAt;
     }
@@ -123,21 +116,13 @@ public class Classes {
     public String getClassCode() {
         return classCode;
     }
-
     public void setClassCode(String classCode) {
         this.classCode = classCode;
     }
 
-    public List<Student> getStudents() {
-        return students;
-    }
-
-    public void setStudents(List<Student> students) {
-        this.students = students;
-    }
+    public List<Student> getStudents() {return students;}
+    public void setStudents(List<Student> students) {this.students = students;}
 
     public Set<String> getLockedWorlds() { return lockedWorlds; }
     public void setLockedWorlds(Set<String> lockedWorlds) { this.lockedWorlds = lockedWorlds; }
 }
-
-// CodeRabbit audit trigger

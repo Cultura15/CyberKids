@@ -12,7 +12,6 @@ public class AnswerSubmissionDTO {
         this.userAnswer = userAnswer;
     }
 
-
     public Long getScenarioId() { return scenarioId; }
 
     public void setScenarioId(Long scenarioId) { this.scenarioId = scenarioId; }

@@ -58,85 +58,41 @@ public class Student {
         this.realName = realName;
     }
 
-    public Long getId() {
-        return id;
-    }
+    public Long getId() {return id;}
+    public void setId(Long id) {this.id = id;}
 
-    public void setId(Long id) {
-        this.id = id;
-    }
+    public String getRobloxId() {return robloxId;}
+    public void setRobloxId(String robloxId) {this.robloxId = robloxId;}
 
-    public String getRobloxId() {
-        return robloxId;
-    }
+    public String getRobloxName() {return robloxName;}
+    public void setRobloxName(String robloxName) {this.robloxName = robloxName;}
 
-    public void setRobloxId(String robloxId) {
-        this.robloxId = robloxId;
-    }
+    public String getRealName() {return realName;}
+    public void setRealName(String realName) {this.realName = realName;}
 
-    public String getRobloxName() {
-        return robloxName;
-    }
+    public Set<Score> getScores() {return scores;}
+    public void setScores(Set<Score> scores) {this.scores = scores;}
 
-    public void setRobloxName(String robloxName) {
-        this.robloxName = robloxName;
-    }
-
-    public String getRealName() {
-        return realName;
-    }
-
-    public void setRealName(String realName) {
-        this.realName = realName;
-    }
-
-    public Set<Score> getScores() {
-        return scores;
-    }
-
-    public void setScores(Set<Score> scores) {
-        this.scores = scores;
-    }
-
-    public Set<Timer> getTimers() {
-        return timers;
-    }
-
-    public void setTimers(Set<Timer> timers) {
-        this.timers = timers;
-    }
+    public Set<Timer> getTimers() {return timers;}
+    public void setTimers(Set<Timer> timers) {this.timers = timers;}
 
     public Classes getClassEntity() {return classEntity;}
-
     public void setClassEntity(Classes classEntity) {this.classEntity = classEntity;}
 
     public String getTargetWorld() {return targetWorld;}
-
     public void setTargetWorld(String targetWorld) {this.targetWorld = targetWorld;}
 
     public String getTargetLevel() {return targetLevel;}
-
     public void setTargetLevel(String targetLevel) {this.targetLevel = targetLevel;}
 
-    public Boolean getOnline() {
-        return isOnline != null ? isOnline : false;
-    }
-
-    public void setOnline(Boolean online) {
-        isOnline = online;
-    }
+    public Boolean getOnline() {return isOnline != null ? isOnline : false;}
+    public void setOnline(Boolean online) {isOnline = online;}
 
     public String getGrade() {return grade;}
-
-    public String getSection() {
-        return section;
-    }
-
-    public void setSection(String section) {
-        this.section = section;
-    }
-
     public void setGrade(String grade) {this.grade = grade;}
+
+    public String getSection() {return section;}
+    public void setSection(String section) {this.section = section;}
 
     public String getRealNameOrFallback() {
         return (realName != null && !realName.isBlank())
@@ -146,5 +102,3 @@ public class Student {
                 : "Unknown Player";
     }
 }
-
-// CodeRabbit audit trigger

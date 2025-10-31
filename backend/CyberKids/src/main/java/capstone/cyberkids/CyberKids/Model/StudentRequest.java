@@ -50,5 +50,3 @@ public class StudentRequest {
         this.classCode = classCode;
     }
 }
-
-// CodeRabbit audit trigger

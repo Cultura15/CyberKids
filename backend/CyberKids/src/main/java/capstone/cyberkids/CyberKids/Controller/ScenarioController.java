@@ -13,7 +13,6 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
-
 import java.util.List;
 import java.util.Map;
 
@@ -27,6 +26,7 @@ public class ScenarioController {
         this.scenarioService = scenarioService;
     }
 
+    // Create Questions for Leve 1 Game
     @PostMapping
     public ResponseEntity<?> createScenario(@RequestBody ScenarioRequestDTO request) {
         try {
@@ -43,36 +43,7 @@ public class ScenarioController {
         }
     }
 
-    @GetMapping("/my-scenarios")
-    public ResponseEntity<List<ScenarioDTO>> getMyScenarios() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-
-        String email;
-        if (authentication.getPrincipal() instanceof UserDetails) {
-            email = ((UserDetails) authentication.getPrincipal()).getUsername();
-        } else {
-            email = authentication.getPrincipal().toString();
-        }
-
-        Long teacherId = scenarioService.getTeacherIdByEmail(email);
-        List<ScenarioDTO> scenarios = scenarioService.getScenariosByTeacherId(teacherId);
-
-        return ResponseEntity.ok(scenarios);
-    }
-
-    // NEW ENDPOINT: For Roblox game to fetch active scenarios
-    @GetMapping("/game/active")
-    public ResponseEntity<List<GameScenarioDTO>> getActiveScenariosForGame() {
-        try {
-            List<GameScenarioDTO> scenarios = scenarioService.getAllActiveScenariosForGameDTO();
-            return ResponseEntity.ok(scenarios);
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(null);
-        }
-    }
-
-    // NEW ENDPOINT: For Roblox to submit answers and get AI feedback
+    // Roblox endpoint to submit answers and receive AI feedback
     @PostMapping("/game/submit-answer")
     public ResponseEntity<?> submitAnswerForFeedback(@RequestBody AnswerSubmissionDTO submission) {
         try {
@@ -96,6 +67,49 @@ public class ScenarioController {
         }
     }
 
+
+    // Get Questions for logged in teacher
+    @GetMapping("/my-scenarios")
+    public ResponseEntity<List<ScenarioDTO>> getMyScenarios() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        String email;
+        if (authentication.getPrincipal() instanceof UserDetails) {
+            email = ((UserDetails) authentication.getPrincipal()).getUsername();
+        } else {
+            email = authentication.getPrincipal().toString();
+        }
+
+        Long teacherId = scenarioService.getTeacherIdByEmail(email);
+        List<ScenarioDTO> scenarios = scenarioService.getScenariosByTeacherId(teacherId);
+
+        return ResponseEntity.ok(scenarios);
+    }
+
+    // Roblox endpoint to fetch active questions
+    @GetMapping("/game/active")
+    public ResponseEntity<List<GameScenarioDTO>> getActiveScenariosForGame() {
+        try {
+            List<GameScenarioDTO> scenarios = scenarioService.getAllActiveScenariosForGameDTO();
+            return ResponseEntity.ok(scenarios);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(null);
+        }
+    }
+
+    // Roblox endpoint to count how many active questions
+    @GetMapping("/count")
+    public ResponseEntity<Map<String, Long>> getScenarioCount() {
+        try {
+            long count = scenarioService.getActiveScenarioCount();
+            return ResponseEntity.ok(Map.of("activeCount", count));
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+    }
+
+    // Edit a question
     @PutMapping("/{scenarioId}")
     public ResponseEntity<?> updateScenario(
             @PathVariable Long scenarioId,
@@ -109,17 +123,7 @@ public class ScenarioController {
         }
     }
 
-    @PutMapping("/{scenarioId}/toggle")
-    public ResponseEntity<?> toggleScenarioStatus(@PathVariable Long scenarioId) {
-        try {
-            scenarioService.toggleScenarioStatus(scenarioId);
-            return ResponseEntity.ok(Map.of("message", "Scenario status updated"));
-        } catch (RuntimeException e) {
-            return ResponseEntity.badRequest()
-                    .body(Map.of("error", e.getMessage()));
-        }
-    }
-
+    // Delete a question
     @DeleteMapping("/{scenarioId}")
     public ResponseEntity<?> deleteScenario(@PathVariable Long scenarioId) {
         try {
@@ -131,15 +135,15 @@ public class ScenarioController {
         }
     }
 
-    @GetMapping("/count")
-    public ResponseEntity<Map<String, Long>> getScenarioCount() {
-        try {
-            long count = scenarioService.getActiveScenarioCount();
-            return ResponseEntity.ok(Map.of("activeCount", count));
-        } catch (RuntimeException e) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-        }
-    }
-}
 
-// CodeRabbit audit trigger
+//    @PutMapping("/{scenarioId}/toggle")
+//    public ResponseEntity<?> toggleScenarioStatus(@PathVariable Long scenarioId) {
+//        try {
+//            scenarioService.toggleScenarioStatus(scenarioId);
+//            return ResponseEntity.ok(Map.of("message", "Scenario status updated"));
+//        } catch (RuntimeException e) {
+//            return ResponseEntity.badRequest()
+//                    .body(Map.of("error", e.getMessage()));
+//        }
+//    }
+}

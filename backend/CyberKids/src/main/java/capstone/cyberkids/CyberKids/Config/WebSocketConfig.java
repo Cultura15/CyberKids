@@ -26,4 +26,3 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
     }
 }
 
-// CodeRabbit audit trigger

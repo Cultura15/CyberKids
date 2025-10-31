@@ -146,5 +146,3 @@ public class ClassService {
         classRepository.deleteById(classId);
     }
 }
-
-// CodeRabbit audit trigger
