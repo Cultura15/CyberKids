@@ -17,7 +17,7 @@ public class FeedbackResponseDTO {
         this.scenarioId = scenarioId;
     }
 
-    // Getters and Setters
+
     public String getFeedback() { return feedback; }
     public void setFeedback(String feedback) { this.feedback = feedback; }
 

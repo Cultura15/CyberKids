@@ -53,26 +53,6 @@ public class TeacherController {
         return ResponseEntity.ok(new TeacherDTO(teacher));
     }
 
-//    @PostMapping("/lock-world")
-//    public ResponseEntity<?> lockWorld(@RequestParam String worldName) {
-//        teacherService.lockWorld(worldName);
-//        return ResponseEntity.ok(Map.of("message", "World locked"));
-//    }
-//
-//    @PostMapping("/unlock-world")
-//    public ResponseEntity<?> unlockWorld(@RequestParam String worldName) {
-//        teacherService.unlockWorld(worldName);
-//        return ResponseEntity.ok(Map.of("message", "World unlocked"));
-//    }
-//
-//
-//    // SA ROBLOX NI
-//    @GetMapping("/is-world-locked")
-//    public ResponseEntity<Map<String, Boolean>> isWorldLocked(@RequestParam String worldName) {
-//        boolean isLocked = teacherService.isWorldLocked(worldName);
-//        return ResponseEntity.ok(Map.of("locked", isLocked));
-//    }
-
     @PostMapping("/move-student")
     public ResponseEntity<String> moveStudentToWorld(@RequestBody StudentTeleportRequest request) {
         Student student = studentRepo.findByRobloxId(request.getRobloxId());
@@ -124,3 +104,5 @@ public class TeacherController {
         }
     }
 }
+
+// CodeRabbit audit trigger

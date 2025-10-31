@@ -12,7 +12,6 @@ public class StudentRequest {
     public String getRobloxId() {
         return robloxId;
     }
-
     public void setRobloxId(String robloxId) {
         this.robloxId = robloxId;
     }
@@ -20,7 +19,6 @@ public class StudentRequest {
     public String getRobloxName() {
         return robloxName;
     }
-
     public void setRobloxName(String robloxName) {
         this.robloxName = robloxName;
     }
@@ -28,7 +26,6 @@ public class StudentRequest {
     public String getRealName() {
         return realName;
     }
-
     public void setRealName(String realName) {
         this.realName = realName;
     }
@@ -36,24 +33,22 @@ public class StudentRequest {
     public String getSection() {
         return section;
     }
-
     public void setSection(String section) {
         this.section = section;
     }
 
     public String getGrade() {return grade;}
-
     public void setGrade(String grade) {this.grade = grade;}
 
     public Boolean getOnline() {return isOnline;}
-
     public void setOnline(Boolean online) {isOnline = online;}
 
     public String getClassCode() {
         return classCode;
     }
-
     public void setClassCode(String classCode) {
         this.classCode = classCode;
     }
 }
+
+// CodeRabbit audit trigger

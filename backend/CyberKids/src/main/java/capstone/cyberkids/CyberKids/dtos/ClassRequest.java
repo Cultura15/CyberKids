@@ -29,15 +29,10 @@ public class ClassRequest {
         return colorTheme;
     }
 
-    public void setColorTheme(String colorTheme) {
-        this.colorTheme = colorTheme;
-    }
+    public void setColorTheme(String colorTheme) {this.colorTheme = colorTheme;}
 
-    public Integer getMaxStudents() {
-        return maxStudents;
-    }
+    public Integer getMaxStudents() {return maxStudents;}
 
-    public void setMaxStudents(Integer maxStudents) {
-        this.maxStudents = maxStudents;
-    }
+    public void setMaxStudents(Integer maxStudents) {this.maxStudents = maxStudents;}
 }
+// CodeRabbit audit trigger

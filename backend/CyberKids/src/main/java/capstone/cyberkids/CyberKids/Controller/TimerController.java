@@ -62,5 +62,6 @@ public class TimerController {
             return ResponseEntity.internalServerError().body("Error deleting timer: " + e.getMessage());
         }
     }
-
 }
+
+// CodeRabbit audit trigger

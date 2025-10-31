@@ -11,7 +11,6 @@ public class LeaderboardResponseDTO {
     private String date;
     private StudentDTO student;
 
-    // Constructor
     public LeaderboardResponseDTO(Level1Entity entry) {
         this.id = entry.getId();
         this.score = entry.getScore();
@@ -36,7 +35,6 @@ public class LeaderboardResponseDTO {
         this.student = new StudentDTO(entry.getStudent());
     }
 
-    // Getters and Setters
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
 
@@ -52,7 +50,6 @@ public class LeaderboardResponseDTO {
     public StudentDTO getStudent() { return student; }
     public void setStudent(StudentDTO student) { this.student = student; }
 
-    // Nested Student DTO
     public static class StudentDTO {
         private Long id;
         private String robloxId;
@@ -66,7 +63,6 @@ public class LeaderboardResponseDTO {
             this.realName = student.getRealName();
         }
 
-        // Getters and Setters
         public Long getId() { return id; }
         public void setId(Long id) { this.id = id; }
 

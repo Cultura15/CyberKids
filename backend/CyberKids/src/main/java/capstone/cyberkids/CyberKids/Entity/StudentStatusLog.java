@@ -40,3 +40,5 @@ public class StudentStatusLog {
 
     public void setTimestamp(LocalDateTime timestamp) { this.timestamp = timestamp; }
 }
+
+// CodeRabbit audit trigger

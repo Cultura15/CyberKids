@@ -26,7 +26,7 @@ public class Timer {
     private ChallengeType challengeType;
 
 
-    private String timeTaken;  // In seconds
+    private String timeTaken;
     private LocalDateTime startTime;
     private LocalDateTime endTime;
 
@@ -99,3 +99,5 @@ public class Timer {
         }
     }
 }
+
+// CodeRabbit audit trigger

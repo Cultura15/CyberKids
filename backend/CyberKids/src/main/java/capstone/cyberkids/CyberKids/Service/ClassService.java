@@ -116,28 +116,6 @@ public class ClassService {
                 .orElseThrow(() -> new RuntimeException("Class not found for code: " + classCode));
     }
 
-//    public Optional<Classes> getClassByCode(String classCode) {
-//        return classRepository.findByClassCode(classCode);
-//    }
-
-
-
-
-//    public Set<String> getLockedWorldsForClass(String classCode, String teacherEmail) {
-//        Teacher teacher = teacherRepository.findByEmail(teacherEmail)
-//                .orElseThrow(() -> new RuntimeException("Teacher not found"));
-//
-//        Classes clazz = classRepository.findByClassCode(classCode)
-//                .orElseThrow(() -> new RuntimeException("Class not found"));
-//
-//        // Security check: ensure the class belongs to the logged-in teacher
-//        if (!clazz.getTeacher().getId().equals(teacher.getId())) {
-//            throw new RuntimeException("You are not authorized to access this class.");
-//        }
-//
-//        return clazz.getLockedWorlds();
-//    }
-
 
     public Classes getClassById(Long classId) {
         return classRepository.findById(classId)
@@ -168,3 +146,5 @@ public class ClassService {
         classRepository.deleteById(classId);
     }
 }
+
+// CodeRabbit audit trigger

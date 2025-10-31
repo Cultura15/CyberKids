@@ -73,3 +73,5 @@ public class Scenario {
     public AnswerTypeLvl1 getCorrectAnswer() { return correctAnswer; }
     public void setCorrectAnswer(AnswerTypeLvl1 correctAnswer) { this.correctAnswer = correctAnswer; }
 }
+
+// CodeRabbit audit trigger

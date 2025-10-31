@@ -9,14 +9,12 @@ public class GameScenarioDTO {
 
     public GameScenarioDTO() {}
 
-    // Constructor that takes Scenario (needed for .map(GameScenarioDTO::new))
     public GameScenarioDTO(Scenario scenario) {
         this.id = scenario.getId();
         this.content = scenario.getContent();
         this.correctAnswer = scenario.getCorrectAnswer().name();
     }
 
-    // Getters and Setters
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
 

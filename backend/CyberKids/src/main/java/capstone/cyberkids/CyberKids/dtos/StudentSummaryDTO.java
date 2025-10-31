@@ -26,5 +26,4 @@ public class StudentSummaryDTO {
     public String getGrade() { return grade; }
     public String getSection() { return section; }
     public Boolean getIsOnline() { return isOnline; }
-
 }

@@ -190,3 +190,5 @@ public class ScenarioService {
         return scenarioRepository.countByTeacherAndActiveTrue(teacher);
     }
 }
+
+// CodeRabbit audit trigger

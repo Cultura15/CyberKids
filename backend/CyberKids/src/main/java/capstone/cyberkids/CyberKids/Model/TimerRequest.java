@@ -17,7 +17,6 @@ public class TimerRequest {
     public Student getStudent() {
         return student;
     }
-
     public void setStudent(Student student) {
         this.student = student;
     }
@@ -25,7 +24,6 @@ public class TimerRequest {
     public ChallengeType getChallengeType() {
         return challengeType;
     }
-
     public void setChallengeType(ChallengeType challengeType) {
         this.challengeType = challengeType;
     }
@@ -33,7 +31,6 @@ public class TimerRequest {
     public String getStatus() {
         return status;
     }
-
     public void setStatus(String status) {
         this.status = status;
     }
@@ -41,7 +38,6 @@ public class TimerRequest {
     public LocalDateTime getStartTime() {
         return startTime;
     }
-
     public void setStartTime(LocalDateTime startTime) {
         this.startTime = startTime;
     }
@@ -49,7 +45,6 @@ public class TimerRequest {
     public LocalDateTime getEndTime() {
         return endTime;
     }
-
     public void setEndTime(LocalDateTime endTime) {
         this.endTime = endTime;
     }
@@ -57,9 +52,9 @@ public class TimerRequest {
     public Long getTimerId() {
         return timerId;
     }
-
     public void setTimerId(Long timerId) {
         this.timerId = timerId;
     }
 }
 
+// CodeRabbit audit trigger

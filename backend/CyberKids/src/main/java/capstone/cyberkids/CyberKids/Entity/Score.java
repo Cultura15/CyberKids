@@ -87,3 +87,5 @@ public class Score {
         this.challengeType = challengeType;
     }
 }
+
+// CodeRabbit audit trigger

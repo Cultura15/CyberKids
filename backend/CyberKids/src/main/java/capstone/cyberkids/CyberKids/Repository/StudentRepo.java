@@ -26,3 +26,5 @@ public interface StudentRepo extends JpaRepository<Student, Long> {
     Optional<Student> findByIdWithScoresAndTimers(@Param("id") Long id);
 
 }
+
+// CodeRabbit audit trigger

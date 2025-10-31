@@ -156,7 +156,7 @@ public class SecurityConfig {
                         newTeacher.setEmail(finalEmail);
                         newTeacher.setFullName(finalName);
                         newTeacher.setRole(Role.TEACHER);
-                        newTeacher.setPassword("oauth2"); // OAuth users don't have passwords
+                        newTeacher.setPassword("oauth2");
                         return teacherRepo.save(newTeacher);
                     });
 
@@ -171,8 +171,6 @@ public class SecurityConfig {
                     );
 
                     System.out.println("Generated JWT token for teacher: " + teacher.getEmail());
-
-                    // Redirect to frontend with parameters
                     String redirectUrl = String.format(
                             "%s/oauth-callback?token=%s&userId=%s&role=%s&email=%s&name=%s",
                             frontendUrl,
@@ -251,3 +249,5 @@ public class SecurityConfig {
     }
 
 }
+
+// CodeRabbit audit trigger

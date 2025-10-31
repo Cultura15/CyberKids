@@ -244,23 +244,6 @@ public class StudentController {
         }
     }
 
-//    @PostMapping("/status")
-//    public ResponseEntity<?> updateOnlineStatus(@RequestBody StudentStatusDTO request) {
-//        Student student = studentRepo.findByRobloxId(request.getRobloxId());
-//        if (student == null) {
-//            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("error", "Student not found"));
-//        }
-//
-//        student.setOnline(request.isOnline());
-//        studentRepo.save(student);
-//
-//        messagingTemplate.convertAndSend("/topic/student-status",
-//                new StudentStatusDTO(student.getRobloxId(), request.isOnline()));
-//
-//        return ResponseEntity.ok(Map.of("message", "Status updated"));
-//    }
-
-
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(@PathVariable Long id) {
         if (!studentRepo.existsById(id)) {
@@ -270,5 +253,6 @@ public class StudentController {
         return ResponseEntity.noContent().build();
     }
 
-
 }
+
+// CodeRabbit audit trigger
