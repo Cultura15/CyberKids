@@ -22,8 +22,4 @@ public class ScoreService {
         System.out.println("Saving score for student: " + score.getStudent().getRobloxId());
         return scoreRepository.save(score);
     }
-
-//    public List<Score> getAllScores() {
-//        return scoreRepository.findAll();
-//    }
 }

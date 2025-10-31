@@ -1,15 +1,11 @@
 package capstone.cyberkids.CyberKids.Controller;
 
-import capstone.cyberkids.CyberKids.Entity.Student;
 import capstone.cyberkids.CyberKids.Entity.Timer;
-import capstone.cyberkids.CyberKids.Model.ChallengeType;
 import capstone.cyberkids.CyberKids.Model.TimerRequest;
 import capstone.cyberkids.CyberKids.Repository.StudentRepo;
 import capstone.cyberkids.CyberKids.Service.TimerService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @RestController
 @RequestMapping("/api/timer")
@@ -48,23 +44,5 @@ public class TimerController {
             return ResponseEntity.internalServerError().body("Error deleting timer: " + e.getMessage());
         }
     }
-
-
-//    @GetMapping("/student/{studentId}")
-//    public ResponseEntity<List<Timer>> getByStudent(@PathVariable Long studentId) {
-//        List<Timer> list = timerService.getTimersByStudentId(studentId);
-//        return ResponseEntity.ok(list);
-//    }
-//
-//    @GetMapping("/challenge/{type}")
-//    public ResponseEntity<List<Timer>> getByChallenge(@PathVariable String type) {
-//        try {
-//            ChallengeType ct = ChallengeType.valueOf(type.toUpperCase());
-//            return ResponseEntity.ok(timerService.getTimersByChallengeType(ct));
-//        } catch (IllegalArgumentException ex) {
-//            return ResponseEntity.badRequest().build();
-//        }
-//    }
 }
 
-// CodeRabbit audit trigger

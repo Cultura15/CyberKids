@@ -7,8 +7,6 @@ import capstone.cyberkids.CyberKids.Service.ScoreService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import java.util.List;
-
 
 @RestController
 @RequestMapping("/api/scores")
@@ -46,11 +44,6 @@ public class ScoreController {
 
         return ResponseEntity.ok(saved);
     }
-
-//    @GetMapping
-//    public List<Score> getAllScores() {
-//        return scoreService.getAllScores();
-//    }
 }
 
 

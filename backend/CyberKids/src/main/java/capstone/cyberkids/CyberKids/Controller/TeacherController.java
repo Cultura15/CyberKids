@@ -6,7 +6,6 @@ import capstone.cyberkids.CyberKids.Entity.Teacher;
 import capstone.cyberkids.CyberKids.Model.StudentTeleportRequest;
 import capstone.cyberkids.CyberKids.Repository.NotificationRepo;
 import capstone.cyberkids.CyberKids.Repository.StudentRepo;
-import capstone.cyberkids.CyberKids.Repository.StudentStatusLogRepository;
 import capstone.cyberkids.CyberKids.Service.NotificationService;
 import capstone.cyberkids.CyberKids.Service.StudentService;
 import capstone.cyberkids.CyberKids.Service.TeacherService;
@@ -92,15 +91,4 @@ public class TeacherController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
         }
     }
-
-
-//    @GetMapping("/student-status-history/{studentId}")
-//    public ResponseEntity<?> getStudentStatusHistory(@PathVariable Long studentId) {
-//        Student student = studentRepo.findById(studentId)
-//                .orElseThrow(() -> new RuntimeException("Student not found"));
-//
-//        List<StudentStatusLog> logs = statusLogRepository.findByStudentOrderByTimestampDesc(student);
-//
-//        return ResponseEntity.ok(logs);
-//    }
 }

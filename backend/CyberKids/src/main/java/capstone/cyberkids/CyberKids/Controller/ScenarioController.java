@@ -134,16 +134,4 @@ public class ScenarioController {
                     .body(Map.of("error", e.getMessage()));
         }
     }
-
-
-//    @PutMapping("/{scenarioId}/toggle")
-//    public ResponseEntity<?> toggleScenarioStatus(@PathVariable Long scenarioId) {
-//        try {
-//            scenarioService.toggleScenarioStatus(scenarioId);
-//            return ResponseEntity.ok(Map.of("message", "Scenario status updated"));
-//        } catch (RuntimeException e) {
-//            return ResponseEntity.badRequest()
-//                    .body(Map.of("error", e.getMessage()));
-//        }
-//    }
 }

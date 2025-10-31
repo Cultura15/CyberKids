@@ -143,20 +143,4 @@ public class ClassController {
         classService.deleteClass(classId);
         return ResponseEntity.noContent().build();
     }
-
-//    @GetMapping("/all-classes")
-//    public ResponseEntity<List<ClassDTO>> getAllClasses() {
-//        List<ClassDTO> classDTOs = classService.getAllClasses();
-//        return ResponseEntity.ok(classDTOs);
-//    }
-
-//    @PutMapping("/{classId}")
-//    public ResponseEntity<Classes> updateClass(
-//            @PathVariable Long classId,
-//            @RequestParam String grade,
-//            @RequestParam String section) {
-//
-//        Classes updatedClass = classService.updateClass(classId, grade, section);
-//        return ResponseEntity.ok(updatedClass);
-//    }
 }
