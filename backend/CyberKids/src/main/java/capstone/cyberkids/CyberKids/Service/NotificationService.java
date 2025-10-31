@@ -103,3 +103,5 @@ public class NotificationService {
         notificationRepo.deleteById(id);
     }
 }
+
+// CodeRabbit audit trigger

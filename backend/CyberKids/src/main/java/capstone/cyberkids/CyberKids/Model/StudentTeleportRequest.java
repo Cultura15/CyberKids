@@ -8,7 +8,6 @@ public class StudentTeleportRequest {
     public String getRobloxId() {
         return robloxId;
     }
-
     public void setRobloxId(String robloxId) {
         this.robloxId = robloxId;
     }
@@ -16,7 +15,6 @@ public class StudentTeleportRequest {
     public String getTargetWorld() {
         return targetWorld;
     }
-
     public void setTargetWorld(String targetWorld) {
         this.targetWorld = targetWorld;
     }
@@ -24,9 +22,9 @@ public class StudentTeleportRequest {
     public String getTargetLevel() {
         return targetLevel;
     }
-
     public void setTargetLevel(String targetLevel) {
         this.targetLevel = targetLevel;
     }
 }
 
+// CodeRabbit audit trigger

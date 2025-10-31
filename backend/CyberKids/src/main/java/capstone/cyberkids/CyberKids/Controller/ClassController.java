@@ -128,11 +128,7 @@ public class ClassController {
     public ResponseEntity<?> isWorldLocked(
             @PathVariable String classCode,
             @RequestParam String worldName) {
-
-        // Find the class by classCode (throws RuntimeException if not found)
         Classes classEntity = classService.getClassByCode(classCode);
-
-        // Check if the world is locked by this teacher
         boolean isLocked = classEntity.getLockedWorlds().contains(worldName);
 
         return ResponseEntity.ok(Map.of(
@@ -141,23 +137,6 @@ public class ClassController {
                 "locked", isLocked
         ));
     }
-
-
-
-//    @GetMapping("/{classCode}/locked-worlds")
-//    public ResponseEntity<?> getLockedWorldsForClass(@PathVariable String classCode) {
-//        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-//        String email = authentication.getName();
-//
-//        try {
-//            Set<String> lockedWorlds = classService.getLockedWorldsForClass(classCode, email);
-//            return ResponseEntity.ok(lockedWorlds);
-//        } catch (RuntimeException e) {
-//            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of("error", e.getMessage()));
-//        }
-//    }
-
-
 
     @GetMapping("/all-classes")
     public ResponseEntity<List<ClassDTO>> getAllClasses() {
@@ -181,3 +160,5 @@ public class ClassController {
         return ResponseEntity.noContent().build();
     }
 }
+
+// CodeRabbit audit trigger

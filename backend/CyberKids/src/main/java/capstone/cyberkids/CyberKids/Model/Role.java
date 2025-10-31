@@ -6,3 +6,4 @@ public enum Role {
     ADMIN
 }
 
+// CodeRabbit audit trigger

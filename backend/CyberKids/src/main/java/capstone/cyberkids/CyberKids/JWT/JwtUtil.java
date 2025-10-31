@@ -34,7 +34,7 @@ public class JwtUtil {
 
 
         public String extractRole(String token) {
-            return extractClaim(token, claims -> claims.get("role", String.class)); // Extract role claim
+            return extractClaim(token, claims -> claims.get("role", String.class));
         }
 
         public Date extractExpiration(String token) {
@@ -57,3 +57,5 @@ public class JwtUtil {
             return extractExpiration(token).before(new Date());
         }
 }
+
+// CodeRabbit audit trigger

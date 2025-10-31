@@ -12,3 +12,5 @@ public interface ClassRepo extends JpaRepository<Classes, Long> {
     Optional<Classes> findByClassCode(String classCode);
 
 }
+
+// CodeRabbit audit trigger

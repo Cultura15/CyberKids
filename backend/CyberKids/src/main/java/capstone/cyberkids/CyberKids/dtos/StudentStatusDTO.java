@@ -15,7 +15,6 @@ public class StudentStatusDTO {
     public String getRobloxId() {
         return robloxId;
     }
-
     public void setRobloxId(String robloxId) {
         this.robloxId = robloxId;
     }
@@ -23,7 +22,6 @@ public class StudentStatusDTO {
     public boolean isOnline() {
         return isOnline;
     }
-
     public void setOnline(boolean online) {
         isOnline = online;
     }

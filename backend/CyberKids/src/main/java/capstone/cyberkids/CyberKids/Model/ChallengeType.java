@@ -5,3 +5,5 @@ public enum ChallengeType {
     PASSWORD_SECURITY,
     PHISHING_IDENTIFICATION
 }
+
+// CodeRabbit audit trigger

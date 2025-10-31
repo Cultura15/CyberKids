@@ -14,3 +14,5 @@ public interface ScoreRepo extends JpaRepository<Score, Long> {
     List<Score> findByStudentAndChallengeType(Student student, ChallengeType challengeType);
     List<Score> findByStudentAndChallengeTypeAndDateCompleted(Student student, ChallengeType challengeType, LocalDate dateCompleted);
 }
+
+// CodeRabbit audit trigger

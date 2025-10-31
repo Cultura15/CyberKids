@@ -19,7 +19,6 @@ public class Level3Entity {
     private String totalTimeTaken;
     private LocalDate date;
 
-    // Default constructor
     public Level3Entity() {}
 
     public Level3Entity(Student student, int score, String totalTimeTaken, LocalDate date) {
@@ -29,7 +28,6 @@ public class Level3Entity {
         this.date = date;
     }
 
-    // Getters and setters
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
 
@@ -45,3 +43,5 @@ public class Level3Entity {
     public LocalDate getDate() { return date; }
     public void setDate(LocalDate date) { this.date = date; }
 }
+
+// CodeRabbit audit trigger

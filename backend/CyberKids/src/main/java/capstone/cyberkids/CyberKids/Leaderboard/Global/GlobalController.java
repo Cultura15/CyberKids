@@ -79,7 +79,6 @@ public class GlobalController {
     public ResponseEntity<List<GlobalLeaderboardDTO>> getOverallLeaderboardForTeacher() {
         return ResponseEntity.ok(globalLeaderboardService.getAllRankedOverallForTeacher());
     }
-
-
-
 }
+
+// CodeRabbit audit trigger

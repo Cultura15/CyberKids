@@ -30,24 +30,31 @@ public class ScenarioDTO {
         }
 
         if (scenario.getCorrectAnswer() != null) {
-            this.correctAnswer = scenario.getCorrectAnswer().name(); // SAFE or UNSAFE
+            this.correctAnswer = scenario.getCorrectAnswer().name();
         }
     }
 
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
+
     public String getContent() { return content; }
     public void setContent(String content) { this.content = content; }
+
     public Boolean getActive() { return active; }
     public void setActive(Boolean active) { this.active = active; }
+
     public String getTeacherName() { return teacherName; }
     public void setTeacherName(String teacherName) { this.teacherName = teacherName; }
+
     public Date getCreatedAt() { return createdAt; }
     public void setCreatedAt(Date createdAt) { this.createdAt = createdAt; }
+
     public Date getUpdatedAt() { return updatedAt; }
     public void setUpdatedAt(Date updatedAt) { this.updatedAt = updatedAt; }
+
     public Long getClassId() { return classId; }
     public void setClassId(Long classId) { this.classId = classId; }
+
     public String getCorrectAnswer() {return correctAnswer;}
     public void setCorrectAnswer(String correctAnswer) {this.correctAnswer = correctAnswer;}
 }

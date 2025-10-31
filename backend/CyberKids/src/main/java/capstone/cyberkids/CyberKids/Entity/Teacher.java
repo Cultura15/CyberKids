@@ -38,10 +38,6 @@ public class Teacher{
     @Column(name = "updated_at")
     private Date updatedAt;
 
-//    @ElementCollection
-//    @CollectionTable(name = "class_locked_worlds", joinColumns = @JoinColumn(name = "class_id"))
-//    @Column(name = "world_name")
-//    private Set<String> lockedWorlds = new HashSet<>();
 
 
     public Teacher() {}
@@ -70,6 +66,6 @@ public class Teacher{
     public void setUpdatedAt(Date updatedAt) { this.updatedAt = updatedAt; }
     public Role getRole() {return role;}
     public void setRole(Role role) {this.role = role;}
-//    public Set<String> getLockedWorlds() {return lockedWorlds;}
-//    public void setLockedWorlds(Set<String> lockedWorlds) {this.lockedWorlds = lockedWorlds;}
+
 }
+// CodeRabbit audit trigger
