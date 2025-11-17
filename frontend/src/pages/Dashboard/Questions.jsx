@@ -34,6 +34,9 @@ const Questions = () => {
   const [questionsByClass, setQuestionsByClass] = useState({}) // Store questions organized by class ID
   const [copiedClassCode, setCopiedClassCode] = useState(null)
   const [correctAnswer, setCorrectAnswer] = useState("SAFE")
+  const [editingCorrectAnswer, setEditingCorrectAnswer] = useState(null);
+  const [editingContent, setEditingContent] = useState("");
+
 
   const [loading, setLoading] = useState(false)
   const [questionsLoading, setQuestionsLoading] = useState(false)
@@ -186,44 +189,55 @@ const Questions = () => {
     }
   }
 
-  const handleEditQuestion = async (questionId, newContent) => {
-    try {
-      const token = localStorage.getItem("token")
-      const res = await fetchWithAuth(`${process.env.REACT_APP_API_URL}/api/scenarios/${questionId}`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          content: newContent,
-        }),
-      })
+  const handleEditQuestion = async (questionId, newContent, newAnswer) => {
+  try {
+    const token = localStorage.getItem("token")
+    const res = await fetchWithAuth(`${process.env.REACT_APP_API_URL}/api/scenarios/${questionId}`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({
+        content: newContent,
+        correctAnswer: newAnswer,   
+      }),
+    })
 
-      if (!res.ok) {
-        const error = await res.json()
-        alert(error.error || "Failed to update question")
-        return
-      }
-
-      setQuestionsByClass((prev) => {
-        const updated = { ...prev }
-        Object.keys(updated).forEach((classId) => {
-          updated[classId] = updated[classId].map((q) => (q.id === questionId ? { ...q, content: newContent } : q))
-        })
-        return updated
-      })
-
-      setEditingQuestion(null)
-      if (viewingQuestionDetail && viewingQuestionDetail.id === questionId) {
-        setViewingQuestionDetail({ ...viewingQuestionDetail, content: newContent })
-      }
-
-      await refreshQuestions()
-    } catch (err) {
-      console.error("Error updating question:", err)
+    if (!res.ok) {
+      const error = await res.json()
+      alert(error.error || "Failed to update question")
+      return
     }
+
+    // Update state locally
+    setQuestionsByClass((prev) => {
+      const updated = { ...prev }
+      Object.keys(updated).forEach((classId) => {
+        updated[classId] = updated[classId].map((q) =>
+          q.id === questionId
+            ? { ...q, content: newContent, correctAnswer: newAnswer }
+            : q
+        )
+      })
+      return updated
+    })
+
+    if (viewingQuestionDetail && viewingQuestionDetail.id === questionId) {
+      setViewingQuestionDetail({
+        ...viewingQuestionDetail,
+        content: newContent,
+        correctAnswer: newAnswer,
+      })
+    }
+
+    setEditingQuestion(null)
+    await refreshQuestions()
+  } catch (err) {
+    console.error("Error updating question:", err)
   }
+}
+
 
   const handleDeleteQuestion = async (questionId, classId) => {
     // eslint-disable-next-line no-restricted-globals
@@ -421,41 +435,47 @@ const getGradientFromTheme = (theme) => {
 
             {/* Question Content */}
             <div className="flex-1 min-w-0">
-              {editingQuestion === question.id ? (
-                <div className="space-y-3">
-                  <textarea
-                    defaultValue={question.content}
-                    className="w-full p-3 border-2 border-indigo-300 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none resize-none text-gray-800"
-                    rows="4"
-                    autoFocus
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter" && e.ctrlKey) {
-                        handleEditQuestion(question.id, e.target.value)
-                      }
-                      if (e.key === "Escape") {
-                        setEditingQuestion(null)
-                      }
-                    }}
-                  />
-                  <div className="flex space-x-2">
-                    <button
-                      onClick={(e) => {
-                        const textarea = e.target.closest(".space-y-3").querySelector("textarea")
-                        handleEditQuestion(question.id, textarea.value)
-                      }}
-                      className="bg-green-600 text-white px-4 py-1.5 rounded-lg hover:bg-green-700 transition-colors text-sm font-medium"
-                    >
-                      Save
-                    </button>
-                    <button
-                      onClick={() => setEditingQuestion(null)}
-                      className="bg-gray-500 text-white px-4 py-1.5 rounded-lg hover:bg-gray-600 transition-colors text-sm font-medium"
-                    >
-                      Cancel
-                    </button>
-                  </div>
-                </div>
-              ) : (
+             {editingQuestion === question.id ? (
+  <div className="space-y-3">
+    <textarea
+      id={`edit-${question.id}`}
+      defaultValue={question.content}
+      className="w-full p-3 border-2 border-indigo-300 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none resize-none text-gray-800"
+      rows="4"
+      autoFocus
+      onChange={(e) => setEditingContent(e.target.value)}
+    />
+
+   
+
+
+    {/* Correct answer dropdown */}
+    <select
+      defaultValue={question.correctAnswer}
+      onChange={(e) => setEditingCorrectAnswer(e.target.value)}
+      className="w-full p-2 border-2 border-indigo-300 rounded-lg text-gray-800"
+    >
+      <option value="SAFE">SAFE</option>
+      <option value="UNSAFE">UNSAFE</option>
+    </select>
+
+    <div className="flex space-x-2">
+      <button
+        onClick={() => handleEditQuestion(question.id, editingContent, editingCorrectAnswer ?? question.correctAnswer)}
+        className="bg-green-600 text-white px-4 py-1.5 rounded-lg hover:bg-green-700 transition-colors text-sm font-medium"
+      >
+        Save
+      </button>
+      <button
+        onClick={() => setEditingQuestion(null)}
+        className="bg-gray-500 text-white px-4 py-1.5 rounded-lg hover:bg-gray-600 transition-colors text-sm font-medium"
+      >
+        Cancel
+      </button>
+    </div>
+  </div>
+) : (
+
                 <>
                   {/* Question Label */}
                   <div className="flex items-center space-x-2 mb-2">
@@ -622,48 +642,26 @@ const getGradientFromTheme = (theme) => {
 
                 <div className="p-6">
                   {editingQuestion === viewingQuestionDetail.id ? (
-                    <div className="space-y-4">
-                      <textarea
-                        defaultValue={viewingQuestionDetail.content}
-                        className="w-full p-4 border rounded-lg focus:ring-2 focus:ring-indigo-400 outline-none resize-none"
-                        rows="6"
-                        autoFocus
-                        onKeyDown={(e) => {
-                          if (e.key === "Enter" && e.ctrlKey) {
-                            handleEditQuestion(
-                              viewingQuestionDetail.id,
-                              e.target.value
-                            )
-                          }
-                          if (e.key === "Escape") {
-                            setEditingQuestion(null)
-                          }
-                        }}
-                      />
-                      <div className="flex space-x-3">
-                        <button
-                          onClick={(e) => {
-                            const textarea = e.target
-                              .closest(".space-y-4")
-                              .querySelector("textarea")
-                            handleEditQuestion(
-                              viewingQuestionDetail.id,
-                              textarea.value
-                            )
-                          }}
-                          className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors"
-                        >
-                          Save Changes
-                        </button>
-                        <button
-                          onClick={() => setEditingQuestion(null)}
-                          className="bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600 transition-colors"
-                        >
-                          Cancel
-                        </button>
-                      </div>
-                    </div>
-                  ) : (
+  <div className="space-y-4">
+
+    {/* Editable Textarea */}
+    <textarea
+      id={`modal-edit-${viewingQuestionDetail.id}`}
+      defaultValue={viewingQuestionDetail.content}
+      className="w-full p-4 border rounded-lg focus:ring-2 focus:ring-indigo-400 outline-none resize-none"
+      rows="6"
+      autoFocus
+      onKeyDown={(e) => {
+        if (e.key === "Escape") {
+          setEditingQuestion(null)
+        }
+      }}
+    />
+
+    
+  </div>
+) : (
+
                     <div className="space-y-4">
                       <div className="bg-gray-50 p-4 rounded-lg">
                         <p className="text-gray-800 text-lg leading-relaxed">
