@@ -79,7 +79,7 @@ public class ScenarioService {
                 .toList();
     }
 
-    public Scenario updateScenario(Long scenarioId, String content) {
+    public Scenario updateScenario(Long scenarioId, String content, String correctAnswer) {
         Teacher teacher = teacherService.getLoggedInTeacher();
 
         Scenario scenario = scenarioRepository.findById(scenarioId)
@@ -93,8 +93,18 @@ public class ScenarioService {
             scenario.setContent(content.trim());
         }
 
+        if (correctAnswer != null && !correctAnswer.trim().isEmpty()) {
+            try {
+                AnswerTypeLvl1 answerEnum = AnswerTypeLvl1.valueOf(correctAnswer.trim().toUpperCase());
+                scenario.setCorrectAnswer(answerEnum);
+            } catch (IllegalArgumentException e) {
+                throw new RuntimeException("Correct answer must be either SAFE or UNSAFE");
+            }
+        }
+
         return scenarioRepository.save(scenario);
     }
+
 
     public void deleteScenario(Long scenarioId) {
         Teacher teacher = teacherService.getLoggedInTeacher();

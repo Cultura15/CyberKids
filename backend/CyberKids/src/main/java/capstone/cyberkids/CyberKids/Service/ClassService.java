@@ -8,6 +8,7 @@ import jakarta.transaction.Transactional;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
+
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -114,6 +115,32 @@ public class ClassService {
     public Classes getClassById(Long classId) {
         return classRepository.findById(classId)
                 .orElseThrow(() -> new RuntimeException("Class not found with id: " + classId));
+    }
+
+    @Transactional
+    public Classes updateClassDetails(Long classId, String teacherEmail,
+                                      String grade, String section, Integer maxStudents) {
+
+        Teacher teacher = teacherRepository.findByEmail(teacherEmail)
+                .orElseThrow(() -> new RuntimeException("Teacher not found"));
+
+        Classes clazz = classRepository.findById(classId)
+                .orElseThrow(() -> new RuntimeException("Class not found"));
+
+        if (!clazz.getTeacher().getId().equals(teacher.getId())) {
+            throw new RuntimeException("You are not authorized to edit this class.");
+        }
+
+        Optional<Classes> existing = classRepository.findByGradeAndSectionAndTeacherId(grade, section, teacher.getId());
+        if (existing.isPresent() && !existing.get().getId().equals(classId)) {
+            throw new RuntimeException("Another class with this Grade & Section already exists.");
+        }
+
+        if (grade != null) clazz.setGrade(grade);
+        if (section != null) clazz.setSection(section);
+        if (maxStudents != null) clazz.setMaxStudents(maxStudents);
+
+        return classRepository.save(clazz);
     }
 
     public void deleteClass(Long classId) {
