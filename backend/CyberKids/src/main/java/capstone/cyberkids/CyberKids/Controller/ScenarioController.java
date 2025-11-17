@@ -115,13 +115,18 @@ public class ScenarioController {
             @PathVariable Long scenarioId,
             @RequestBody ScenarioRequestDTO request) {
         try {
-            Scenario scenario = scenarioService.updateScenario(scenarioId, request.getContent());
+            Scenario scenario = scenarioService.updateScenario(
+                    scenarioId,
+                    request.getContent(),
+                    request.getCorrectAnswer()
+            );
             return ResponseEntity.ok(new ScenarioDTO(scenario));
         } catch (RuntimeException e) {
             return ResponseEntity.badRequest()
                     .body(Map.of("error", e.getMessage()));
         }
     }
+
 
     // Delete a question
     @DeleteMapping("/{scenarioId}")

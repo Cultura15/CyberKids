@@ -137,6 +137,36 @@ public class ClassController {
         ));
     }
 
+    // Edit class
+    @PutMapping("/{classId}")
+    public ResponseEntity<?> updateClass(
+            @PathVariable Long classId,
+            @RequestBody ClassEditRequest request) {
+        try {
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+            String email;
+
+            if (authentication.getPrincipal() instanceof UserDetails) {
+                email = ((UserDetails) authentication.getPrincipal()).getUsername();
+            } else {
+                email = authentication.getPrincipal().toString();
+            }
+
+            Classes updated = classService.updateClassDetails(
+                    classId,
+                    email,
+                    request.getGrade(),
+                    request.getSection(),
+                    request.getMaxStudents()
+            );
+
+            return ResponseEntity.ok(updated);
+
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+        }
+    }
+
     // Delete class
     @DeleteMapping("/{classId}")
     public ResponseEntity<Void> deleteClass(@PathVariable Long classId) {

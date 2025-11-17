@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Outlet, useLocation } from "react-router-dom"
+import { Outlet, useLocation, useNavigate } from "react-router-dom"
 import {
   Plus,
   Search,
@@ -93,6 +93,7 @@ const ClassComponent = () => {
   const [newClassName, setNewClassName] = useState("")
   const [newGrade, setNewGrade] = useState("")
   const [newSection, setNewSection] = useState("")
+  const [newMaxStudents, setNewMaxStudents] = useState("")
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
   const [selectedClass, setSelectedClass] = useState(null)
@@ -115,6 +116,7 @@ const ClassComponent = () => {
   const [challengeFilter, setChallengeFilter] = useState("all")
   const [challengeSortDropdownOpen, setChallengeSortDropdownOpen] = useState(false)
   const [copiedClassCode, setCopiedClassCode] = useState(null)
+  
 
   // Add a new state for status history
   const [statusHistory, setStatusHistory] = useState([])
@@ -122,7 +124,8 @@ const ClassComponent = () => {
   const [loadingStatusHistory, setLoadingStatusHistory] = useState(false)
 
   const { studentStatuses, initializeStatuses, getOnlineStatus } = useStudentStatusContext();
-  
+
+  const navigate = useNavigate();
 
 
   // const [studentStatuses, setStudentStatuses] = useState({})
@@ -375,63 +378,68 @@ const ClassComponent = () => {
   }
 
   // Move student to a specific world
-  const moveStudentToWorld = async (student, level) => {
-    if (!student.robloxId) {
-      alert("Cannot assign player: No Roblox ID found for this student.")
-      return
+const moveStudentToWorld = async (student, level) => {
+  if (!student.robloxId) {
+    alert("Cannot assign player: No Roblox ID found for this student.")
+    return
+  }
+
+  // 🔥 NEW: Check if player is offline before moving
+  const onlineStatus = getOnlineStatus(student)
+  if (onlineStatus !== "online") {
+    alert("Cannot move player: Player is offline.")
+    return
+  }
+
+  const worldName = LEVEL_TO_WORLD[level]
+  const levelNumber = LEVEL_TO_NUMBER[level]
+  const levelKey = `${student.id}-${level}`
+
+  // Set loading state for this specific student and level
+  setMovingStudent((prev) => ({
+    ...prev,
+    [levelKey]: true,
+  }))
+
+  try {
+    const response = await fetchWithAuth(`${TEACHER_API_URL}/move-student`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        robloxId: student.robloxId,
+        targetWorld: worldName,
+        targetLevel: levelNumber,
+      }),
+    })
+
+    if (!response.ok) {
+      throw new Error("Failed to assign player")
     }
 
-    const worldName = LEVEL_TO_WORLD[level]
-    const levelNumber = LEVEL_TO_NUMBER[level]
-    const levelKey = `${student.id}-${level}`
-
-    // Set loading state for this specific student and level
-    setMovingStudent((prev) => ({
+    setMoveSuccess((prev) => ({
       ...prev,
       [levelKey]: true,
     }))
 
-    try {
-      const response = await fetchWithAuth(`${TEACHER_API_URL}/move-student`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          robloxId: student.robloxId,
-          targetWorld: worldName,
-          targetLevel: levelNumber,
-        }),
-      })
-
-      if (!response.ok) {
-        throw new Error("Failed to assign player")
-      }
-
-      // Set success state for this specific student and level
+    setTimeout(() => {
       setMoveSuccess((prev) => ({
-        ...prev,
-        [levelKey]: true,
-      }))
-
-      // Clear success message after 3 seconds
-      setTimeout(() => {
-        setMoveSuccess((prev) => ({
-          ...prev,
-          [levelKey]: false,
-        }))
-      }, 3000)
-    } catch (err) {
-      console.error("Error assigning player:", err)
-      alert(`Failed to assign player: ${err.message}`)
-    } finally {
-      // Clear loading state
-      setMovingStudent((prev) => ({
         ...prev,
         [levelKey]: false,
       }))
-    }
+    }, 3000)
+  } catch (err) {
+    console.error("Error assigning player:", err)
+    alert(`Failed to assign player: ${err.message}`)
+  } finally {
+    setMovingStudent((prev) => ({
+      ...prev,
+      [levelKey]: false,
+    }))
   }
+}
+
 
   // Change student level
   const changeStudentLevel = (studentId, newLevel) => {
@@ -486,52 +494,109 @@ const ClassComponent = () => {
   }
 
   // Edit class name - Note: This would need a backend endpoint to update class info
-  const handleEditClass = () => {
-    // This is a placeholder. In a real implementation, you would make an API call
-    // to update the class information on the server
-    alert("Edit functionality would require an additional API endpoint")
-    setIsEditingClass(false)
+  // Edit class
+const handleEditClass = async () => {
+  if (!newGrade.trim() || !newSection.trim() || !newMaxStudents) {
+    alert("Please enter grade, section, and maximum students");
+    return;
   }
+
+  setLoading(true);
+  try {
+    const response = await fetchWithAuth(`${API_BASE_URL}/${selectedClass}`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        grade: newGrade,
+        section: newSection,
+        maxStudents: Number(newMaxStudents), // make sure it's a number
+      }),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData || "Failed to update class");
+    }
+
+    const updatedClass = await response.json();
+
+    // Update the class list in state
+    setClasses((prev) =>
+      prev.map((cls) => (cls.id === updatedClass.id ? updatedClass : cls))
+    );
+
+    setIsEditingClass(false);
+    setNewGrade("");
+    setNewSection("");
+    setNewMaxStudents("");
+  } catch (err) {
+    console.error("Error updating class:", err);
+    setError(err.message);
+  } finally {
+    setLoading(false);
+  }
+};
+
 
   // Delete class
-  const handleDeleteClass = async () => {
-    if (window.confirm("Are you sure you want to delete this class? This action cannot be undone.")) {
-      setLoading(true)
-      try {
-        const response = await fetchWithAuth(`${API_BASE_URL}/${selectedClass}`, {
-          method: "DELETE",
-        })
+  // Delete class with check
+const handleDeleteClass = async () => {
+  // Find the class object
+  const classObj = classes.find((cls) => cls.id === selectedClass);
+  if (!classObj) return;
 
-        if (!response.ok) {
-          throw new Error("Failed to delete class")
-        }
+  // Check if class has students
+  if (students.length > 0) {
+    alert("Cannot delete this class because it still contains students.");
+    return;
+  }
 
-        // Refresh the classes list
-        const classesResponse = await fetchWithAuth(`${API_BASE_URL}/my-classes`)
-        if (classesResponse.ok) {
-          const updatedClasses = await classesResponse.json()
-          setClasses(updatedClasses)
-        }
+  if (
+    window.confirm(
+      "Are you sure you want to delete this class? This action cannot be undone."
+    )
+  ) {
+    setLoading(true);
+    try {
+      const response = await fetchWithAuth(`${API_BASE_URL}/${selectedClass}`, {
+        method: "DELETE",
+      });
 
-        backToClasses()
-      } catch (err) {
-        console.error("Error deleting class:", err)
-        setError(err.message)
-      } finally {
-        setLoading(false)
+      if (!response.ok) {
+        throw new Error("Failed to delete class");
       }
+
+      // Refresh the classes list
+      const classesResponse = await fetchWithAuth(`${API_BASE_URL}/my-classes`);
+      if (classesResponse.ok) {
+        const updatedClasses = await classesResponse.json();
+        setClasses(updatedClasses);
+      }
+
+      backToClasses();
+    } catch (err) {
+      console.error("Error deleting class:", err);
+      setError(err.message);
+    } finally {
+      setLoading(false);
     }
   }
+};
+
 
   // Start editing class
   const startEditClass = () => {
-    const classToEdit = classes.find((cls) => cls.id === selectedClass)
-    if (classToEdit) {
-      setNewGrade(classToEdit.grade)
-      setNewSection(classToEdit.section)
-      setIsEditingClass(true)
-    }
+  const classToEdit = classes.find((cls) => cls.id === selectedClass);
+  if (classToEdit) {
+    setNewGrade(classToEdit.grade || "");
+    setNewSection(classToEdit.section || "");
+    setNewMaxStudents(classToEdit.maxStudents || ""); 
+    setIsEditingClass(true);
   }
+};
+
 
   // View class students
   const viewClassStudents = async (classObj) => {
@@ -1018,9 +1083,10 @@ const getGradientFromTheme = (theme) => {
               <h3 className="text-xl font-medium text-gray-700 mb-1">No Classes Found</h3>
               <p className="text-lg text-gray-500 mb-4">Create your first class to get started.</p>
               <button
-                onClick={() => setIsCreatingClass(true)}
+                onClick={() => navigate("/dashboard/myclass/create-class")}
                 className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors text-base"
               >
+
                 Create Class
               </button>
             </div>
@@ -1031,88 +1097,104 @@ const getGradientFromTheme = (theme) => {
   }
 
   // Render students view
-  if (viewMode === "students") {
-    const classObj = classes.find((c) => c.id === selectedClass)
+if (viewMode === "students") {
+  const classObj = classes.find((c) => c.id === selectedClass)
 
-    return (
-      <div className="space-y-6 mt-8" style={nunitoFont}>
-        {/* Page Header with Back Button, Edit and Delete */}
-        <div className="bg-white rounded-lg shadow-sm p-6">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center">
-              <button onClick={backToClasses} className="mr-4 p-2 rounded-full hover:bg-gray-100 transition-colors">
-                <ArrowLeft className="h-6 w-6 text-gray-600" />
-              </button>
-              {isEditingClass ? (
-                <div className="flex items-center">
-                  <div className="mr-2">
-                    <input
-                      type="text"
-                      className="border border-gray-300 rounded-lg px-3 py-1 mr-2 text-base"
-                      placeholder="Grade"
-                      value={newGrade}
-                      onChange={(e) => setNewGrade(e.target.value)}
-                    />
-                    <input
-                      type="text"
-                      className="border border-gray-300 rounded-lg px-3 py-1 text-base"
-                      placeholder="Section"
-                      value={newSection}
-                      onChange={(e) => setNewSection(e.target.value)}
-                    />
-                  </div>
-                  <button
-                    onClick={handleEditClass}
-                    className="px-3 py-1 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors text-base mr-2"
-                  >
-                    Save
-                  </button>
-                  <button
-                    onClick={() => {
-                      setIsEditingClass(false)
-                      setNewGrade("")
-                      setNewSection("")
-                    }}
-                    className="px-3 py-1 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors text-base"
-                  >
-                    Cancel
-                  </button>
+  return (
+    <div className="space-y-6 mt-8" style={nunitoFont}>
+      {/* Page Header with Back Button, Edit and Delete */}
+      <div className="bg-white rounded-lg shadow-sm p-6">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center">
+            <button
+              onClick={backToClasses}
+              className="mr-4 p-2 rounded-full hover:bg-gray-100 transition-colors"
+            >
+              <ArrowLeft className="h-6 w-6 text-gray-600" />
+            </button>
+
+            {isEditingClass ? (
+              <div className="flex items-center">
+                <div className="mr-2 flex space-x-2">
+                  <input
+                    type="text"
+                    className="border border-gray-300 rounded-lg px-3 py-1 text-base"
+                    placeholder="Grade"
+                    value={newGrade}
+                    onChange={(e) => setNewGrade(e.target.value)}
+                  />
+                  <input
+                    type="text"
+                    className="border border-gray-300 rounded-lg px-3 py-1 text-base"
+                    placeholder="Section"
+                    value={newSection}
+                    onChange={(e) => setNewSection(e.target.value)}
+                  />
+                  <input
+                    type="number"
+                    className="border border-gray-300 rounded-lg px-3 py-1 text-base"
+                    placeholder="Max Students"
+                    value={newMaxStudents}
+                    onChange={(e) => setNewMaxStudents(e.target.value)}
+                  />
                 </div>
-              ) : (
-                <div>
-                  <h2 className="text-2xl font-semibold text-gray-800">
-                    {classObj?.grade} - {classObj?.section}
-                  </h2>
 
-                  {/* Class Code Display in Students View */}
-                  {classObj?.classCode && (
-                    <div className="flex items-center space-x-2">
-                      <div className="bg-indigo-50 px-3 py-1 rounded-full border border-indigo-200">
-                        <span className="text-sm font-mono font-bold text-indigo-700 tracking-wider">
-                          {classObj.classCode}
-                        </span>
-                      </div>
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation()
-                          copyClassCode(classObj.classCode)
-                        }}
-                        className="p-1 rounded-full bg-indigo-100 hover:bg-indigo-200 transition-colors text-indigo-600"
-                        title="Copy class code"
-                      >
-                        {copiedClassCode === classObj.classCode ? (
-                          <CheckCircle className="h-4 w-4" />
-                        ) : (
-                          <CopyIcon className="h-4 w-4" />
-                        )}
-                      </button>
+                <button
+                  onClick={handleEditClass}
+                  className="px-3 py-1 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors text-base mr-2"
+                >
+                  Save
+                </button>
+                <button
+                  onClick={() => {
+                    setIsEditingClass(false)
+                    setNewGrade("")
+                    setNewSection("")
+                    setNewMaxStudents("")
+                  }}
+                  className="px-3 py-1 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors text-base"
+                >
+                  Cancel
+                </button>
+              </div>
+            ) : (
+              <div>
+                <h2 className="text-2xl font-semibold text-gray-800">
+                  {classObj?.grade} - {classObj?.section}
+                </h2>
+
+                {/* Class Code Display in Students View */}
+                {classObj?.classCode && (
+                  <div className="flex items-center space-x-2">
+                    <div className="bg-indigo-50 px-3 py-1 rounded-full border border-indigo-200">
+                      <span className="text-sm font-mono font-bold text-indigo-700 tracking-wider">
+                        {classObj.classCode}
+                      </span>
                     </div>
-                  )}
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        copyClassCode(classObj.classCode)
+                      }}
+                      className="p-1 rounded-full bg-indigo-100 hover:bg-indigo-200 transition-colors text-indigo-600"
+                      title="Copy class code"
+                    >
+                      {copiedClassCode === classObj.classCode ? (
+                        <CheckCircle className="h-4 w-4" />
+                      ) : (
+                        <CopyIcon className="h-4 w-4" />
+                      )}
+                    </button>
+                  </div>
+                )}
 
-                  <p className="text-lg text-gray-600">{students.length} students</p>
-                </div>
-              )}
-            </div>
+                <p className="text-lg text-gray-600">{students.length} students</p>
+              </div>
+            )}
+          </div>
+
+          {/* The Edit/Delete buttons section starts here */}
+
 
             {!isEditingClass && (
               <div className="flex space-x-2">

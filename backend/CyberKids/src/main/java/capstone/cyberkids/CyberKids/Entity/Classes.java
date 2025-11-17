@@ -91,6 +91,7 @@ public class Classes {
     public String getColorTheme() { return colorTheme; }
 
     public Integer getMaxStudents() { return maxStudents; }
+    public void setMaxStudents(Integer maxStudents) {this.maxStudents = maxStudents;}
 
     public Teacher getTeacher() {
         return teacher;
