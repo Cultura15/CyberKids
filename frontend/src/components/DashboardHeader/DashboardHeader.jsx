@@ -77,7 +77,11 @@ const DashboardHeader = ({
         {/* Left side - Logo + Navigation */}
         <div className="flex items-center gap-6">
           <div className="flex items-center gap-3">
-            <h1 className="text-2xl font-bold text-white tracking-tight">CyberKids</h1>
+             <img
+      src="/logo4.png"
+      alt="App Logo"
+      className="object-contain"
+    />
           </div>
 
           <nav className="flex items-center gap-1">

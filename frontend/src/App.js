@@ -23,6 +23,7 @@ const Questions = lazy(() => import("./pages/Dashboard/Questions"))
 const MyClass = lazy(() => import("./pages/Dashboard/Class"))
 const CreateClass = lazy(() => import("./pages/Dashboard/CreateClass"))
 const Notifications = lazy(() => import("./pages/Dashboard/Notifications"))
+const LandingPage = lazy(() => import("./pages/Dashboard/LandingPage"))
 
 // === Loading spinner ===
 function LoadingSpinner() {
@@ -104,6 +105,10 @@ function App() {
     <BrowserRouter>
       <Suspense fallback={<LoadingSpinner />}>
         <Routes>
+          {/* === Landing Page (Root) === */}
+          <Route path="/" element={<LandingPage />} />
+
+
           {/* === Auth Routes === */}
           <Route
             path="/login"
@@ -150,6 +155,7 @@ function App() {
           {/* === Redirect routes === */}
           <Route path="/" element={<Navigate to="/dashboard" replace />} />
           <Route path="*" element={<Navigate to="/dashboard" replace />} />
+          <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </Suspense>
     </BrowserRouter>
