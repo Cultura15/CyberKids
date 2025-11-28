@@ -1,82 +1,65 @@
-<img src="https://skillicons.dev/icons?i=react,spring" alt="Cultura"> <img align="left" alt="Roblox" width="40px" style="padding-right:5px;" src="https://github.com/user-attachments/assets/c04693fb-42c7-45aa-a3e5-4fd2fb5d00e9" />
+# CyberKids: An AI-Integrated Cybersecurity Awareness Game using Roblox Platform
+
+**CyberKids** is a gamified cybersecurity learning platform designed to teach elementary students essential online safety skills through interactive, age-appropriate experiences. Built on Roblox Studio and paired with a dedicated teacher dashboard, the platform introduces core concepts in a way that is engaging, accessible, and easy to understand. By combining playful learning with real-time classroom monitoring, CyberKids helps young learners develop safe digital habits and equips educators with tools to support effective cybersecurity education.
+<br><br>
+
+*Built with Spring Boot, React.js, Tailwind CSS, MySQL and Roblox Studio*
+
+![Project Image](https://raw.githubusercontent.com/Cultura15/CyberKids/main/frontend/public/thumbnail1.png)
+
+![Project Image](https://raw.githubusercontent.com/Cultura15/CyberKids/main/frontend/public/thumbnail2.png)
+
+## 🚀 Features
+
+### Roblox (Students)
+- 🧩 **Interactive Game Levels** — Information Sorting, Password Security, Phishing Awareness  
+- ⏱️ **Score & Timer Mechanics** — Tracks accuracy and performance in real time  
+- 💡 **AI-Generated Feedback** — Students receive immediate, adaptive guidance  
+- 📊 **Dynamic Leaderboard** — Live ranking of student performance during activities  
+
+### Web Dashboard (Teachers)
+- 🗂️ **Classroom Management** — Create classes, manage learners, and organize sections  
+- 🔍 **Student Progress Insights** — View detailed reports on individual and class performance  
+- 🛂 **Game Access Controls** — Enable or restrict access to specific levels or activities  
+- 📝 **Custom Task Creator** — Build and send personalized questions directly to Roblox  
+- 🔔 **Live Notifications** — Real-time updates for teacher activity and student events  
+
+### Backend API
+- 🛡️ **JWT Security** — Robust authentication and authorization  
+- 🌐 **REST APIs** — Comprehensive endpoints for all system features  
+- 🔗 **Roblox Integration Services** — API endpoints for task retrieval, answer submission, and score reporting  
+- 📶 **WebSocket Events** — Real-time communication for online status and notifications  
+- 🤖 **AI Integration** — OpenAI GPT models provide dynamic feedback to learners  
+- 🗃️ **MySQL Database** — Structured storage for users, analytics, tasks, and classrooms
+
+### Key Technologies
+- **Frontend (Web)**: React 18, JavaScript, Tailwind CSS, ShadCN/UI
+- **Backend**: Spring Boot 3.4, Java 17, MySQL, Spring Security (JWT), WebSocket, OpenAI GPT-4
+- **Game Engine**: Roblox Studio, Lua, HTTPService
+- **Infrastructure / DevOps**: Microsoft Azure, Vercel, Docker
+
+## 👥 Project Members
+
+### 🧑‍💻 Jesson Cultura  
+![Role](https://img.shields.io/badge/Role-Lead%20Developer-green)  
+GitHub: https://github.com/Cultura15
+
+### 🧑‍💻 Ashley Vequiso  
+![Role](https://img.shields.io/badge/Role-FullStack%20Developer-purple)  
+GitHub: https://github.com/AshVequiso
+
+### 🧑‍💻 Emmanuel Dedumo  
+![Role](https://img.shields.io/badge/Role-Game%20Developer-orange)  
+GitHub: https://github.com/EmmanuelDedumo
+
+### 🧑‍💻 Jhudiel Artezuela  
+![Role](https://img.shields.io/badge/Role-Game%20Animator-cyan)  
+GitHub: https://github.com/AdrianJhudiel
+
+### 🧑‍💻 John Kenneth Baguio  
+![Role](https://img.shields.io/badge/Role-Game%20Animator-cyan)  
+GitHub: https://github.com/kenbasilan
 
 
-
-
-# CyberKids: A Cybersecurity Game for Elementary Students
-
->  _Capstone Project for IT332_  
-> 👩‍🏫 **Prof**: Dr. Ralph P. Laviste  
-> 🧑‍🏫 **Adviser**: Dr. Eugene C. Busico
-
----
-
-## Overview
-
-**CyberKids** is an educational, gamified platform designed on **Roblox Studio** to teach elementary students the fundamentals of cybersecurity. Through three immersive levels, the game simplifies complex topics like data privacy, password security, and phishing awareness using age-appropriate content and engaging mechanics.
-
-This is a 4th year capstone project developed by a team of BSIT students as part of their final requirement in IT332.
-
----
-
-## Game Levels & Learning Objectives
-
-### Level 1: Information Sorting
-- Learn to distinguish between **public** and **private** information.
-- Practice sharing only safe data online through in-game scenarios.
-
-### Level 2: Password Security
-- Understand what makes a **strong password**.
-- Interactive mini-games demonstrate brute force attacks and the importance of complexity.
-
-### Level 3: Phishing Awareness
-- Identify and avoid **phishing attempts** like impersonation, USB baiting, email scams, and QR code traps.
-
----
-
-## Key Features
-
-### SMART-Aligned Learning Objectives
-Each module was designed using the SMART framework:  
-**Specific**, **Measurable**, **Achievable**, **Relevant**, and **Time-bound** learning goals.
-
-### Gamified Experience
-- Built-in **scoring system**, **timers**, and **leaderboards**.
-- Students are rewarded for accuracy and speed, encouraging repeated learning through play.
-
-### Student Real-Name Registration
-- Secure registration system linking **real names** to **Roblox accounts**.
-- Enables accurate tracking and assessment of student performance.
-
-### Teacher Web Dashboard
-- Built using **React.js**, this dashboard allows teachers to:
-  - Monitor real-time student progress.
-  - Generate **analytics and performance reports**.
-  - Identify learning gaps and adapt instruction accordingly.
-
-### Real-Time Communication
-- Teachers can send alerts and notifications.
-- Keeps students informed, engaged, and on track throughout their learning journey.
-
----
-
-## Tech Stack
-
-| Layer        | Technology         |
-|--------------|--------------------|
-| 🖥️ Frontend   | React.js           |
-| 🧠 Backend    | Spring Boot (Java) |
-| 🕹️ Game Engine | Roblox Studio (Lua) |
-| 🌐 Languages  | Java, JavaScript, Lua |
-
----
-
-## 👥 Project Team
-
-- **Jesson Cultura**  
-- **Ash Josh V. Vequiso**  
-- **Emmanuel Dedumo**  
-- **Jhudiel Artezuela**  
-- **John Kenneth B. Baguio**
 
 
