@@ -78,13 +78,6 @@
 			<scope>test</scope>
 		</dependency>
 
-<!--		&lt;!&ndash; For JacksonFactory &ndash;&gt;-->
-<!--		<dependency>-->
-<!--			<groupId>com.google.http-client</groupId>-->
-<!--			<artifactId>google-http-client-jackson2</artifactId>-->
-<!--			<version>1.43.3</version>-->
-<!--		</dependency>-->
-
 		<!-- JWT API -->
 		<dependency>
 			<groupId>io.jsonwebtoken</groupId>
@@ -108,12 +101,6 @@
 			<scope>runtime</scope>
 		</dependency>
 
-		<dependency>
-			<groupId>jakarta.servlet</groupId>
-			<artifactId>jakarta.servlet-api</artifactId>
-			<scope>provided</scope>
-		</dependency>
-
 		<!-- Spring WebFlux for WebClient -->
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
@@ -131,18 +118,6 @@
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-oauth2-client</artifactId>
-		</dependency>
-
-		<!-- Spring Security (If not already included) -->
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-security</artifactId>
-		</dependency>
-
-		<!-- Spring Web for RestControllers -->
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-web</artifactId>
 		</dependency>
 
 		<!-- Spring Ai Starter for Google GenAI -->
