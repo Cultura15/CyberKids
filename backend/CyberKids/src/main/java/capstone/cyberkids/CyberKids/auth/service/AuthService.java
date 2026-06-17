@@ -4,6 +4,7 @@ import capstone.cyberkids.CyberKids.auth.JWT.JwtUtil;
 import capstone.cyberkids.CyberKids.entity.Teacher;
 import capstone.cyberkids.CyberKids.exception.InvalidCredentialsException;
 import capstone.cyberkids.CyberKids.auth.dto.AuthResponse;
+import capstone.cyberkids.CyberKids.exception.UserNotFoundException;
 import capstone.cyberkids.CyberKids.repository.TeacherRepo;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -26,7 +27,8 @@ public class AuthService {
         try {
             authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(email, password));
 
-            Teacher teacher = teacherRepo.findByEmail(email).orElseThrow(() -> new RuntimeException("User not found"));
+            Teacher teacher = teacherRepo.findByEmail(email)
+                    .orElseThrow(() -> new UserNotFoundException(email));
 
             String token = jwtUtil.generateToken(
                     teacher.getEmail(),

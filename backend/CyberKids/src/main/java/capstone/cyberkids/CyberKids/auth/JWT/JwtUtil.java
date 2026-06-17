@@ -2,10 +2,11 @@ package capstone.cyberkids.CyberKids.auth.JWT;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.io.Decoders;
+import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
-
+import javax.crypto.SecretKey;
 import java.util.Date;
 import java.util.function.Function;
 
@@ -16,15 +17,20 @@ public class JwtUtil {
         @Value("${jwt.secret}")
         private String SECRET_KEY;
 
+        private SecretKey getSigningKey(){
+            byte[] keyBytes = Decoders.BASE64.decode(SECRET_KEY);
+            return Keys.hmacShaKeyFor(keyBytes);
+        }
 
         public String generateToken(String username, String role, Long userId, String email) {
             return Jwts.builder()
-                    .setSubject(username)
+                    .subject(username)
                     .claim("role", role)
                     .claim("id", userId)
                     .claim("email", email)
-                    .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60 * 10)) // 10 hours expiration
-                    .signWith(SignatureAlgorithm.HS256, SECRET_KEY)
+                    .issuedAt(new Date())
+                    .expiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60 * 10))
+                    .signWith(getSigningKey())
                     .compact();
         }
 
@@ -42,9 +48,10 @@ public class JwtUtil {
 
         public <T> T extractClaim(String token, Function<Claims, T> claimsResolver) {
             final Claims claims = Jwts.parser()
-                    .setSigningKey(SECRET_KEY)
-                    .parseClaimsJws(token)
-                    .getBody();
+                    .verifyWith(getSigningKey())
+                    .build()
+                    .parseSignedClaims(token)
+                    .getPayload();
             return claimsResolver.apply(claims);
         }
 

@@ -11,7 +11,6 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
-
 import java.io.IOException;
 
 @Component
@@ -25,6 +24,7 @@ public class JwtRequestFilter extends OncePerRequestFilter  {
         this.userDetailsService = userDetailsService;
     }
 
+    // TODO: Fix html response for errors, doesn't return error status and message
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
             throws ServletException, IOException {
@@ -38,6 +38,8 @@ public class JwtRequestFilter extends OncePerRequestFilter  {
                 username = jwtUtil.extractUsername(jwt);
             } catch (ExpiredJwtException e) {
                 logger.warn("Token expired: " + e.getMessage());
+            } catch (Exception e){
+                logger.warn("Invalid token: " + e.getMessage());
             }
         }
 
