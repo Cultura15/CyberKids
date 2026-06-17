@@ -1,7 +1,6 @@
 package capstone.cyberkids.CyberKids.Model;
 
-import capstone.cyberkids.CyberKids.Entity.Student;
-import capstone.cyberkids.CyberKids.Model.ChallengeType;
+import capstone.cyberkids.CyberKids.entity.Student;
 
 import java.time.LocalDateTime;
 

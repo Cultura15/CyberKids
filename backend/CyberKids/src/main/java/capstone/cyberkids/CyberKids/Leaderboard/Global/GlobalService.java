@@ -1,16 +1,16 @@
 package capstone.cyberkids.CyberKids.Leaderboard.Global;
 
-import capstone.cyberkids.CyberKids.Entity.Classes;
-import capstone.cyberkids.CyberKids.Entity.Student;
+import capstone.cyberkids.CyberKids.entity.Classes;
+import capstone.cyberkids.CyberKids.entity.Student;
 import capstone.cyberkids.CyberKids.Leaderboard.LeaderboardLevel1.Level1Entity;
 import capstone.cyberkids.CyberKids.Leaderboard.LeaderboardLevel1.Level1Repo;
 import capstone.cyberkids.CyberKids.Leaderboard.LeaderboardLevel2.Level2Entity;
 import capstone.cyberkids.CyberKids.Leaderboard.LeaderboardLevel2.Level2Repo;
 import capstone.cyberkids.CyberKids.Leaderboard.LeaderboardLevel3.Level3Entity;
 import capstone.cyberkids.CyberKids.Leaderboard.LeaderboardLevel3.Level3Repo;
-import capstone.cyberkids.CyberKids.Service.ClassService;
-import capstone.cyberkids.CyberKids.Service.StudentService;
-import capstone.cyberkids.CyberKids.dtos.GlobalLeaderboardDTO;
+import capstone.cyberkids.CyberKids.service.ClassService;
+import capstone.cyberkids.CyberKids.service.StudentService;
+import capstone.cyberkids.CyberKids.dto.GlobalLeaderboardDTO;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;

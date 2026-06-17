@@ -1,9 +1,9 @@
 package capstone.cyberkids.CyberKids.MsTeams;
 
-import capstone.cyberkids.CyberKids.Entity.Teacher;
-import capstone.cyberkids.CyberKids.JWT.JwtUtil;
+import capstone.cyberkids.CyberKids.entity.Teacher;
+import capstone.cyberkids.CyberKids.auth.JWT.JwtUtil;
 import capstone.cyberkids.CyberKids.Model.Role;
-import capstone.cyberkids.CyberKids.Repository.TeacherRepo;
+import capstone.cyberkids.CyberKids.repository.TeacherRepo;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;

@@ -1,6 +1,6 @@
 package capstone.cyberkids.CyberKids.Leaderboard.Global;
 
-import capstone.cyberkids.CyberKids.dtos.GlobalLeaderboardDTO;
+import capstone.cyberkids.CyberKids.dto.GlobalLeaderboardDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;

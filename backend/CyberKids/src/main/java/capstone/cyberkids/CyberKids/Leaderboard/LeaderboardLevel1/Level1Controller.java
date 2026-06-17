@@ -6,7 +6,7 @@ import org.springframework.web.bind.annotation.*;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
-import capstone.cyberkids.CyberKids.dtos.LeaderboardResponseDTO;
+import capstone.cyberkids.CyberKids.dto.LeaderboardResponseDTO;
 
 @RestController
 @RequestMapping("/api/leaderboard/info-sorting/daily")

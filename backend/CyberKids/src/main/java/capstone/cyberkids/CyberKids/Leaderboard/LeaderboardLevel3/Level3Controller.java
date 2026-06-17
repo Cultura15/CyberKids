@@ -1,7 +1,7 @@
 package capstone.cyberkids.CyberKids.Leaderboard.LeaderboardLevel3;
 
 
-import capstone.cyberkids.CyberKids.dtos.LeaderboardResponseDTO;
+import capstone.cyberkids.CyberKids.dto.LeaderboardResponseDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;

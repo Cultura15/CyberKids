@@ -1,6 +1,6 @@
 package capstone.cyberkids.CyberKids.Leaderboard.LeaderboardLevel2;
 
-import capstone.cyberkids.CyberKids.Entity.Student;
+import capstone.cyberkids.CyberKids.entity.Student;
 import jakarta.persistence.*;
 import java.time.LocalDate;
 

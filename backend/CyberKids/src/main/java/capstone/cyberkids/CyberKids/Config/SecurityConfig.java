@@ -1,11 +1,11 @@
 package capstone.cyberkids.CyberKids.Config;
 
-import capstone.cyberkids.CyberKids.Entity.Teacher;
-import capstone.cyberkids.CyberKids.JWT.CustomUserDetailsService;
-import capstone.cyberkids.CyberKids.JWT.JwtRequestFilter;
-import capstone.cyberkids.CyberKids.JWT.JwtUtil;
+import capstone.cyberkids.CyberKids.entity.Teacher;
+import capstone.cyberkids.CyberKids.auth.service.CustomUserDetailsService;
+import capstone.cyberkids.CyberKids.auth.JWT.JwtRequestFilter;
+import capstone.cyberkids.CyberKids.auth.JWT.JwtUtil;
 import capstone.cyberkids.CyberKids.Model.Role;
-import capstone.cyberkids.CyberKids.Repository.TeacherRepo;
+import capstone.cyberkids.CyberKids.repository.TeacherRepo;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -35,7 +35,6 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import java.io.IOException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
 import java.util.List;
 
 @Configuration

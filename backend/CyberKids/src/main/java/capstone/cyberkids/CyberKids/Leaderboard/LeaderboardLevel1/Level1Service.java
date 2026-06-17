@@ -1,9 +1,9 @@
 package capstone.cyberkids.CyberKids.Leaderboard.LeaderboardLevel1;
 
-import capstone.cyberkids.CyberKids.Entity.Student;
+import capstone.cyberkids.CyberKids.entity.Student;
 import capstone.cyberkids.CyberKids.Leaderboard.Global.GlobalService;
-import capstone.cyberkids.CyberKids.Repository.StudentRepo;
-import capstone.cyberkids.CyberKids.dtos.LeaderboardResponseDTO;
+import capstone.cyberkids.CyberKids.repository.StudentRepo;
+import capstone.cyberkids.CyberKids.dto.LeaderboardResponseDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import java.time.LocalDate;

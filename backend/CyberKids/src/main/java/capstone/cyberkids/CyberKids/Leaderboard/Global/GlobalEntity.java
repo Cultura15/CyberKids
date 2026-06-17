@@ -1,6 +1,6 @@
 package capstone.cyberkids.CyberKids.Leaderboard.Global;
 
-import capstone.cyberkids.CyberKids.Entity.Student;
+import capstone.cyberkids.CyberKids.entity.Student;
 import jakarta.persistence.*;
 
 @Entity
