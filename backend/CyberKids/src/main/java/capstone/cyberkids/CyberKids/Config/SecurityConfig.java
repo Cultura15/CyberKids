@@ -9,6 +9,7 @@ import capstone.cyberkids.CyberKids.repository.TeacherRepo;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -31,12 +32,12 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
-
 import java.io.IOException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 
+@Slf4j
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
@@ -88,15 +89,10 @@ public class SecurityConfig {
                     OAuth2User principal = (OAuth2User) authentication.getPrincipal();
 
                     if (principal == null) {
-                        System.err.println("OAuth2User principal is null - authentication may have failed");
+                        log.error("OAuth2User principal is null - authentication may have failed");
                         response.sendRedirect(frontendUrl + "/login?error=authentication_failed");
                         return;
                     }
-
-                    // Log the principal attributes for debugging
-                    System.out.println("OAuth2User attributes: " + principal.getAttributes());
-                    System.out.println("OAuth2User authorities: " + principal.getAuthorities());
-                    System.out.println("OAuth2User name: " + principal.getName());
 
                     // Extract user information - try multiple attribute names
                     String email = principal.getAttribute("mail");
@@ -128,16 +124,14 @@ public class SecurityConfig {
 
                     // Debug: Print all available attributes if email is still null
                     if (email == null) {
-                        System.err.println("No email found in OAuth2 response");
-                        System.err.println("Available attributes: " + principal.getAttributes().keySet());
-                        System.err.println("Attribute values: " + principal.getAttributes());
+                        log.error("No email found in OAuth2 response. Available attribute keys: {}", principal.getAttributes().keySet());
                         response.sendRedirect(frontendUrl + "/login?error=no_email");
                         return;
                     }
 
                     // Validate required fields
                     if (email.trim().isEmpty()) {
-                        System.err.println("Email is empty");
+                        log.warn("OAuth2 email attribute is empty for principal: {}", principal.getName());
                         response.sendRedirect(frontendUrl + "/login?error=invalid_email");
                         return;
                     }
@@ -146,11 +140,11 @@ public class SecurityConfig {
                     final String finalEmail = email.toLowerCase().trim(); // Normalize email
                     final String finalName = (name != null && !name.trim().isEmpty()) ? name.trim() : "Microsoft User";
 
-                    System.out.println("Processing OAuth for email: " + finalEmail + ", name: " + finalName);
+                    log.info("Processing OAuth2 login for: {}", finalEmail);
 
                     // Find or create teacher
                     Teacher teacher = teacherRepo.findByEmail(finalEmail).orElseGet(() -> {
-                        System.out.println("Creating new teacher for email: " + finalEmail);
+                        log.info("New teacher registered via OAuth2: {}", finalEmail);
                         Teacher newTeacher = new Teacher();
                         newTeacher.setEmail(finalEmail);
                         newTeacher.setFullName(finalName);
@@ -158,8 +152,6 @@ public class SecurityConfig {
                         newTeacher.setPassword("oauth2");
                         return teacherRepo.save(newTeacher);
                     });
-
-                    System.out.println("Teacher found/created: " + teacher.getEmail() + " (ID: " + teacher.getId() + ")");
 
                     // Generate JWT token
                     String jwt = jwtUtil.generateToken(
@@ -169,7 +161,7 @@ public class SecurityConfig {
                             teacher.getEmail()
                     );
 
-                    System.out.println("Generated JWT token for teacher: " + teacher.getEmail());
+                    log.info("JWT generated successfully for: {}", teacher.getEmail());
                     String redirectUrl = String.format(
                             "%s/oauth-callback?token=%s&userId=%s&role=%s&email=%s&name=%s",
                             frontendUrl,
@@ -180,12 +172,10 @@ public class SecurityConfig {
                             URLEncoder.encode(teacher.getFullName(), StandardCharsets.UTF_8)
                     );
 
-                    System.out.println("Redirecting to: " + redirectUrl);
                     response.sendRedirect(redirectUrl);
 
                 } catch (Exception e) {
-                    System.err.println("Error processing OAuth success: " + e.getMessage());
-                    e.printStackTrace();
+                    log.error("Error processing OAuth2 success handler", e);
                     response.sendRedirect(frontendUrl + "/login?error=oauth_processing_failed&details=" +
                             URLEncoder.encode(e.getMessage(), StandardCharsets.UTF_8));
                 }
@@ -222,7 +212,7 @@ public class SecurityConfig {
                 .oauth2Login(oauth2 -> oauth2
                         .successHandler(oauth2SuccessHandler())
                         .failureHandler((request, response, exception) -> {
-                            System.err.println("OAuth2 login failed: " + exception.getMessage());
+                            log.error("OAuth2 login failed: {}", exception.getMessage());
                             exception.printStackTrace();
                             response.sendRedirect(frontendUrl + "/login?error=oauth_failed");
                         })
@@ -249,5 +239,3 @@ public class SecurityConfig {
     }
 
 }
-
-// CodeRabbit audit trigger
