@@ -6,7 +6,6 @@ import org.hibernate.annotations.UpdateTimestamp;
 import capstone.cyberkids.CyberKids.Model.AnswerTypeLvl1;
 import java.util.Date;
 
-
 @Entity
 @Table(name = "scenarios")
 public class Scenario {

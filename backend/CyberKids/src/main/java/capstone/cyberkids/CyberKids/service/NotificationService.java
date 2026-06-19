@@ -26,9 +26,7 @@ public class NotificationService {
     private static final DateTimeFormatter MANILA_FORMATTER =
             DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS");
 
-    public NotificationService(SimpMessagingTemplate messagingTemplate,
-                               NotificationRepo notificationRepo,
-                               TeacherRepo teacherRepo) {
+    public NotificationService(SimpMessagingTemplate messagingTemplate, NotificationRepo notificationRepo, TeacherRepo teacherRepo) {
         this.messagingTemplate = messagingTemplate;
         this.notificationRepo = notificationRepo;
         this.teacherRepo = teacherRepo;
@@ -42,8 +40,7 @@ public class NotificationService {
         String destination = "/topic/teacher/" + teacherEmail.replace("@", "_");
 
         Instant nowUtc = Instant.now();
-        Notification notification = new Notification(student.getRealName() + " has officially registered.",
-                teacherRepo.findByEmail(teacherEmail).orElseThrow());
+        Notification notification = new Notification(student.getRealName() + " has officially registered.", teacherRepo.findByEmail(teacherEmail).orElseThrow());
         notification.setTimestamp(nowUtc);
         notificationRepo.save(notification);
 
@@ -64,8 +61,7 @@ public class NotificationService {
         String message = studentName + " has completed the challenge: " + missionName + ".";
 
         Instant nowUtc = Instant.now();
-        Teacher teacher = teacherRepo.findByEmail(teacherEmail)
-                .orElseThrow(() -> new RuntimeException("Teacher not found"));
+        Teacher teacher = teacherRepo.findByEmail(teacherEmail).orElseThrow(() -> new RuntimeException("Teacher not found"));
 
         Notification notification = new Notification(message, teacher, "MISSION_COMPLETION");
         notification.setTimestamp(nowUtc);

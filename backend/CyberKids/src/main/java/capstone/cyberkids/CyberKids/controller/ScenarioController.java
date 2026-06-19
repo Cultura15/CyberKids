@@ -30,16 +30,11 @@ public class ScenarioController {
     @PostMapping
     public ResponseEntity<?> createScenario(@RequestBody ScenarioRequestDTO request) {
         try {
-            Scenario scenario = scenarioService.createScenario(
-                    request.getContent(),
-                    request.getClassId(),
-                    request.getCorrectAnswer()
+            Scenario scenario = scenarioService.createScenario(request.getContent(), request.getClassId(), request.getCorrectAnswer()
             );
-            return ResponseEntity.status(HttpStatus.CREATED)
-                    .body(new ScenarioDTO(scenario));
+            return ResponseEntity.status(HttpStatus.CREATED).body(new ScenarioDTO(scenario));
         } catch (RuntimeException e) {
-            return ResponseEntity.badRequest()
-                    .body(Map.of("error", e.getMessage()));
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
         }
     }
 
@@ -48,22 +43,15 @@ public class ScenarioController {
     public ResponseEntity<?> submitAnswerForFeedback(@RequestBody AnswerSubmissionDTO submission) {
         try {
             if (submission.getScenarioId() == null || submission.getUserAnswer() == null) {
-                return ResponseEntity.badRequest()
-                        .body(Map.of("error", "Scenario ID and user answer are required"));
+                return ResponseEntity.badRequest().body(Map.of("error", "Scenario ID and user answer are required"));
             }
-
-            FeedbackResponseDTO feedback = scenarioService.evaluateAnswerWithAI(
-                    submission.getScenarioId(),
-                    submission.getUserAnswer()
+            FeedbackResponseDTO feedback = scenarioService.evaluateAnswerWithAI(submission.getScenarioId(), submission.getUserAnswer()
             );
-
             return ResponseEntity.ok(feedback);
         } catch (RuntimeException e) {
-            return ResponseEntity.badRequest()
-                    .body(Map.of("error", e.getMessage()));
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(Map.of("error", "An error occurred while processing your answer"));
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Map.of("error", "An error occurred while processing your answer"));
         }
     }
 
@@ -72,17 +60,14 @@ public class ScenarioController {
     @GetMapping("/my-scenarios")
     public ResponseEntity<List<ScenarioDTO>> getMyScenarios() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-
         String email;
         if (authentication.getPrincipal() instanceof UserDetails) {
             email = ((UserDetails) authentication.getPrincipal()).getUsername();
         } else {
             email = authentication.getPrincipal().toString();
         }
-
         Long teacherId = scenarioService.getTeacherIdByEmail(email);
         List<ScenarioDTO> scenarios = scenarioService.getScenariosByTeacherId(teacherId);
-
         return ResponseEntity.ok(scenarios);
     }
 
@@ -93,8 +78,7 @@ public class ScenarioController {
             List<GameScenarioDTO> scenarios = scenarioService.getAllActiveScenariosForGameDTO();
             return ResponseEntity.ok(scenarios);
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(null);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
         }
     }
 
@@ -111,15 +95,12 @@ public class ScenarioController {
 
     // Edit a question
     @PutMapping("/{scenarioId}")
-    public ResponseEntity<?> updateScenario(
-            @PathVariable Long scenarioId,
-            @RequestBody ScenarioRequestDTO request) {
+    public ResponseEntity<?> updateScenario(@PathVariable Long scenarioId, @RequestBody ScenarioRequestDTO request) {
         try {
             Scenario scenario = scenarioService.updateScenario(scenarioId, request.getContent());
             return ResponseEntity.ok(new ScenarioDTO(scenario));
         } catch (RuntimeException e) {
-            return ResponseEntity.badRequest()
-                    .body(Map.of("error", e.getMessage()));
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
         }
     }
 
@@ -130,8 +111,7 @@ public class ScenarioController {
             scenarioService.deleteScenario(scenarioId);
             return ResponseEntity.ok(Map.of("message", "Scenario deleted successfully"));
         } catch (RuntimeException e) {
-            return ResponseEntity.badRequest()
-                    .body(Map.of("error", e.getMessage()));
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
         }
     }
 }

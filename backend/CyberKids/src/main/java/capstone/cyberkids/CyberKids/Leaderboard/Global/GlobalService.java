@@ -32,12 +32,10 @@ public class GlobalService {
     @Autowired private ClassService classService;
     @Autowired private StudentService studentService;
 
-
     @Transactional
     public void rebuildFromLevel1() {
         rebuildFromLevel(level1Repo.findAll(), "Level 1");
     }
-
 
     @Transactional
     public void rebuildFromLevel2() {

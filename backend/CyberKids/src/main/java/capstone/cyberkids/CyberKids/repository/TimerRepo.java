@@ -5,12 +5,10 @@ import capstone.cyberkids.CyberKids.Model.ChallengeType;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
-
 import java.util.List;
 
 public interface TimerRepo extends JpaRepository<Timer, Long> {
     List<Timer> findByStudent_Id(Long studentId);
-
     List<Timer> findByChallengeType(ChallengeType challengeType);
 
     @Query("SELECT t FROM Timer t WHERE t.student.id = :studentId AND t.endTime IS NULL ORDER BY t.startTime DESC")

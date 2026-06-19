@@ -3,7 +3,6 @@ package capstone.cyberkids.CyberKids.entity;
 import capstone.cyberkids.CyberKids.Model.ChallengeType;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
-
 import java.time.LocalDateTime;
 
 @Entity

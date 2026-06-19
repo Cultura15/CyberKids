@@ -1,7 +1,6 @@
 package capstone.cyberkids.CyberKids.Model;
 
 import capstone.cyberkids.CyberKids.entity.Student;
-
 import java.time.LocalDateTime;
 
 public class TimerRequest {

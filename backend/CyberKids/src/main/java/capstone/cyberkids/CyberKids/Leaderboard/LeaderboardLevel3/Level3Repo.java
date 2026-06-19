@@ -9,7 +9,6 @@ import java.util.List;
 
 public interface Level3Repo extends JpaRepository<Level3Entity, Long> {
 
-
     @Query("SELECT e FROM Level3Entity e WHERE e.date = :date " +
             "AND e.id IN (SELECT MAX(e2.id) FROM Level3Entity e2 " +
             "WHERE e2.date = :date AND e2.score = " +

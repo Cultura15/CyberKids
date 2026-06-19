@@ -20,8 +20,7 @@ public class TeacherService {
     public Teacher getLoggedInTeacher() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String email = authentication.getName();
-        return teacherRepo.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("Teacher not found"));
+        return teacherRepo.findByEmail(email).orElseThrow(() -> new RuntimeException("Teacher not found"));
     }
 
     public Teacher registerTeacher(Teacher teacher) {
@@ -31,7 +30,6 @@ public class TeacherService {
 
         teacher.setPassword(passwordEncoder.encode(teacher.getPassword()));
         teacher.setRole(Role.TEACHER);
-
         return teacherRepo.save(teacher);
     }
 }

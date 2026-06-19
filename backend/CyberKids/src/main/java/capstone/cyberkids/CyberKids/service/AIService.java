@@ -25,7 +25,6 @@ public class AIService {
     public String generateScenarioFeedback(Scenario scenario, String userAnswer, boolean isCorrect) {
         String correctAnswer = scenario.getCorrectAnswer().name();
         String scenarioContent = scenario.getContent();
-
         String prompt = createFeedbackPrompt(scenarioContent, correctAnswer, userAnswer, isCorrect);
         return getGeminiResponse(prompt);
     }

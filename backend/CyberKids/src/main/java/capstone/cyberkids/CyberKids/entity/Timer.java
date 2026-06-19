@@ -2,10 +2,8 @@ package capstone.cyberkids.CyberKids.entity;
 
 import capstone.cyberkids.CyberKids.Model.ChallengeType;
 import jakarta.persistence.*;
-
 import java.time.LocalDateTime;
 import com.fasterxml.jackson.annotation.JsonBackReference;
-
 
 @Entity
 @Table(name = "time")

@@ -6,7 +6,6 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface GlobalRepo extends JpaRepository<GlobalEntity, Long> {
-
     GlobalEntity findByStudent(Student student);
 }
 

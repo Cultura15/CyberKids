@@ -31,14 +31,12 @@ public class ClassController {
     public ResponseEntity<?> createClass(@RequestBody ClassRequest request) {
         try {
             Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-
             String email;
             if (authentication.getPrincipal() instanceof UserDetails) {
                 email = ((UserDetails) authentication.getPrincipal()).getUsername();
             } else {
                 email = authentication.getPrincipal().toString();
             }
-
             Classes createdClass = classService.createClassByEmail(
                     email,
                     request.getGrade(),
@@ -46,7 +44,6 @@ public class ClassController {
                     request.getColorTheme(),
                     request.getMaxStudents()
             );
-
             return ResponseEntity.ok(createdClass);
         } catch (RuntimeException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
@@ -55,13 +52,9 @@ public class ClassController {
 
     // Locks the game for the specified class
     @PostMapping("/{classCode}/lock-world")
-    public ResponseEntity<?> lockWorldForClass(
-            @PathVariable String classCode,
-            @RequestParam String worldName) {
-
+    public ResponseEntity<?> lockWorldForClass(@PathVariable String classCode, @RequestParam String worldName) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String email = authentication.getName();
-
         try {
             classService.lockWorldForClass(classCode, worldName, email);
             return ResponseEntity.ok(Map.of("message", "World locked for class " + classCode));
@@ -70,16 +63,11 @@ public class ClassController {
         }
     }
 
-
     // Unlocks the game for the specified class
     @PostMapping("/{classCode}/unlock-world")
-    public ResponseEntity<?> unlockWorldForClass(
-            @PathVariable String classCode,
-            @RequestParam String worldName) {
-
+    public ResponseEntity<?> unlockWorldForClass(@PathVariable String classCode, @RequestParam String worldName) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String email = authentication.getName();
-
         try {
             classService.unlockWorldForClass(classCode, worldName, email);
             return ResponseEntity.ok(Map.of("message", "World unlocked for class " + classCode));
@@ -88,12 +76,9 @@ public class ClassController {
         }
     }
 
-
     // Lightweight list of students
     @GetMapping("/grade/{grade}/section/{section}/students/summary")
-    public ResponseEntity<List<StudentSummaryDTO>> getStudentsSummary(
-            @PathVariable String grade,
-            @PathVariable String section) {
+    public ResponseEntity<List<StudentSummaryDTO>> getStudentsSummary(@PathVariable String grade, @PathVariable String section) {
         List<StudentSummaryDTO> summaries = studentService.getStudentSummariesByGradeAndSection(grade, section);
         return ResponseEntity.ok(summaries);
     }
@@ -109,14 +94,12 @@ public class ClassController {
     @GetMapping("/my-classes")
     public ResponseEntity<List<Classes>> getClassesForLoggedInTeacher() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-
         String email;
         if (authentication.getPrincipal() instanceof UserDetails) {
             email = ((UserDetails) authentication.getPrincipal()).getUsername();
         } else {
             email = authentication.getPrincipal().toString();
         }
-
         Long teacherId = classService.getTeacherIdByEmail(email);
         List<Classes> classes = classService.getClassesByTeacher(teacherId);
         return ResponseEntity.ok(classes);
@@ -124,12 +107,9 @@ public class ClassController {
 
     // Roblox endpoint to check if game is locked/unlocked
     @GetMapping("/{classCode}/is-world-locked")
-    public ResponseEntity<?> isWorldLocked(
-            @PathVariable String classCode,
-            @RequestParam String worldName) {
+    public ResponseEntity<?> isWorldLocked(@PathVariable String classCode, @RequestParam String worldName) {
         Classes classEntity = classService.getClassByCode(classCode);
         boolean isLocked = classEntity.getLockedWorlds().contains(worldName);
-
         return ResponseEntity.ok(Map.of(
                 "classCode", classCode,
                 "worldName", worldName,

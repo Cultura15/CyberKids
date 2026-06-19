@@ -33,12 +33,10 @@ public class StudentService {
     }
 
     public Student getStudentByIdWithScoresAndTimers(Long id) {
-        return repo.findByIdWithScoresAndTimers(id)
-                .orElseThrow(() -> new EntityNotFoundException("Student not found"));
+        return repo.findByIdWithScoresAndTimers(id).orElseThrow(() -> new EntityNotFoundException("Student not found"));
     }
 
     public boolean moveStudentToWorld(String robloxId, String targetWorld, String targetLevel) {
-
         Student student = repo.findByRobloxId(robloxId);
         if (student == null) {
             return false;

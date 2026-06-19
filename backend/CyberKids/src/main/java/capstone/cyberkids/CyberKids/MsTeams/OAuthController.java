@@ -5,17 +5,18 @@ import capstone.cyberkids.CyberKids.auth.JWT.JwtUtil;
 import capstone.cyberkids.CyberKids.Model.Role;
 import capstone.cyberkids.CyberKids.repository.TeacherRepo;
 import jakarta.servlet.http.HttpServletResponse;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-
 import java.io.IOException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 
+@Slf4j
 @RestController
 @RequestMapping("/api/oauth")
 public class OAuthController {
@@ -41,11 +42,6 @@ public class OAuthController {
                 response.sendRedirect(frontendUrl + "/login?error=authentication_failed");
                 return;
             }
-
-            // Log the principal attributes for debugging
-            System.out.println("OAuth2User attributes: " + principal.getAttributes());
-            System.out.println("OAuth2User authorities: " + principal.getAuthorities());
-            System.out.println("OAuth2User name: " + principal.getName());
 
             // Extract user information - try multiple attribute names
             String email = principal.getAttribute("mail");
@@ -77,9 +73,9 @@ public class OAuthController {
 
             // Debug: Print all available attributes if email is still null
             if (email == null) {
-                System.err.println("No email found in OAuth2 response");
-                System.err.println("Available attributes: " + principal.getAttributes().keySet());
-                System.err.println("Attribute values: " + principal.getAttributes());
+                log.error("No email found in OAuth2 response");
+                log.error("Available attributes: " + principal.getAttributes().keySet());
+                log.error("Attribute values: " + principal.getAttributes());
                 response.sendRedirect(frontendUrl + "/login?error=no_email");
                 return;
             }
@@ -99,7 +95,6 @@ public class OAuthController {
 
             // Find or create teacher
             Teacher teacher = teacherRepo.findByEmail(finalEmail).orElseGet(() -> {
-                System.out.println("Creating new teacher for email: " + finalEmail);
                 Teacher newTeacher = new Teacher();
                 newTeacher.setEmail(finalEmail);
                 newTeacher.setFullName(finalName);
@@ -108,7 +103,6 @@ public class OAuthController {
                 return teacherRepo.save(newTeacher);
             });
 
-            System.out.println("Teacher found/created: " + teacher.getEmail() + " (ID: " + teacher.getId() + ")");
 
             // Generate JWT token
             String jwt = jwtUtil.generateToken(
@@ -117,8 +111,6 @@ public class OAuthController {
                     teacher.getId(),
                     teacher.getEmail()
             );
-
-            System.out.println("Generated JWT token for teacher: " + teacher.getEmail());
 
             // Redirect to frontend with parameters
             String redirectUrl = String.format(
@@ -130,12 +122,10 @@ public class OAuthController {
                     URLEncoder.encode(teacher.getEmail(), StandardCharsets.UTF_8),
                     URLEncoder.encode(teacher.getFullName(), StandardCharsets.UTF_8)
             );
-
-            System.out.println("Redirecting to: " + redirectUrl);
             response.sendRedirect(redirectUrl);
 
         } catch (Exception e) {
-            System.err.println("Error processing OAuth success: " + e.getMessage());
+            log.error("Error processing OAuth success: " + e.getMessage());
             e.printStackTrace();
             response.sendRedirect(frontendUrl + "/login?error=oauth_processing_failed&details=" +
                     URLEncoder.encode(e.getMessage(), StandardCharsets.UTF_8));
@@ -144,9 +134,7 @@ public class OAuthController {
 
     @GetMapping("/redirect")
     public void fallbackRedirect(HttpServletResponse response) throws IOException {
-        System.err.println("Fallback redirect called - this should not happen in normal flow");
+        log.error("Fallback redirect called - this should not happen in normal flow");
         response.sendRedirect(frontendUrl + "/login?error=invalid_oauth_request");
     }
 }
-
-// CodeRabbit audit trigger

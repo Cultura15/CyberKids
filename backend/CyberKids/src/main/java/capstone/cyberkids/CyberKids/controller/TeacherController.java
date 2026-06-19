@@ -52,7 +52,6 @@ public class TeacherController {
     @PostMapping("/move-student")
     public ResponseEntity<String> moveStudentToWorld(@RequestBody StudentTeleportRequest request) {
         Student student = studentRepo.findByRobloxId(request.getRobloxId());
-
         if (student == null) {
             return ResponseEntity.badRequest().body("Student not found.");
         }
@@ -60,18 +59,9 @@ public class TeacherController {
         if (student.getOnline() == null || !student.getOnline()) {
             return ResponseEntity.badRequest().body("Player is offline.");
         }
-
-        boolean success = studentService.moveStudentToWorld(
-                request.getRobloxId(),
-                request.getTargetWorld(),
-                request.getTargetLevel()
-        );
-
-        return success
-                ? ResponseEntity.ok("Student move request stored successfully.")
-                : ResponseEntity.badRequest().body("Failed to move student.");
+        boolean success = studentService.moveStudentToWorld(request.getRobloxId(), request.getTargetWorld(), request.getTargetLevel());
+        return success ? ResponseEntity.ok("Student move request stored successfully.") : ResponseEntity.badRequest().body("Failed to move student.");
     }
-
 
     // Displays Teacher Notification
     @GetMapping("/notification/me")

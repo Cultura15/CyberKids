@@ -28,37 +28,24 @@ public class Level1Service {
             throw new RuntimeException("Student not found with Roblox ID: " + robloxId);
         }
 
-        System.out.println("=== LEADERBOARD UPDATE DEBUG ===");
-        System.out.println("Student: " + student.getRobloxName());
-        System.out.println("Raw score: " + score);
-        System.out.println("Raw time received: '" + totalTimeTaken + "'");
-
         String cleanTime = cleanTimeInput(totalTimeTaken);
-        System.out.println("Cleaned time: '" + cleanTime + "'");
 
         Level1Entity entry = new Level1Entity(student, score, cleanTime, date);
         Level1Entity savedEntry = leaderboardRepo.save(entry);
 
-        System.out.println("Saved entry - ID: " + savedEntry.getId() + ", Time: '" + savedEntry.getTotalTimeTaken() + "'");
-        System.out.println("=== END DEBUG ===");
-
         globalLeaderboardService.rebuildFromLevel1();
-
         return savedEntry;
 
     }
 
     private String cleanTimeInput(String timeInput) {
         if (timeInput == null || timeInput.trim().isEmpty()) {
-            System.out.println("Time input is null/empty, defaulting to 00:00");
             return "00:00";
         }
 
         String trimmed = timeInput.trim();
-        System.out.println("Trimmed input: '" + trimmed + "'");
 
         if (trimmed.matches("\\d{1,2}:\\d{2}")) {
-            System.out.println("Time already in MM:SS format");
             return trimmed;
         }
 
@@ -67,10 +54,8 @@ public class Level1Service {
             int minutes = totalSeconds / 60;
             int seconds = totalSeconds % 60;
             String formatted = String.format("%d:%02d", minutes, seconds);
-            System.out.println("Converted " + totalSeconds + " seconds to " + formatted);
             return formatted;
         } catch (NumberFormatException e) {
-            System.out.println("Could not parse '" + trimmed + "' as number, defaulting to 00:00");
             return "00:00";
         }
     }
@@ -80,8 +65,6 @@ public class Level1Service {
     }
 
     public List<LeaderboardResponseDTO> getLeaderboardByDate(LocalDate date) {
-        System.out.println("Fetching best scores for date: " + date);
-
         List<Level1Entity> entries = leaderboardRepo.findBestScoresByDate(date);
 
         return entries.stream()

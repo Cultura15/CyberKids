@@ -19,7 +19,6 @@ public class ScoreService {
 
     @Transactional
     public Score saveScore(Score score) {
-        System.out.println("Saving score for student: " + score.getStudent().getRobloxId());
         return scoreRepository.save(score);
     }
 }

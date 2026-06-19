@@ -16,12 +16,8 @@ public class GlobalController {
 
     // Get Leaderboard per Class of Specified Teacher
     @GetMapping("/class/{classId}/level/{levelName}")
-    public ResponseEntity<List<GlobalLeaderboardDTO>> getLeaderboardByClassAndLevel(
-            @PathVariable Long classId,
-            @PathVariable String levelName) {
-
-        List<GlobalLeaderboardDTO> leaderboard =
-                globalLeaderboardService.getRankedLevelByClass(classId, levelName);
+    public ResponseEntity<List<GlobalLeaderboardDTO>> getLeaderboardByClassAndLevel(@PathVariable Long classId, @PathVariable String levelName) {
+        List<GlobalLeaderboardDTO> leaderboard = globalLeaderboardService.getRankedLevelByClass(classId, levelName);
         return ResponseEntity.ok(leaderboard);
     }
 

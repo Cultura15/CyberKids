@@ -1,5 +1,6 @@
 package capstone.cyberkids.CyberKids.Leaderboard.LeaderboardLevel1;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -8,6 +9,7 @@ import java.util.List;
 import java.util.Map;
 import capstone.cyberkids.CyberKids.dto.LeaderboardResponseDTO;
 
+@Slf4j
 @RestController
 @RequestMapping("/api/leaderboard/info-sorting/daily")
 public class Level1Controller {
@@ -21,15 +23,9 @@ public class Level1Controller {
             @RequestBody Map<String, Object> requestData) {
 
         try {
-            System.out.println("=== CONTROLLER UPDATE REQUEST ===");
-            System.out.println("Roblox ID: " + robloxId);
-            System.out.println("Request body: " + requestData);
 
             Integer score = (Integer) requestData.get("score");
             String totalTimeTaken = (String) requestData.get("totalTimeTaken");
-
-            System.out.println("Parsed score: " + score);
-            System.out.println("Parsed time: '" + totalTimeTaken + "'");
 
             if (score == null || score < 0) {
                 return ResponseEntity.badRequest().body("Invalid score provided");
@@ -38,11 +34,6 @@ public class Level1Controller {
             Level1Entity updatedEntry =
                     leaderboardService.updateStudentDailyScoreAndTimeByRobloxId(
                             robloxId, score, totalTimeTaken, LocalDate.now());
-
-            System.out.println("=== UPDATE SUCCESS ===");
-            System.out.println("Entry ID: " + updatedEntry.getId());
-            System.out.println("Final score: " + updatedEntry.getScore());
-            System.out.println("Final time: '" + updatedEntry.getTotalTimeTaken() + "'");
 
             return ResponseEntity.ok(Map.of(
                     "success", true,
@@ -53,7 +44,7 @@ public class Level1Controller {
             ));
 
         } catch (Exception e) {
-            System.err.println("ERROR in updateDailyLeaderboardByRobloxId: " + e.getMessage());
+            log.error("ERROR in updateDailyLeaderboardByRobloxId: " + e.getMessage());
             e.printStackTrace();
             return ResponseEntity.badRequest().body(Map.of(
                     "success", false,
@@ -68,7 +59,7 @@ public class Level1Controller {
             List<LeaderboardResponseDTO> leaderboard = leaderboardService.getTodayLeaderboard();
             return ResponseEntity.ok(leaderboard);
         } catch (Exception e) {
-            System.err.println("ERROR in getTodayLeaderboard: " + e.getMessage());
+            log.error("ERROR in getTodayLeaderboard: " + e.getMessage());
             return ResponseEntity.internalServerError().build();
         }
     }
@@ -79,7 +70,7 @@ public class Level1Controller {
             List<LeaderboardResponseDTO> leaderboard = leaderboardService.getLeaderboardByDate(date);
             return ResponseEntity.ok(leaderboard);
         } catch (Exception e) {
-            System.err.println("ERROR in getLeaderboardByDate: " + e.getMessage());
+            log.error("ERROR in getLeaderboardByDate: " + e.getMessage());
             return ResponseEntity.internalServerError().build();
         }
     }
